@@ -1,9 +1,13 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
+  import { arcStore } from "$lib/stores/ArcStore.svelte";
 
   let fileInput: HTMLInputElement;
 
+  /**
+   * Import JSON Files
+   * @param event
+   */
   function handleChange(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
@@ -12,13 +16,13 @@
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const json = JSON.parse(reader.result as string);
+        const json = JSON.parse(reader.result as string) as ARC_RO_JSON;
         console.log(json);
+        arcStore.init(json);
       } catch (e) {
         alert("Ungültige JSON-Datei");
       }
     };
-    console.log(file);
 
     reader.readAsText(file);
   }
