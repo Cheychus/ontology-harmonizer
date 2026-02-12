@@ -11,5 +11,7 @@ interface GraphNode {
   additionalType?: string;
   name: string;
   termCode?: string;
+  // This is were the ontologies could be saved
   propertyID?: string;
+  unitCode?: string;
 }
