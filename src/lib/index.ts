@@ -14,4 +14,7 @@ interface GraphNode {
   // This is were the ontologies could be saved
   propertyID?: string;
   unitCode?: string;
+  valueReference?: string | string[];
 }
+
+

@@ -1,9 +1,17 @@
+import { SvelteMap } from "svelte/reactivity";
+
+export type DerivedOntology = {
+  source: GraphNode;
+  value: string;
+}
+
 class ArcStore {
   filename: string = $state("");
   json: ARC_RO_JSON | null = $state(null);
-  graph: GraphNode[] = $state([]);
-  definedOntologies: Map<string, string> = $state(new Map());
-  undefinedOntologies: Map<string, string> = $state(new Map());
+  graph: GraphNode[] = $derived(this.json?.["@graph"] ?? []);
+  definedOntologies: SvelteMap<string, DerivedOntology> = $state(new SvelteMap());
+  undefinedOntologies: SvelteMap<string, DerivedOntology> = $state(new SvelteMap());
+  ontologiesCount: number = $derived(this.definedOntologies.size + this.undefinedOntologies.size);
   initialised: boolean = $state(false);
 
   /**
@@ -12,24 +20,23 @@ class ArcStore {
    */
   public init(json: ARC_RO_JSON) {
     this.json = json;
-    this.graph = json["@graph"] ?? [];
     this.extractOntologies();
     this.initialised = true;
   }
 
   private extractOntologies() {
     // To reset the maps after a new arc was initialised
-    this.definedOntologies = new Map();
-    this.undefinedOntologies = new Map();
+    this.definedOntologies.clear();
+    this.undefinedOntologies.clear();
 
 
     this.graph.forEach(node => {
       if (node["@type"] === "PropertyValue") {
         const ontology = this.extractOntology(node);
         if (!ontology) {
-          this.undefinedOntologies.set(node.name, "undefined");
+          this.undefinedOntologies.set(node.name, { source: node, value: "" });
         } else {
-          this.definedOntologies.set(node.name, ontology);
+          this.definedOntologies.set(node.name, { source: node, value: ontology });
         }
 
       }
@@ -53,6 +60,16 @@ class ArcStore {
     }
 
     return null;
+  }
+
+  saveOntologyValue(key: string, value: string) {
+    console.log("SAVE: ", key, value);
+  }
+
+  updateArcJson() {
+    this.extractOntologies(); // To detect if a undefined Ontology is now defined
+    this.json = this.json; // To trigger svelte reactivity and update the json
+
   }
 
 }

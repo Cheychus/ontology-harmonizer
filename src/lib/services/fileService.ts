@@ -1,3 +1,5 @@
+import { arcStore } from "$lib/stores/ArcStore.svelte";
+
 export async function readJsonFile<T>(file: File): Promise<T> {
     const text = await file.text();
     try {
@@ -8,8 +10,21 @@ export async function readJsonFile<T>(file: File): Promise<T> {
     }
 }
 
-export async function loadArcFile(file: File): Promise<ARC_RO_JSON> {
+export async function loadArcFile(file: File): Promise<void> {
     const json = await readJsonFile<ARC_RO_JSON>(file);
-    return json;
+    arcStore.init(json);
+}
+
+export function downloadJson(data: unknown, fileName: string) {
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.click();
+
+    URL.revokeObjectURL(url);
 }
 
