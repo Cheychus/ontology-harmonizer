@@ -20,15 +20,17 @@ class MapStore {
         console.log("Apply all mappings");
         let count = 0;
         this.ontologyMapping.entries().forEach((mapping) => {
+            // Update both, defined and undefined ontologies 
             const onto1 = arcStore.definedOntologies.get(mapping[0]);
             const onto2 = arcStore.undefinedOntologies.get(mapping[0]);
 
             // Directly update the json source here, because the mapping clearly defines a value for this ontology key
-            if (onto1) {
+            // Update only when the mapping defines another value for the key
+            if (onto1 && onto1.value !== mapping[1]) {
                 onto1.source.propertyID = mapping[1];
                 count++;
             }
-            if (onto2) {
+            if (onto2 && onto2.value !== mapping[1]) {
                 onto2.source.propertyID = mapping[1];
                 count++;
             }

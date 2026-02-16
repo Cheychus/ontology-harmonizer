@@ -32,8 +32,6 @@
   }
 
   function handleSave() {}
-
-  $inspect(mapStore.ontologyMapping);
 </script>
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
