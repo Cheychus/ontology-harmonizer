@@ -6,6 +6,7 @@
   import { arcStore } from "$lib/stores/ArcStore.svelte";
   import { mapStore } from "$lib/stores/MapStore.svelte";
   import { onMount } from "svelte";
+  import * as Collapsible from "$lib/components/ui/collapsible/index.js";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
@@ -76,19 +77,47 @@
         >
       </div>
 
-      <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
-      <div class="flex flex-col gap-2">
-        {#each arcStore.definedOntologies as ontology, i}
-          <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
-        {/each}
-      </div>
+      <Collapsible.Root>
+        <Collapsible.Trigger>
+          <div class="flex gap-2 items-center">
+            <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
+            <Button variant={"ghost"}
+              ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+              </svg></Button
+            >
+          </div>
+        </Collapsible.Trigger>
 
-      <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
-      <div class="flex flex-col gap-2">
-        {#each arcStore.undefinedOntologies as ontology, i}
-          <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
-        {/each}
-      </div>
+        <Collapsible.Content>
+          <div class="flex flex-col gap-2">
+            {#each arcStore.definedOntologies as ontology, i}
+              <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
+            {/each}
+          </div></Collapsible.Content
+        >
+      </Collapsible.Root>
+
+      <Collapsible.Root open={true}>
+        <Collapsible.Trigger>
+          <div class="flex gap-2 items-center">
+            <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
+            <Button variant={"ghost"}
+              ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+              </svg></Button
+            >
+          </div>
+        </Collapsible.Trigger>
+
+        <Collapsible.Content>
+          <div class="flex flex-col gap-2">
+            {#each arcStore.undefinedOntologies as ontology, i}
+              <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
+            {/each}
+          </div></Collapsible.Content
+        >
+      </Collapsible.Root>
     </div>
   {/if}
 </div>
