@@ -7,6 +7,8 @@
   import { mapStore } from "$lib/stores/MapStore.svelte";
   import { onMount } from "svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+  import { importOntologyFile, writeOntologyFile } from "$lib/services/ontologyService";
+  import ontoFile from "$lib/assets/mappings/mapping-test.obo?raw";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
@@ -16,6 +18,9 @@
 
   onMount(() => {
     mapStore.init();
+
+    const file = importOntologyFile(ontoFile);
+    console.log(file);
   });
 
   /**

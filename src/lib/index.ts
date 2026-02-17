@@ -17,4 +17,15 @@ interface GraphNode {
   valueReference?: string | string[];
 }
 
+interface OntologyTerm {
+  id: string;
+  name: string;
+  synonyms: string[];
+  xrefs: string[];
+}
 
+interface OntologyFile {
+  ontology: string;
+  formatVersion: string;
+  terms: OntologyTerm[];
+}

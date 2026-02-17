@@ -1,0 +1,15 @@
+format-version: 1.2
+ontology: arc-harmonized
+
+[Term]
+id: ARC:0000001
+name: organism
+xref: OBI:0100026
+synonym: "Organism" EXACT []
+synonym: "Organismus" EXACT []
+
+[Term]
+id: ARC:0000002
+name: processed material
+xref: OBI:0000047
+synonym: "pellet" EXACT []
