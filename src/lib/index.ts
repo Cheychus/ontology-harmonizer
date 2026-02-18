@@ -9,12 +9,14 @@ interface GraphNode {
   "@id": string;
   "@type": string;
   additionalType?: string;
-  name: string;
-  termCode?: string;
-  // This is were the ontologies could be saved
-  propertyID?: string;
-  unitCode?: string;
-  valueReference?: string | string[];
+
+  // This is were the ontologies are saved
+  name: string; // Key name
+  propertyID?: string; // SHOULD be present (URL) - Key ontology reference
+  unitText?: string; // Unit name
+  unitCode?: string; // COULD be present (URL) - Unit ontology reference
+  value?: string; // Value text or number
+  valueReference?: string; // COULD be present (URL) - Value ontology reference
 }
 
 

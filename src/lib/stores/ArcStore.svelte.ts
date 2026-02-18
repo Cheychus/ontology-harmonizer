@@ -1,8 +1,11 @@
+import { extractOntologies } from "$lib/services/ontologyService";
 import { SvelteMap } from "svelte/reactivity";
 
 export type DerivedOntology = {
   source: GraphNode;
+  key: string;
   value: string;
+  ontologyAttribute: "propertyID" | "unitCode" | "valueReference";
 }
 
 class ArcStore {
@@ -20,11 +23,11 @@ class ArcStore {
    */
   public init(json: ARC_RO_JSON) {
     this.json = json;
-    this.extractOntologies();
+    this.searchOntologies();
     this.initialised = true;
   }
 
-  private extractOntologies() {
+  private searchOntologies() {
     // To reset the maps after a new arc was initialised
     this.definedOntologies.clear();
     this.undefinedOntologies.clear();
@@ -32,34 +35,19 @@ class ArcStore {
 
     this.graph.forEach(node => {
       if (node["@type"] === "PropertyValue") {
-        const ontology = this.extractOntology(node);
-        if (!ontology) {
-          this.undefinedOntologies.set(node.name, { source: node, value: "" });
-        } else {
-          this.definedOntologies.set(node.name, { source: node, value: ontology });
-        }
 
+        const ontologies = extractOntologies(node);
+        ontologies.forEach((onto) => {
+          if (onto.key === "" || onto.value === "") {
+            this.undefinedOntologies.set(onto.key, onto);
+          } else {
+            this.definedOntologies.set(onto.key, onto);
+          }
+        });
       }
     });
     console.log(this.definedOntologies);
     console.log(this.undefinedOntologies);
-  }
-
-  /**
-   * Ontologies can be saved in different attributes, so this method checks all possible values
-   * and can be extended if more attributes need support
-   * @param node 
-   * @returns 
-   */
-  private extractOntology(node: GraphNode): string | null {
-    if (node.propertyID) {
-      return node.propertyID;
-    }
-    if (node.unitCode) {
-      return node.unitCode;
-    }
-
-    return null;
   }
 
   saveOntologyValue(key: string, value: string) {
@@ -67,7 +55,7 @@ class ArcStore {
   }
 
   updateArcJson() {
-    this.extractOntologies(); // To detect if a undefined Ontology is now defined
+    this.searchOntologies(); // To detect if a undefined Ontology is now defined
     this.json = this.json; // To trigger svelte reactivity and update the json
 
   }
