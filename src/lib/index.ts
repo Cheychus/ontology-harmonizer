@@ -19,4 +19,15 @@ interface GraphNode {
   valueReference?: string; // COULD be present (URL) - Value ontology reference
 }
 
+interface OntologyTerm {
+  id: string;
+  name: string;
+  synonyms: string[];
+  xrefs: string[];
+}
 
+interface OntologyFile {
+  ontology: string;
+  formatVersion: string;
+  terms: OntologyTerm[];
+}
