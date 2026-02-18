@@ -1,26 +1,38 @@
 <script lang="ts">
-  import OntologyCard from "$lib/components/Ontologies/OntologyCard.svelte";
+  import OntologyCard from "$lib/components/ontologies/OntologyCard.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import Input from "$lib/components/ui/input/input.svelte";
-  import { downloadJson, loadArcFile } from "$lib/services/fileService";
+  import { downloadJson, loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { arcStore } from "$lib/stores/ArcStore.svelte";
   import { mapStore } from "$lib/stores/MapStore.svelte";
   import { onMount } from "svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
-  import { importOntologyFile, writeOntologyFile } from "$lib/services/ontologyService";
-  import ontoFile from "$lib/assets/mappings/mapping-test.obo?raw";
+  import { OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
+  import ontoFile from "$lib/assets/mappings/test3.obo?raw";
+  import Mapping from "$lib/components/mapping/Mapping.svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
   let fileInput: HTMLInputElement;
   let fileName = $state("");
   let statusMessage = $state("");
+  let oboFile: string = $state("");
 
   onMount(() => {
     mapStore.init();
 
-    const file = importOntologyFile(ontoFile);
-    console.log(file);
+    try {
+      const file: OboFile = parseOntologyFile(ontoFile);
+      console.log(file);
+    } catch (error) {
+      if (error instanceof OboParseError) {
+        console.error("OBO Parse error:", error.message, error.line);
+      } else {
+        console.error("Unknown error: ", error);
+      }
+    }
+
+    // oboFile = file;
   });
 
   /**
@@ -40,6 +52,7 @@
 </script>
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
+  <Mapping oboFile={ontoFile} />
   <div class="flex gap-2">
     <Button class="p-6" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
     {#if arcStore.initialised}

@@ -1,4 +1,4 @@
-import { extractOntologies } from "$lib/services/ontologyService";
+import { extractOntologies } from "$lib/services/arcs/arcOntology.service";
 import { SvelteMap } from "svelte/reactivity";
 
 export type DerivedOntology = {

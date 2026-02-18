@@ -1,0 +1,35 @@
+format-version: 1.4
+ontology: test
+
+[Term]
+id: ARC:0000001
+name: term1
+xref: OBI:0100026
+synonym: "Test Synonym" EXACT SCOPE_LITERAL []
+synonym: "Test Synonym without array" EXACT SCOPE_LITERAL
+synonym: "Test Synonym" EXACT
+synonym: "The other white meat" EXACT MARKETING_SLOGAN [MEAT:00324, BACONBASE:03021]
+
+[Term]
+id: ARC:0000002
+name: term2
+xref: OBI:0000047
+synonym: "pellet" EXACT []
+
+[Term]
+id: ARC:0000003
+name: term3
+
+[Term]
+id: ARC:0000004
+name: term4
+xref: OBI:0100026
+
+[Term]
+id: ARC:0000005
+name: term5
+synonym: "Test Synonym" EXACT
+
+
+
+
