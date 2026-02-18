@@ -7,9 +7,10 @@
   import { mapStore } from "$lib/stores/MapStore.svelte";
   import { onMount } from "svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
-  import { OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
-  import ontoFile from "$lib/assets/mappings/test3.obo?raw";
+  import { addTerm, downloadObo, getNextId, OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
+  import ontoFile from "$lib/assets/mappings/mapping.obo?raw";
   import Mapping from "$lib/components/mapping/Mapping.svelte";
+  import type { OboFile, OboSynonym } from "$lib/types/oboFiles";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
@@ -20,19 +21,6 @@
 
   onMount(() => {
     mapStore.init();
-
-    try {
-      const file: OboFile = parseOntologyFile(ontoFile);
-      console.log(file);
-    } catch (error) {
-      if (error instanceof OboParseError) {
-        console.error("OBO Parse error:", error.message, error.line);
-      } else {
-        console.error("Unknown error: ", error);
-      }
-    }
-
-    // oboFile = file;
   });
 
   /**

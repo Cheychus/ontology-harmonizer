@@ -103,7 +103,6 @@ function extractSynonym(synonym: string): OboSynonym {
     let synonymText = "";
     const textStartIdx = synonym.indexOf('"');
     const textEndIdx = synonym.lastIndexOf('"');
-    console.log(synonym, textStartIdx, textEndIdx);
 
     if (textStartIdx === -1 || textEndIdx === -1 || textStartIdx > textEndIdx) {
         throw new OboParseError("Invalid synonym format (missing text)", synonym);
@@ -117,20 +116,17 @@ function extractSynonym(synonym: string): OboSynonym {
 
     if (xrefStart !== -1 && xrefEnd !== -1 && xrefEnd > xrefStart) {
         const xrefRaw = synonym.substring(xrefStart + 1, xrefEnd);
-        console.log("raw: ", xrefRaw, " ---")
         if (xrefRaw.length > 0) {
             xrefList = xrefRaw.split(",").map(x => x.trim());
         } else {
             xrefList = [];
         }
-        console.log(xrefList);
     }
 
     const metaStart = textEndIdx + 1;
     const metaEnd = xrefStart !== -1 ? xrefStart : synonym.length;
     const metaPart = synonym.substring(metaStart, metaEnd).trim();
     const metaTokens = metaPart.split(/\s+/).filter(Boolean);
-    console.log(metaTokens)
 
     if (metaTokens.length === 0) {
         throw new OboParseError("Missing scope identifier in synonym", synonym);
@@ -157,7 +153,6 @@ function extractSynonym(synonym: string): OboSynonym {
         oboSyn.xrefList = xrefList;
     }
 
-    console.log(oboSyn);
     return oboSyn;
 }
 
@@ -187,14 +182,14 @@ export function writeOntologyFile(obo: OboFile): string {
         lines.push(synonyms.join("\n"));
         const xrefs = term.xrefs.map((xref) => `xref: ${xref}`).join("\n");
         lines.push(xrefs);
+        lines.push(""); // Line break between terms
     });
 
     const oboString = lines.join("\n");
-    console.log(oboString);
     return oboString;
 }
 
-function downloadObo(oboString: string, fileName = "mapping.obo") {
+export function downloadObo(oboString: string, fileName = "mapping.obo") {
     const blob = new Blob([oboString], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -202,6 +197,34 @@ function downloadObo(oboString: string, fileName = "mapping.obo") {
     a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+export function getNextId(terms: OboTerm[], prefix: string): string {
+    const numbers = terms
+        .filter(t => t.id.startsWith(prefix + ":"))
+        .map(t => parseInt(t.id.split(":")[1], 10))
+        .filter(n => !isNaN(n));
+
+    const max = numbers.length ? Math.max(...numbers) : 0;
+    const next = (max + 1).toString().padStart(7, "0");
+
+    return `${prefix}:${next}`;
+}
+export function createPrefix(oboFile: OboFile): string {
+    const name = oboFile.ontology;
+    const prefix = name.replace(/[^\w\s]/gi, '').toUpperCase();
+    return prefix;
+}
+
+export function addTerm(oboFile: OboFile, termName: string, synonyms: OboSynonym[], xrefs: string[]): OboTerm {
+    const oboTerm: OboTerm = {
+        id: getNextId(oboFile.terms, createPrefix(oboFile)),
+        name: termName,
+        synonyms,
+        xrefs
+    }
+    oboFile.terms.push(oboTerm);
+    return oboTerm;
 }
 
 
