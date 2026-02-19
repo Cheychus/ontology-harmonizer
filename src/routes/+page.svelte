@@ -61,20 +61,21 @@
   <div class="py-4 w-full">
     <OboMapping />
   </div>
+  {#if arcStore.initialised}
+    <div class="w-full flex flex-col gap-2 pb-4">
+      <Button
+        class="max-w-96"
+        onclick={() => {
+          statusMessage = mapStore.applyMapping() + " Ontologies were updated";
+        }}>Apply Mapping</Button
+      >
+    </div>
+  {/if}
 
   <input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
   {#if arcStore.initialised}
     <Status bind:fileName />
     <div class="flex w-full flex-col">
-      <div class="flex flex-col gap-2">
-        <Button
-          class="max-w-96"
-          onclick={() => {
-            statusMessage = mapStore.applyMapping() + " Ontologies were updated";
-          }}>Apply Mapping</Button
-        >
-      </div>
-
       <Collapsible.Root open={definedToggle} onclick={() => (definedToggle = !definedToggle)}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">

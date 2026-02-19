@@ -11,7 +11,7 @@
     let statusLog: string[] = $state([]);
 </script>
 
-<div class="flex w-full flex-col gap-2 py-4 font-bold">
+<div class="shadow p-4 flex w-full flex-col gap-2 py-4 font-bold">
     <h2 class="">Status:</h2>
     <p>Filename: {fileName}</p>
     <Table.Root>
@@ -33,6 +33,7 @@
             </Table.Row>
         </Table.Body>
     </Table.Root>
+    <h4 class="underline">Status Messages</h4>
     {#each statusLog as log}
         <p class="text-green-400">{log}</p>
     {/each}
