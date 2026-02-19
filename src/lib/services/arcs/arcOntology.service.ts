@@ -18,29 +18,29 @@ export function extractOntologies(node: GraphNode): DerivedOntology[] {
 
     console.log(name, propertyID, "extract");
 
-    if (name && propertyID) {
+    if (name && propertyID != null) {
         derivedOntologies.push({
             source: jsonSource,
             key: name,
-            value: propertyID ?? "",
+            value: propertyID,
             ontologyAttribute: "propertyID"
         });
     }
 
-    if (unitText && unitCode) {
+    if (unitText && unitCode != null) {
         derivedOntologies.push({
             source: jsonSource,
-            key: unitText ?? "",
-            value: unitCode ?? "",
+            key: unitText,
+            value: unitCode,
             ontologyAttribute: "unitCode"
         });
     }
 
-    if (value && valueReference) {
+    if (value && valueReference != null) {
         derivedOntologies.push({
             source: jsonSource,
-            key: value ?? "",
-            value: valueReference ?? "",
+            key: value,
+            value: valueReference,
             ontologyAttribute: "valueReference"
         });
     }

@@ -38,7 +38,7 @@ class ArcStore {
 
         const ontologies = extractOntologies(node);
         ontologies.forEach((onto) => {
-          if (onto.key === "" || onto.value === "") {
+          if (onto.value === "") {
             this.undefinedOntologies.set(onto.key, onto);
           } else {
             this.definedOntologies.set(onto.key, onto);
