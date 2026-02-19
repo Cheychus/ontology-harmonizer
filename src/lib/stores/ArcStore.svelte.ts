@@ -1,4 +1,5 @@
 import { extractOntologies } from "$lib/services/arcs/arcOntology.service";
+import type { OboFile } from "$lib/types/oboFiles";
 import { SvelteMap } from "svelte/reactivity";
 
 export type DerivedOntology = {
@@ -58,6 +59,22 @@ class ArcStore {
     this.searchOntologies(); // To detect if a undefined Ontology is now defined
     this.json = this.json; // To trigger svelte reactivity and update the json
 
+  }
+
+  applyMapping(oboJson: OboFile) {
+    let count = 0;
+    oboJson.terms.forEach((term) => {
+      term.synonyms.forEach((syn) => {
+        const onto = this.definedOntologies.get(syn.synonymText) ?? this.undefinedOntologies.get(syn.synonymText);
+        if (onto) {
+          console.log("mapping found: ", onto, syn.synonymText);
+          onto.source[onto.ontologyAttribute] = term.xrefs.join(",");
+          count++;
+        }
+      });
+    });
+    this.updateArcJson();
+    return count;
   }
 
 }

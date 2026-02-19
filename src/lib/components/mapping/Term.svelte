@@ -39,7 +39,7 @@
         <h4 class="underline">References:</h4>
         <div class="grid grid-cols-4 gap-4">
             {#each term.xrefs as reference, index}
-                <div class="flex flex-col justify-center p-2 border-gray-100 border rounded-sm">
+                <div class="flex flex-col justify-center p-2 border-gray-100 border rounded-sm hover:bg-gray-50">
                     <div class="flex gap-2 items-center">
                         <p class="py-2">{reference}</p>
                         {#if editMode}
@@ -65,7 +65,7 @@
         <h4 class="underline">Synonyms:</h4>
         <div class="grid grid-cols-4 gap-4">
             {#each term.synonyms as synonym, index}
-                <div class="flex flex-col justify-center p-2 border-gray-100 border rounded-sm">
+                <div class="flex flex-col justify-center p-2 border-gray-100 border rounded-sm hover:bg-gray-50">
                     <div class="flex gap-2 items-center">
                         <p class="py-2">{synonym.synonymText}</p>
                         {#if editMode}

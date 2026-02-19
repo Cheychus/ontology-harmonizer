@@ -48,9 +48,11 @@
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
   <div class="flex gap-2 py-16">
-    <Button class="p-6" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
+    <Button class="p-6 px-16" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
     {#if arcStore.initialised}
-      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File</Button>
+      <Button class="p-6 px-16" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}
+        >Export ARC-RO-Crate JSON File</Button
+      >
     {/if}
   </div>
 
@@ -66,7 +68,7 @@
       <Button
         class="max-w-96"
         onclick={() => {
-          statusMessage = mapStore.applyMapping() + " Ontologies were updated";
+          statusMessage = arcStore.applyMapping(oboFileStore.oboJson!) + " Ontologies were updated";
         }}>Apply Mapping</Button
       >
     </div>
@@ -74,9 +76,9 @@
 
   <input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
   {#if arcStore.initialised}
-    <Status bind:fileName />
+    <Status bind:fileName bind:statusMessage />
     <div class="flex w-full flex-col">
-      <Collapsible.Root open={definedToggle} onclick={() => (definedToggle = !definedToggle)}>
+      <Collapsible.Root bind:open={definedToggle}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">
             <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
@@ -106,7 +108,7 @@
         >
       </Collapsible.Root>
 
-      <Collapsible.Root open={undefinedToggle} onclick={() => (undefinedToggle = !undefinedToggle)}>
+      <Collapsible.Root bind:open={undefinedToggle}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">
             <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>

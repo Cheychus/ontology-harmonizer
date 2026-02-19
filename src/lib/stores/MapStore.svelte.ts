@@ -7,9 +7,6 @@ class MapStore {
 
     init() {
         this.ontologyMapping.clear();
-        this.ontologyMapping.set("Organism", "http://purl.org/net/orth#Organism");
-        this.ontologyMapping.set("Column", "http://purl.obolibrary.org/obo/AGRO_00000420")
-        this.ontologyMapping.set("FindMe", "I found you!");
     }
 
     addMapping(key: string, value: string) {
@@ -27,12 +24,13 @@ class MapStore {
             // Directly update the json source here, because the mapping clearly defines a value for this ontology key
             // Update only when the mapping defines another value for the key
             if (onto1 && onto1.value !== mapping[1]) {
-                // FIXME: It should not always update propertyID. It depends on the initial attribut in the json
-                onto1.source.propertyID = mapping[1];
+                const attribute = onto1.ontologyAttribute;
+                onto1.source[attribute] = mapping[1];
                 count++;
             }
             if (onto2 && onto2.value !== mapping[1]) {
-                onto2.source.propertyID = mapping[1];
+                const attribute = onto2.ontologyAttribute;
+                onto2.source[attribute] = mapping[1];
                 count++;
             }
 

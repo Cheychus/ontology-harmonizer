@@ -4,9 +4,10 @@
 
     interface Props {
         fileName: string;
+        statusMessage: string;
     }
 
-    let { fileName = $bindable() }: Props = $props();
+    let { fileName = $bindable(), statusMessage = $bindable() }: Props = $props();
 
     let statusLog: string[] = $state([]);
 </script>
@@ -34,6 +35,7 @@
         </Table.Body>
     </Table.Root>
     <h4 class="underline">Status Messages</h4>
+    <p class="text-green-400">{statusMessage}</p>
     {#each statusLog as log}
         <p class="text-green-400">{log}</p>
     {/each}
