@@ -1,5 +1,5 @@
 import type { OboFile, OboSynonym, OboTerm } from "$lib/types/oboFiles";
-import rawOboString from "$lib/assets/mappings/mapping.obo?raw";
+import rawOboString from "$lib/assets/mappings/testmapping.obo?raw";
 import { addTerm, OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
 
 class OboFileStore {
@@ -12,13 +12,6 @@ class OboFileStore {
 
         try {
             this.oboJson = parseOntologyFile(this.rawOboString);
-            const syns: OboSynonym[] = [
-                { synonymText: "Organism", scopeIdentifier: "EXACT" },
-                { synonymText: "Organismus", scopeIdentifier: "EXACT" },
-            ];
-            const newTerm = addTerm(this.oboJson, "organism", syns, ["OBI:00001", "HEY:00002"]);
-            this.rawOboString = writeOntologyFile(this.oboJson);
-            console.log(this.rawOboString);
         } catch (error) {
             if (error instanceof OboParseError) {
                 console.error("OBO Parse error:", error.message, error.line);

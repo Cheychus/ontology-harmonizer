@@ -12,8 +12,4 @@
 <div class="grid grid-cols-2 gap-2 shadow text-wrap break-all p-4">
     <p>{i} - {name}</p>
     <div class="text-wrap">{ontology.value}</div>
-    <div class="flex gap-1">
-        <Input bind:value={newValue} class="" placeholder="New Ontology" />
-        <Button class="bg-green-500 hover:bg-green-600" onclick={() => mapStore.addMapping(name, newValue)}>Map</Button>
-    </div>
 </div>

@@ -1,0 +1,11 @@
+format-version: 1.4
+ontology: test-mapping
+
+[Term]
+id: TESTMAPPING:0000001
+name: organism
+synonym: "Organism" EXACT
+synonym: "Organismus" EXACT
+synonym: "ORGANISMUS" EXACT
+synonym: "ORGANISM" EXACT
+xref: OBI:0100026

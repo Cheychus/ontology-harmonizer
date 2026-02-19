@@ -3,12 +3,29 @@
     import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
     import Button from "../ui/button/button.svelte";
     import Term from "./Term.svelte";
+    import { Switch } from "$lib/components/ui/switch/index.js";
 
     let oboJson = oboFileStore.oboJson;
+
+    let toggleBtn = $state(false);
 </script>
 
-<div class="w-full h-full p-4">
+<div class="w-full h-full">
     <div class="flex gap-2 items-center">
+        <Button variant={"ghost"} size={"icon"} onclick={() => (toggleBtn = !toggleBtn)}
+            ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+                class:rotate-180={toggleBtn}
+            >
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
+            </svg>
+        </Button>
         <h2 class="underline py-2">Ontology Mapping (OBO-JSON)</h2>
         <Button variant={"outline"} onclick={() => downloadObo(oboFileStore.rawOboString)}
             ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -22,7 +39,7 @@
     </div>
 
     {#if oboFileStore.oboJson}
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4" class:hidden={toggleBtn}>
             {#each oboFileStore.oboJson.terms as term, index}
                 <div class="rounded shadow py-4 px-4">
                     <Term {term} {index} />

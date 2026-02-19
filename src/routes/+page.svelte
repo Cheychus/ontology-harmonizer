@@ -14,6 +14,7 @@
   import OboStringView from "$lib/components/mapping/OboStringView.svelte";
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
+  import Status from "$lib/components/ontologies/Status.svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
@@ -21,6 +22,9 @@
   let fileName = $state("");
   let statusMessage = $state("");
   let oboFile: string = $state("");
+
+  let definedToggle = $state(true),
+    undefinedToggle = $state(true);
 
   onMount(() => {
     mapStore.init();
@@ -43,6 +47,13 @@
 </script>
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
+  <div class="flex gap-2 py-16">
+    <Button class="p-6" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
+    {#if arcStore.initialised}
+      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File</Button>
+    {/if}
+  </div>
+
   <div class="py-4 w-full">
     <OboStringView />
   </div>
@@ -51,38 +62,11 @@
     <OboMapping />
   </div>
 
-  <div class="flex gap-2">
-    <Button class="p-6" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
-    {#if arcStore.initialised}
-      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File</Button>
-    {/if}
-  </div>
-
   <input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
   {#if arcStore.initialised}
-    <div class="flex w-full flex-col gap-2 py-4 font-bold">
-      <h2 class="text-3xl">Status:</h2>
-      <p>Filename: {fileName}</p>
-      <p class="">{arcStore.ontologiesCount} Ontologies were found</p>
-      <p class="">{arcStore.definedOntologies.size} Ontologies are defined</p>
-      <p class="">{arcStore.undefinedOntologies.size} Ontologies are not defined</p>
-      <p class="text-green-400">{statusMessage}</p>
-    </div>
-
+    <Status bind:fileName />
     <div class="flex w-full flex-col">
-      <div class="flex items-center gap-2">
-        <h2 class="text-2xl font-bold underline py-4">Mapping</h2>
-        <Button variant="ghost" size="icon-lg" onclick={() => mapStore.init()}>GET</Button>
-      </div>
-
       <div class="flex flex-col gap-2">
-        {#each mapStore.ontologyMapping as mapping, i}
-          <div class="grid grid-cols-2 gap-2 shadow text-wrap break-all p-4">
-            <p>{i} - {mapping[0]}</p>
-            <div class="text-wrap">{mapping[1]}</div>
-          </div>
-        {/each}
-
         <Button
           class="max-w-96"
           onclick={() => {
@@ -91,15 +75,24 @@
         >
       </div>
 
-      <Collapsible.Root>
+      <Collapsible.Root open={definedToggle} onclick={() => (definedToggle = !definedToggle)}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">
             <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
-            <Button variant={"ghost"}
-              ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
-              </svg></Button
-            >
+            <Button variant={"ghost"} size={"icon"}
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+                class:rotate-180={definedToggle}
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
+              </svg>
+            </Button>
           </div>
         </Collapsible.Trigger>
 
@@ -112,15 +105,24 @@
         >
       </Collapsible.Root>
 
-      <Collapsible.Root open={true}>
+      <Collapsible.Root open={undefinedToggle} onclick={() => (undefinedToggle = !undefinedToggle)}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">
             <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
-            <Button variant={"ghost"}
-              ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
-              </svg></Button
-            >
+            <Button variant={"ghost"} size={"icon"}
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+                class:rotate-180={undefinedToggle}
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
+              </svg>
+            </Button>
           </div>
         </Collapsible.Trigger>
 
