@@ -8,9 +8,12 @@
   import { onMount } from "svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
   import { addTerm, downloadObo, getNextId, OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
-  import ontoFile from "$lib/assets/mappings/mapping.obo?raw";
-  import Mapping from "$lib/components/mapping/Mapping.svelte";
+  import rawOboString from "$lib/assets/mappings/mapping.obo?raw";
+
   import type { OboFile, OboSynonym } from "$lib/types/oboFiles";
+  import OboStringView from "$lib/components/mapping/OboStringView.svelte";
+  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
+  import OboMapping from "$lib/components/mapping/OboMapping.svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
@@ -40,7 +43,14 @@
 </script>
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
-  <Mapping oboFile={ontoFile} />
+  <div class="py-4 w-full">
+    <OboStringView />
+  </div>
+
+  <div class="py-4 w-full">
+    <OboMapping />
+  </div>
+
   <div class="flex gap-2">
     <Button class="p-6" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
     {#if arcStore.initialised}
