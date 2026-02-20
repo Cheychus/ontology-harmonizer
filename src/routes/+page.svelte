@@ -15,6 +15,7 @@
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
   import Status from "$lib/components/ontologies/Status.svelte";
+  import { ChevronRight, ChevronsDown, ChevronsRight, ChevronsUp, Download, Upload } from "lucide-svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
@@ -48,10 +49,11 @@
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
   <div class="flex gap-2 py-16">
-    <Button class="p-6 px-16" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
+    <Button class="p-6 px-16" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File <Upload size={22} /></Button>
+
     {#if arcStore.initialised}
       <Button class="p-6 px-16" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}
-        >Export ARC-RO-Crate JSON File</Button
+        >Export ARC-RO-Crate JSON File <Download size={22} /></Button
       >
     {/if}
   </div>
@@ -84,18 +86,7 @@
           <div class="flex gap-2 items-center">
             <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
             <Button variant={"ghost"} size={"icon"}
-              ><svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-                class:rotate-180={definedToggle}
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
-              </svg>
+              ><ChevronRight class={`transition-transform duration-75 ${definedToggle ? "rotate-90" : ""}`} />
             </Button>
           </div>
         </Collapsible.Trigger>
@@ -114,18 +105,7 @@
           <div class="flex gap-2 items-center">
             <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
             <Button variant={"ghost"} size={"icon"}
-              ><svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-                class:rotate-180={undefinedToggle}
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
-              </svg>
+              ><ChevronRight class={`transition-transform duration-75 ${undefinedToggle ? "rotate-90" : ""}`} />
             </Button>
           </div>
         </Collapsible.Trigger>

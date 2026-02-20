@@ -4,6 +4,7 @@
     import Button from "../ui/button/button.svelte";
     import Term from "./Term.svelte";
     import { Switch } from "$lib/components/ui/switch/index.js";
+    import { ChevronRight, ChevronsDown, Download } from "lucide-svelte";
 
     let oboJson = oboFileStore.oboJson;
 
@@ -12,29 +13,9 @@
 
 <div class="w-full h-full">
     <div class="flex gap-2 items-center">
-        <Button variant={"ghost"} size={"icon"} onclick={() => (toggleBtn = !toggleBtn)}
-            ><svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-                class:rotate-180={toggleBtn}
-            >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
-            </svg>
-        </Button>
         <h2 class="underline py-2">Ontology Mapping (OBO-JSON)</h2>
-        <Button variant={"outline"} onclick={() => downloadObo(oboFileStore.rawOboString)}
-            ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                />
-            </svg>
+        <Button variant={"ghost"} size={"icon"} onclick={() => (toggleBtn = !toggleBtn)}
+            ><ChevronRight class={`transition-transform duration-75 ${!toggleBtn ? "rotate-90" : ""}`} />
         </Button>
     </div>
 

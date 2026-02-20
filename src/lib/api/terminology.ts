@@ -1,4 +1,4 @@
-import type { Collection } from "$lib/types/terminologyService";
+import type { ICollection, ITerminologySearchResult } from "$lib/types/terminologyService";
 
 const BASE = "https://terminology.services.base4nfdi.de/api-gateway";
 
@@ -19,12 +19,12 @@ async function apiGet<T>(fetch: typeof globalThis.fetch, path: string, params?: 
     return res.json() as Promise<T>;
 }
 
-export function getCollections(fetch: typeof globalThis.fetch): Promise<Collection[]> {
-    return apiGet<Collection[]>(fetch, "/collections/");
+export function getCollections(fetch: typeof globalThis.fetch): Promise<ICollection[]> {
+    return apiGet<ICollection[]>(fetch, "/collections/");
 }
 
 export function searchTerms(fetch: typeof globalThis.fetch, query: string, collectionId: string) {
-    return apiGet(fetch, "/search", {
+    return apiGet<ITerminologySearchResult[]>(fetch, "/search", {
         query,
         collectionId,
         display: "short_form,descriptions,label"

@@ -1,10 +1,10 @@
 import { fromLocalStorage, removeItem, toLocalStorage } from "$lib/helpers/localStorage";
-import type { Collection } from "$lib/types/terminologyService";
+import type { ICollection } from "$lib/types/terminologyService";
 
 class TerminologyStore {
 
-    collections: Collection[] = $state([]);
-    selectedCollection: Collection | null = $state(null);
+    collections: ICollection[] = $state([]);
+    selectedCollection: ICollection | null = $state(null);
 
     constructor() {
         this.selectedCollection = this.getLocal();
@@ -16,8 +16,8 @@ class TerminologyStore {
         }
     }
 
-    getLocal(): Collection | null {
-        const col = fromLocalStorage<Collection>("collection");
+    getLocal(): ICollection | null {
+        const col = fromLocalStorage<ICollection>("collection");
         if (col) {
             return col;
         } else {
@@ -25,7 +25,7 @@ class TerminologyStore {
         }
     }
 
-    selectCollection(collection: Collection) {
+    selectCollection(collection: ICollection) {
         this.selectedCollection = collection;
         this.saveLocal();
     }

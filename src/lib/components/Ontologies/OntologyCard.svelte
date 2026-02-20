@@ -4,20 +4,30 @@
     import { arcStore, type DerivedOntology } from "$lib/stores/ArcStore.svelte";
     import { mapStore } from "$lib/stores/MapStore.svelte";
     import { onMount } from "svelte";
+    import { searchTerms } from "$lib/api/terminology";
+    import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
+    import type { ITerminologySearchResult } from "$lib/types/terminologyService";
+    import { LoaderCircle } from "lucide-svelte";
 
     let { i, name, ontology }: { i: number; name: string; ontology: DerivedOntology } = $props();
 
     let newValue: string = $state("");
     let ontoName: string = $state("");
-    let ontos: any[] = $state([]);
+    let ontos: ITerminologySearchResult[] = $state([]);
+
+    let loading = $state(false);
+
+    onMount(() => {
+        ontoName = name;
+    });
 
     async function getOntos() {
-        const response = await fetch(
-            `https://terminology.services.base4nfdi.de/api-gateway/search?query=${ontoName}&collectionId=ea1e887f-fa72-44eb-8105-d966dbe6cd7f&display=short_form&display=descriptions&display=label`,
-        );
-        const data = await response.json();
-        console.log(data);
-        ontos = data;
+        loading = true;
+        const result = await searchTerms(fetch, ontoName, terminologyStore.selectedCollection?.id ?? "");
+        console.log(result);
+
+        ontos = result;
+        loading = false;
     }
 </script>
 
@@ -25,12 +35,17 @@
     <p>{i} - {name}</p>
     <div class="text-wrap">{ontology.value}</div>
     <Input bind:value={ontoName} />
-    <Button onclick={getOntos}>GET ONTOS</Button>
+    <Button onclick={getOntos}
+        >GET ONTOS {#if loading}<LoaderCircle class="animate-spin" />
+        {/if}</Button
+    >
 
     {#each ontos as onto}
         <div class="flex flex-col gap-2">
             <p><strong>{onto.label}</strong> ({onto.short_form})</p>
-            <p>Description: {onto.descriptions.at(0)}</p>
+            {#each onto.descriptions as description, index}
+                <p>Description[{index}]: {description}</p>
+            {/each}
         </div>
     {/each}
 </div>

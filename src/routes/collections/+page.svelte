@@ -5,7 +5,7 @@
     import { onMount } from "svelte";
     import type { PageProps } from "./$types";
     import { getCollections } from "$lib/api/terminology";
-    import Collection from "$lib/components/terminology/CollectionComponent.svelte";
+    import Collection from "$lib/components/terminology/Collection.svelte";
     import Collections from "$lib/components/terminology/Collections.svelte";
 
     let { data }: PageProps = $props();

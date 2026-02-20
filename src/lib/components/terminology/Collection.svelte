@@ -1,11 +1,12 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
-    import type { Collection } from "$lib/types/terminologyService";
+    import type { ICollection } from "$lib/types/terminologyService";
+    import { tick } from "svelte";
     import Button from "../ui/button/button.svelte";
 
     interface Props {
-        collection: Collection;
+        collection: ICollection;
         selectButton?: boolean;
     }
 
@@ -23,8 +24,9 @@
 
     {#if selectButton}
         <Button
-            onclick={() => {
+            onclick={async () => {
                 terminologyStore.selectCollection(collection);
+                await tick();
                 goto("/");
             }}
             class="col-span-3">Select Collection</Button
