@@ -7,7 +7,7 @@
 
     let oboJson = oboFileStore.oboJson;
 
-    let toggleBtn = $state(false);
+    let toggleBtn = $state(true);
 </script>
 
 <div class="w-full h-full">

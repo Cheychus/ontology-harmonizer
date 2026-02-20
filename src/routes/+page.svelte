@@ -63,6 +63,8 @@
   <div class="py-4 w-full">
     <OboMapping />
   </div>
+
+  <Status bind:fileName bind:statusMessage />
   {#if arcStore.initialised}
     <div class="w-full flex flex-col gap-2 pb-4">
       <Button
@@ -76,7 +78,6 @@
 
   <input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
   {#if arcStore.initialised}
-    <Status bind:fileName bind:statusMessage />
     <div class="flex w-full flex-col">
       <Collapsible.Root bind:open={definedToggle}>
         <Collapsible.Trigger>
