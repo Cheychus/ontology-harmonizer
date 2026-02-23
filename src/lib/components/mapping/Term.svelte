@@ -1,10 +1,11 @@
 <script lang="ts">
+    import { curieToIri } from "$lib/services/oboFiles/oboFile.service";
     import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
-    import type { OboSynonym, OboTerm } from "$lib/types/oboFiles";
-    import { getContext } from "svelte";
+    import type { OboTerm } from "$lib/types/oboFiles";
     import Button from "../ui/button/button.svelte";
     import Input from "../ui/input/input.svelte";
     import Switch from "../ui/switch/switch.svelte";
+    import { Plus, X } from "lucide-svelte";
 
     interface Props {
         term: OboTerm;
@@ -27,11 +28,7 @@
         </div>
 
         {#if editMode}
-            <Button variant={"destructive"} class="ml-auto" onclick={() => oboFileStore.removeTerm(index)}
-                ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-            </Button>
+            <Button variant={"destructive"} class="ml-auto" onclick={() => oboFileStore.removeTerm(index)}><X /></Button>
         {/if}
     </div>
 
@@ -41,19 +38,17 @@
             {#each term.xrefs as reference, index}
                 <div class="flex flex-col justify-center p-2 border-gray-100 border rounded-sm hover:bg-gray-50">
                     <div class="flex gap-2 items-center">
-                        <p class="py-2">{reference}</p>
+                        <a
+                            class="py-2 flex items-center gap-2"
+                            href={`http://purl.obolibrary.org/obo/${curieToIri(reference)}`}
+                            aria-label="Link to ontology"
+                            target="_blank"
+                            >{reference}
+                        </a>
+
                         {#if editMode}
                             <Button variant={"outline"} size={"icon"} onclick={() => oboFileStore.removeXref(term, index)} class="ml-auto"
-                                ><svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="size-6"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                </svg>
+                                ><X />
                             </Button>
                         {/if}
                     </div>
@@ -70,16 +65,7 @@
                         <p class="py-2">{synonym.synonymText}</p>
                         {#if editMode}
                             <Button onclick={() => oboFileStore.removeSynonym(term, index)} variant={"outline"} size={"icon"} class="ml-auto"
-                                ><svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke-width="1.5"
-                                    stroke="currentColor"
-                                    class="size-6"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                </svg>
+                                ><X />
                             </Button>
                         {/if}
                     </div>
@@ -93,24 +79,14 @@
             <div class="flex gap-2 w-full">
                 <Button
                     onclick={() => {
-                        const syn: OboSynonym = {
-                            synonymText: synonymInput,
-                            scopeIdentifier: "EXACT",
-                        };
-                        oboFileStore.addSynonym(term, syn);
+                        oboFileStore.addSynonym(term, synonymInput);
                     }}
-                    ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
+                    ><Plus />
                 </Button>
                 <Input placeholder={"synonym name..."} bind:value={synonymInput} class="max-w-80" />
             </div>
             <div class="flex gap-2 w-full">
-                <Button onclick={() => oboFileStore.addXref(term, xrefInput)}
-                    ><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                </Button>
+                <Button onclick={() => oboFileStore.addXref(term, xrefInput)}><Plus /></Button>
                 <Input placeholder={"reference name..."} bind:value={xrefInput} class="max-w-80" />
             </div>
         </div>

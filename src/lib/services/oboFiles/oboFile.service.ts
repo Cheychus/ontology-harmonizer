@@ -199,6 +199,12 @@ export function downloadObo(oboString: string, fileName = "mapping.obo") {
     URL.revokeObjectURL(url);
 }
 
+/**
+ * @deprecated Use class function
+ * @param terms 
+ * @param prefix 
+ * @returns 
+ */
 export function getNextId(terms: OboTerm[], prefix: string): string {
     const numbers = terms
         .filter(t => t.id.startsWith(prefix + ":"))
@@ -210,12 +216,26 @@ export function getNextId(terms: OboTerm[], prefix: string): string {
 
     return `${prefix}:${next}`;
 }
+
+/**
+ * @deprecated Use class function
+ * @param oboFile 
+ * @returns 
+ */
 export function createPrefix(oboFile: OboFile): string {
     const name = oboFile.ontology;
     const prefix = name.replace(/[^\w\s]/gi, '').toUpperCase();
     return prefix;
 }
 
+/**
+ * @deprecated Use Class Function
+ * @param oboFile 
+ * @param termName 
+ * @param synonyms 
+ * @param xrefs 
+ * @returns 
+ */
 export function addTerm(oboFile: OboFile, termName: string, synonyms: OboSynonym[], xrefs: string[]): OboTerm {
     const oboTerm: OboTerm = {
         id: getNextId(oboFile.terms, createPrefix(oboFile)),
@@ -225,6 +245,10 @@ export function addTerm(oboFile: OboFile, termName: string, synonyms: OboSynonym
     }
     oboFile.terms.push(oboTerm);
     return oboTerm;
+}
+
+export function curieToIri(curie: string): string {
+    return curie.replace(":", "_");
 }
 
 

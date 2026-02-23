@@ -1,28 +1,22 @@
 <script lang="ts">
   import OntologyCard from "$lib/components/ontologies/OntologyCard.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import Input from "$lib/components/ui/input/input.svelte";
   import { downloadJson, loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { arcStore } from "$lib/stores/ArcStore.svelte";
   import { mapStore } from "$lib/stores/MapStore.svelte";
   import { onMount } from "svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
-  import { addTerm, downloadObo, getNextId, OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
-  import rawOboString from "$lib/assets/mappings/mapping.obo?raw";
-
-  import type { OboFile, OboSynonym } from "$lib/types/oboFiles";
   import OboStringView from "$lib/components/mapping/OboStringView.svelte";
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
   import Status from "$lib/components/ontologies/Status.svelte";
-  import { ChevronRight, ChevronsDown, ChevronsRight, ChevronsUp, Download, Upload } from "lucide-svelte";
+  import { ChevronRight, Download, Upload } from "lucide-svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
   let fileInput: HTMLInputElement;
   let fileName = $state("");
   let statusMessage = $state("");
-  let oboFile: string = $state("");
 
   let definedToggle = $state(true),
     undefinedToggle = $state(true);
@@ -84,7 +78,7 @@
       <Collapsible.Root bind:open={definedToggle}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">
-            <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
+            <h2 class="underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
             <Button variant={"ghost"} size={"icon"}
               ><ChevronRight class={`transition-transform duration-75 ${definedToggle ? "rotate-90" : ""}`} />
             </Button>
@@ -103,7 +97,7 @@
       <Collapsible.Root bind:open={undefinedToggle}>
         <Collapsible.Trigger>
           <div class="flex gap-2 items-center">
-            <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
+            <h2 class="underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
             <Button variant={"ghost"} size={"icon"}
               ><ChevronRight class={`transition-transform duration-75 ${undefinedToggle ? "rotate-90" : ""}`} />
             </Button>
