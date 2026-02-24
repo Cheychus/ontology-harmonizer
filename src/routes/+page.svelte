@@ -1,5 +1,5 @@
 <script lang="ts">
-  import OntologyCard from "$lib/components/ontologies/OntologyCard.svelte";
+  import OntologyCard from "$lib/components/ontologiesFIX/OntologyCard.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { downloadJson, loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { arcStore } from "$lib/stores/ArcStore.svelte";
@@ -9,9 +9,9 @@
   import OboStringView from "$lib/components/mapping/OboStringView.svelte";
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
-  import Status from "$lib/components/ontologies/Status.svelte";
+  import Status from "$lib/components/ontologiesFIX/Status.svelte";
   import { ChevronRight, Download, Upload } from "lucide-svelte";
-  import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
+  import OntologyView from "$lib/components/ontologiesFIX/OntologyView.svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
