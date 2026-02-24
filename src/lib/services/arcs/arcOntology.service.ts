@@ -16,8 +16,6 @@ export function extractOntologies(node: GraphNode): DerivedOntology[] {
 
     const derivedOntologies: DerivedOntology[] = [];
 
-    console.log(name, propertyID, "extract");
-
     if (name && propertyID != null) {
         derivedOntologies.push({
             source: jsonSource,

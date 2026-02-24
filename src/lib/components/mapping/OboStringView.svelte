@@ -22,7 +22,7 @@
     }
 </script>
 
-<input class="hidden" type="file" accept="obo" bind:this={fileInput} onchange={handleChange} />
+<input class="hidden" type="file" accept=".obo" bind:this={fileInput} onchange={handleChange} />
 
 <div class="flex gap-2 items-center">
     <h2 class="underline py-2">Ontology Mapping (OBO File)</h2>

@@ -21,7 +21,7 @@
 
     {#if oboFileStore.oboJson}
         <div class="flex flex-col gap-4" class:hidden={toggleBtn}>
-            {#each oboFileStore.oboJson.terms as term, index}
+            {#each oboFileStore.oboJson.terms as term, index (term.id)}
                 <div class="rounded shadow py-4 px-4">
                     <Term {term} {index} />
                 </div>

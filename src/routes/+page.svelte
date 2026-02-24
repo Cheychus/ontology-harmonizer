@@ -11,11 +11,11 @@
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
   import Status from "$lib/components/ontologies/Status.svelte";
   import { ChevronRight, Download, Upload } from "lucide-svelte";
+  import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
   let fileInput: HTMLInputElement;
-  let fileName = $state("");
   let statusMessage = $state("");
 
   let definedToggle = $state(true),
@@ -35,11 +35,13 @@
     const file = input.files[0];
 
     await loadArcFile(file);
-    fileName = file.name;
+    arcStore.filename = file.name;
   }
 
   function handleSave() {}
 </script>
+
+<input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
   <div class="flex gap-2 py-16">
@@ -60,20 +62,26 @@
     <OboMapping />
   </div>
 
-  <Status bind:fileName bind:statusMessage />
+  <Status />
   {#if arcStore.initialised}
     <div class="w-full flex flex-col gap-2 pb-4">
       <Button
         class="max-w-96"
         onclick={() => {
-          statusMessage = arcStore.applyMapping(oboFileStore.oboJson!) + " Ontologies were updated";
+          statusMessage = arcStore.mapOBOtoARC() + " Ontologies were updated";
         }}>Apply Mapping</Button
       >
     </div>
+    {statusMessage}
   {/if}
 
-  <input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
   {#if arcStore.initialised}
+    <div class="flex w-full flex-col">
+      <OntologyView ontologies={arcStore.ontologyCandidates} />
+    </div>
+  {/if}
+
+  <!-- {#if arcStore.initialised && false}
     <div class="flex w-full flex-col">
       <Collapsible.Root bind:open={definedToggle}>
         <Collapsible.Trigger>
@@ -112,6 +120,5 @@
           </div></Collapsible.Content
         >
       </Collapsible.Root>
-    </div>
-  {/if}
+    </div>{/if} -->
 </div>

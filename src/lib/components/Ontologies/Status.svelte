@@ -7,20 +7,13 @@
     import Collection from "../terminology/Collection.svelte";
     import { Settings, X } from "lucide-svelte";
 
-    interface Props {
-        fileName: string;
-        statusMessage: string;
-    }
-
-    let { fileName = $bindable(), statusMessage = $bindable() }: Props = $props();
-
     let statusLog: string[] = $state([]);
 </script>
 
 <div class="flex w-full flex-col gap-2 py-4">
     <h2 class="underline">Status Information</h2>
-    <p>Filename: {fileName ? fileName : "No arc file was uploaded"}</p>
-    <Table.Root>
+    <p>Filename: {arcStore.filename}</p>
+    <!-- <Table.Root>
         <Table.Caption></Table.Caption>
         <Table.Header>
             <Table.Row>
@@ -38,7 +31,7 @@
                 <Table.Cell class="text-green-400">0</Table.Cell>
             </Table.Row>
         </Table.Body>
-    </Table.Root>
+    </Table.Root> -->
 
     <div class="flex gap-4 items-center" role="status" onmouseenter={() => preloadData("/collections")}>
         <h3>Collection</h3>
@@ -70,7 +63,6 @@
     {/if}
 
     <h4 class="underline">Status Messages</h4>
-    <p class="text-green-400">{statusMessage}</p>
     {#each statusLog as log}
         <p class="text-green-400">{log}</p>
     {/each}

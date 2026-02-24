@@ -1,6 +1,6 @@
 import type { OboFile, OboSynonym, OboTerm } from "$lib/types/oboFiles";
 import rawOboString from "$lib/assets/mappings/testmapping.obo?raw";
-import { addTerm, OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
+import { OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
 
 export class OboFileStore {
 
@@ -54,7 +54,6 @@ export class OboFileStore {
             synonymText: synonymName,
             scopeIdentifier: "EXACT",
         }
-
         term.synonyms.push(newSyn);
         this.sync();
         return newSyn;
@@ -68,15 +67,16 @@ export class OboFileStore {
 
     public addXref(term: OboTerm, xref: string): boolean {
         if (term.xrefs.some((x) => x === xref)) {
-            console.error("Xref already exists:", xref);
+            console.log("Xref already exists:", xref);
             return false;
         }
         term.xrefs.push(xref);
+        this.oboJson = this.oboJson;
         this.sync();
         return true;
     }
 
-    public findTerm(name: string): OboTerm | null {
+    public findTermByName(name: string): OboTerm | null {
         const term = this.oboJson?.terms.find((term) => {
             if (term.name === name) {
                 return term;
@@ -84,16 +84,19 @@ export class OboFileStore {
                 return term;
             }
         });
-
         return term ?? null;
     }
 
-    public addTerm(termName: string, synonyms: OboSynonym[] = [], xrefs: string[]): OboTerm {
+    public findTermById(termId: string): OboTerm | null {
+        return this.oboJson?.terms.find((t) => t.id === termId) ?? null;
+    }
+
+    public addTerm(termName: string, synonyms: OboSynonym[] = [], xrefs: string[] = []): OboTerm {
         const oboTerm: OboTerm = {
             id: this.getNextId(),
             name: termName,
-            synonyms,
-            xrefs
+            synonyms: [],
+            xrefs: []
         }
         this.oboJson?.terms.push(oboTerm);
         this.sync();
@@ -121,6 +124,23 @@ export class OboFileStore {
         const next = (max + 1).toString().padStart(7, "0");
 
         return `${prefix}:${next}`;
+    }
+
+    public mapOntology(ontologyName: string, termName: string, curie: string) {
+        let term = this.findTermByName(ontologyName) ?? this.findTermByName(termName);
+        console.log("i found: ", term, ontologyName);
+
+        if (!term) {
+            this.addTerm(ontologyName)
+            term = this.findTermByName(ontologyName)!; // to get the proxy instance again - definitely exists here after adding new term
+        }
+        this.addXref(term, curie);
+        if (ontologyName !== termName) {
+            this.addSynonym(term, termName);
+        }
+
+
+        return term;
     }
 
 
