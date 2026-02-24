@@ -1,0 +1,9 @@
+format-version: 1.4
+ontology: test-noxref-nosynonyms
+
+[Term]
+id: OBO:0000001
+name: organism
+
+
+

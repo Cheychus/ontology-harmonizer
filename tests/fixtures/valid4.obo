@@ -1,0 +1,9 @@
+format-version: 1.4
+ontology: test-change-obo
+
+[Term]
+id: OBO:0000001
+name: organism
+
+
+

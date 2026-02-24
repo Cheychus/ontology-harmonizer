@@ -7,9 +7,6 @@ class MapStore {
 
     init() {
         this.ontologyMapping.clear();
-        this.ontologyMapping.set("Organism", "http://purl.org/net/orth#Organism");
-        this.ontologyMapping.set("Column", "http://purl.obolibrary.org/obo/AGRO_00000420")
-        this.ontologyMapping.set("FindMe", "I found you!");
     }
 
     addMapping(key: string, value: string) {
@@ -20,16 +17,20 @@ class MapStore {
         console.log("Apply all mappings");
         let count = 0;
         this.ontologyMapping.entries().forEach((mapping) => {
+            // Update both, defined and undefined ontologies 
             const onto1 = arcStore.definedOntologies.get(mapping[0]);
             const onto2 = arcStore.undefinedOntologies.get(mapping[0]);
 
             // Directly update the json source here, because the mapping clearly defines a value for this ontology key
-            if (onto1) {
-                onto1.source.propertyID = mapping[1];
+            // Update only when the mapping defines another value for the key
+            if (onto1 && onto1.value !== mapping[1]) {
+                const attribute = onto1.ontologyAttribute;
+                onto1.source[attribute] = mapping[1];
                 count++;
             }
-            if (onto2) {
-                onto2.source.propertyID = mapping[1];
+            if (onto2 && onto2.value !== mapping[1]) {
+                const attribute = onto2.ontologyAttribute;
+                onto2.source[attribute] = mapping[1];
                 count++;
             }
 

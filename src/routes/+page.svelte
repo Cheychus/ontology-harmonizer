@@ -1,17 +1,25 @@
 <script lang="ts">
-  import OntologyCard from "$lib/components/Ontologies/OntologyCard.svelte";
+  import OntologyCard from "$lib/components/ontologies/OntologyCard.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import Input from "$lib/components/ui/input/input.svelte";
-  import { downloadJson, loadArcFile } from "$lib/services/fileService";
+  import { downloadJson, loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { arcStore } from "$lib/stores/ArcStore.svelte";
   import { mapStore } from "$lib/stores/MapStore.svelte";
   import { onMount } from "svelte";
+  import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+  import OboStringView from "$lib/components/mapping/OboStringView.svelte";
+  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
+  import OboMapping from "$lib/components/mapping/OboMapping.svelte";
+  import Status from "$lib/components/ontologies/Status.svelte";
+  import { ChevronRight, Download, Upload } from "lucide-svelte";
+  import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
 
   const ALLOWED_FORMAT = "application/json,.json";
 
   let fileInput: HTMLInputElement;
-  let fileName = $state("");
   let statusMessage = $state("");
+
+  let definedToggle = $state(true),
+    undefinedToggle = $state(true);
 
   onMount(() => {
     mapStore.init();
@@ -27,68 +35,90 @@
     const file = input.files[0];
 
     await loadArcFile(file);
-    fileName = file.name;
+    arcStore.filename = file.name;
   }
 
   function handleSave() {}
-
-  $inspect(mapStore.ontologyMapping);
 </script>
 
+<input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
+
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
-  <div class="flex gap-2">
-    <Button class="p-6" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File</Button>
+  <div class="flex gap-2 py-16">
+    <Button class="p-6 px-16" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File <Upload size={22} /></Button>
+
     {#if arcStore.initialised}
-      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File</Button>
+      <Button class="p-6 px-16" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}
+        >Export ARC-RO-Crate JSON File <Download size={22} /></Button
+      >
     {/if}
   </div>
 
-  <input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
+  <div class="py-4 w-full">
+    <OboStringView />
+  </div>
+
+  <div class="py-4 w-full">
+    <OboMapping />
+  </div>
+
+  <Status />
   {#if arcStore.initialised}
-    <div class="flex w-full flex-col gap-2 py-4 font-bold">
-      <h2 class="text-3xl">Status:</h2>
-      <p>Filename: {fileName}</p>
-      <p class="">{arcStore.ontologiesCount} Ontologies were found</p>
-      <p class="">{arcStore.definedOntologies.size} Ontologies are defined</p>
-      <p class="">{arcStore.undefinedOntologies.size} Ontologies are not defined</p>
-      <p class="text-green-400">{statusMessage}</p>
+    <div class="w-full flex flex-col gap-2 pb-4">
+      <Button
+        class="max-w-96"
+        onclick={() => {
+          statusMessage = arcStore.mapOBOtoARC() + " Ontologies were updated";
+        }}>Apply Mapping</Button
+      >
     </div>
+    {statusMessage}
+  {/if}
 
+  {#if arcStore.initialised}
     <div class="flex w-full flex-col">
-      <div class="flex items-center gap-2">
-        <h2 class="text-2xl font-bold underline py-4">Mapping</h2>
-        <Button variant="ghost" size="icon-lg" onclick={() => mapStore.init()}>GET</Button>
-      </div>
-
-      <div class="flex flex-col gap-2">
-        {#each mapStore.ontologyMapping as mapping, i}
-          <div class="grid grid-cols-2 gap-2 shadow text-wrap break-all p-4">
-            <p>{i} - {mapping[0]}</p>
-            <div class="text-wrap">{mapping[1]}</div>
-          </div>
-        {/each}
-
-        <Button
-          class="max-w-96"
-          onclick={() => {
-            statusMessage = mapStore.applyMapping() + " Ontologies were updated";
-          }}>Apply Mapping</Button
-        >
-      </div>
-
-      <h2 class="text-2xl font-bold underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
-      <div class="flex flex-col gap-2">
-        {#each arcStore.definedOntologies as ontology, i}
-          <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
-        {/each}
-      </div>
-
-      <h2 class="text-2xl font-bold underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
-      <div class="flex flex-col gap-2">
-        {#each arcStore.undefinedOntologies as ontology, i}
-          <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
-        {/each}
-      </div>
+      <OntologyView ontologies={arcStore.ontologyCandidates} />
     </div>
   {/if}
+
+  <!-- {#if arcStore.initialised && false}
+    <div class="flex w-full flex-col">
+      <Collapsible.Root bind:open={definedToggle}>
+        <Collapsible.Trigger>
+          <div class="flex gap-2 items-center">
+            <h2 class="underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
+            <Button variant={"ghost"} size={"icon"}
+              ><ChevronRight class={`transition-transform duration-75 ${definedToggle ? "rotate-90" : ""}`} />
+            </Button>
+          </div>
+        </Collapsible.Trigger>
+
+        <Collapsible.Content>
+          <div class="flex flex-col gap-2">
+            {#each arcStore.definedOntologies as ontology, i}
+              <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
+            {/each}
+          </div></Collapsible.Content
+        >
+      </Collapsible.Root>
+
+      <Collapsible.Root bind:open={undefinedToggle}>
+        <Collapsible.Trigger>
+          <div class="flex gap-2 items-center">
+            <h2 class="underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
+            <Button variant={"ghost"} size={"icon"}
+              ><ChevronRight class={`transition-transform duration-75 ${undefinedToggle ? "rotate-90" : ""}`} />
+            </Button>
+          </div>
+        </Collapsible.Trigger>
+
+        <Collapsible.Content>
+          <div class="flex flex-col gap-2">
+            {#each arcStore.undefinedOntologies as ontology, i}
+              <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
+            {/each}
+          </div></Collapsible.Content
+        >
+      </Collapsible.Root>
+    </div>{/if} -->
 </div>

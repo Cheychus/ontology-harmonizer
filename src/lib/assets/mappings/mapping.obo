@@ -1,0 +1,22 @@
+format-version: 1.4
+ontology: test-mapping
+
+[Term]
+id: TEST:001
+name: term-name
+xref: term-xref
+synonym: "Synonym Name with optional attributes" EXACT OPTIONAL_TYPE [OPTIONAL_XREFs]
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+synonym: "Minimal Synonym" EXACT
+
+[Term]
+id: ARC:0000006
+name: processed material
+xref: OBI:0000047
+synonym: "pellet" EXACT []

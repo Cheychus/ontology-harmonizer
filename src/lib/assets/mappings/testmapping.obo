@@ -1,0 +1,20 @@
+format-version: 1.4
+ontology: test-mapping
+
+[Term]
+id: TESTMAPPING:0000001
+name: organism
+synonym: "Organism" EXACT
+synonym: "Organismus" EXACT
+synonym: "ORGANISMUS" EXACT
+synonym: "ORGANISM" EXACT
+xref: OBI:0100026
+
+[Term]
+id: TESTMAPPING:0000002
+name: Genetically Engineered Mouse
+synonym: "Genetische Maus" EXACT
+synonym: "Genetic Mouse" EXACT
+synonym: "mouse" EXACT
+synonym: "Maus" EXACT
+xref: NCIT:C22189

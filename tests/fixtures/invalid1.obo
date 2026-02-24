@@ -1,0 +1,11 @@
+format-version: 1.4
+ontology: test-literals
+
+[Term]
+id: OBO:0000001
+name: organism
+xref: XXX:XXXX
+synonym: "Test with literals" EXACT
+synonym: Test without literals EXACT
+
+
