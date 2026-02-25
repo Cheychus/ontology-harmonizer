@@ -11,9 +11,9 @@ const config = {
 			assets: 'build',
 			fallback: 'index.html'
 		}),
-		    paths: {
-      base: process.env.NODE_ENV === 'production' ? '/ontology-harmonizer' : ''
-    }
+		paths: {
+			base: '/ontology-harmonizer'
+		}
 	}
 };
 
