@@ -27,4 +27,4 @@ jobs:
         with:
           path: build
 
-      - uses: actions/deploy-pages@vv4
+      - uses: actions/deploy-pages@v4
