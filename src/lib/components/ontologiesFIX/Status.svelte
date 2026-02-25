@@ -6,7 +6,6 @@
   import { goto, preloadData } from "$app/navigation";
   import Collection from "../terminology/Collection.svelte";
   import { Settings, X } from "lucide-svelte";
-  import { base } from "$service-worker";
   import { resolve } from "$app/paths";
 
   let statusLog: string[] = $state([]);
