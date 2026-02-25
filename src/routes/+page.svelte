@@ -78,45 +78,4 @@
       <OntologyView ontologies={arcStore.ontologyCandidates} />
     </div>
   {/if}
-
-  <!-- {#if arcStore.initialised && false}
-    <div class="flex w-full flex-col">
-      <Collapsible.Root bind:open={definedToggle}>
-        <Collapsible.Trigger>
-          <div class="flex gap-2 items-center">
-            <h2 class="underline py-4">Defined Ontologies ({arcStore.definedOntologies.size}/{arcStore.ontologiesCount})</h2>
-            <Button variant={"ghost"} size={"icon"}
-              ><ChevronRight class={`transition-transform duration-75 ${definedToggle ? "rotate-90" : ""}`} />
-            </Button>
-          </div>
-        </Collapsible.Trigger>
-
-        <Collapsible.Content>
-          <div class="flex flex-col gap-2">
-            {#each arcStore.definedOntologies as ontology, i}
-              <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
-            {/each}
-          </div></Collapsible.Content
-        >
-      </Collapsible.Root>
-
-      <Collapsible.Root bind:open={undefinedToggle}>
-        <Collapsible.Trigger>
-          <div class="flex gap-2 items-center">
-            <h2 class="underline py-4">Undefined Ontologies ({arcStore.undefinedOntologies.size}/{arcStore.ontologiesCount})</h2>
-            <Button variant={"ghost"} size={"icon"}
-              ><ChevronRight class={`transition-transform duration-75 ${undefinedToggle ? "rotate-90" : ""}`} />
-            </Button>
-          </div>
-        </Collapsible.Trigger>
-
-        <Collapsible.Content>
-          <div class="flex flex-col gap-2">
-            {#each arcStore.undefinedOntologies as ontology, i}
-              <OntologyCard {i} name={ontology[0]} ontology={ontology[1]} />
-            {/each}
-          </div></Collapsible.Content
-        >
-      </Collapsible.Root>
-    </div>{/if} -->
 </div>

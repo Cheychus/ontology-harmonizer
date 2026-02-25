@@ -12,15 +12,17 @@
   interface Props {
     ontologies: ITerminologySearchResult[];
     name: string;
-    accept: any;
   }
 
-  let { ontologies, name }: Props = $props();
+  let { ontologies = $bindable(), name }: Props = $props();
 
-  let listView = $state(false);
-  let idx = $derived(ontologies.length / ontologies.length - 1); // dervied to reset the idx when ontologies are updated
+  let idx = $derived(ontologies.length / ontologies.length - 1); // this will reset the idx when ontologies are updated
   let currentOntology = $derived(ontologies[idx]);
+  let selectValue = $derived("");
+  let selectedTerm: OboTerm | null = $state(null);
+  let referenceInput: string = $derived(iriToCurie(ontologies[idx]?.short_form ?? ""));
 
+  // Derive select options from the existing obo file mapping terms
   const selectOptions = $derived.by(() => {
     return (
       oboFileStore.oboJson?.terms.map((term) => {
@@ -28,15 +30,7 @@
       }) ?? []
     );
   });
-
-  let selectValue = $derived("");
-  let selectedTerm: OboTerm | null = $state(null);
-
   const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping term");
-
-  // $inspect(selectOptions);
-
-  let referenceInput: string = $derived(iriToCurie(ontologies[idx]?.short_form ?? ""));
 
   function mapOntology() {
     if (!selectedTerm && !referenceInput) {
@@ -52,21 +46,12 @@
       oboFileStore.mapOntology(currentOntology?.label ?? name, name, xref);
     }
   }
-
-  // $inspect(selectValue, referenceInput);
-  $inspect("onto", currentOntology);
 </script>
 
 <div class="flex flex-col gap-2">
-  {#if listView}
-    <p class="font-bold">Matches: {ontologies.length}</p>
-    {#each ontologies as ontology}
-      <Matching {ontology} />
-    {/each}
-  {:else if ontologies.length > 0}
+  {#if ontologies.length > 0}
     <div class="flex justify-between gap-4 items-center">
       <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx - 1 < 0 ? idx : idx - 1)}><ArrowLeft /></Button>
-      <!-- <Button variant="default" size="lg" class="px-16" onclick={() => acceptOntology()}>Accept <Check size={20} /></Button> -->
       <p class="font-bold">Match: {idx + 1} / {ontologies.length}</p>
       <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx + 1 >= ontologies.length ? idx : idx + 1)}><ArrowRight /></Button>
     </div>

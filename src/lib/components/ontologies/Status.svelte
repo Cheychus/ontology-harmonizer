@@ -1,6 +1,5 @@
 <script lang="ts">
   import { arcStore } from "$lib/stores/ArcStore.svelte";
-  import * as Table from "$lib/components/ui/table/index.js";
   import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
   import Button from "../ui/button/button.svelte";
   import { goto, preloadData } from "$app/navigation";
@@ -14,26 +13,6 @@
 <div class="flex w-full flex-col gap-2 py-4">
   <h2 class="underline">Status Information</h2>
   <p>Filename: {arcStore.filename}</p>
-  <!-- <Table.Root>
-        <Table.Caption></Table.Caption>
-        <Table.Header>
-            <Table.Row>
-                <Table.Head class="">Ontologies</Table.Head>
-                <Table.Head>Defined</Table.Head>
-                <Table.Head>Undefined</Table.Head>
-                <Table.Head class="">Mappable</Table.Head>
-            </Table.Row>
-        </Table.Header>
-        <Table.Body>
-            <Table.Row>
-                <Table.Cell class="font-medium">{arcStore.ontologiesCount}</Table.Cell>
-                <Table.Cell>{arcStore.definedOntologies.size}</Table.Cell>
-                <Table.Cell>{arcStore.undefinedOntologies.size}</Table.Cell>
-                <Table.Cell class="text-green-400">0</Table.Cell>
-            </Table.Row>
-        </Table.Body>
-    </Table.Root> -->
-
   <div class="flex gap-4 items-center" role="status" onmouseenter={() => preloadData("./collections")}>
     <h3>Collection</h3>
     <Button
@@ -41,7 +20,7 @@
       size={"icon"}
       onclick={() => {
         goto(resolve("/collections"));
-      }}><Settings class="w-6! h-6!" /></Button
+      }}><Settings /></Button
     >
 
     {#if terminologyStore.selectedCollection}

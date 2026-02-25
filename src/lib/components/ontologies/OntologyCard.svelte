@@ -1,54 +1,47 @@
 <script lang="ts">
   import Input from "../ui/input/input.svelte";
   import Button from "../ui/button/button.svelte";
-  import { arcStore, type DerivedOntology } from "$lib/stores/ArcStore.svelte";
-  import { mapStore } from "$lib/stores/MapStore.svelte";
+  import { type DerivedOntology } from "$lib/stores/ArcStore.svelte";
   import { onMount } from "svelte";
   import { searchTerms } from "$lib/api/terminology";
   import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
   import type { ITerminologySearchResult } from "$lib/types/terminologyService";
   import { LoaderCircle, Search } from "lucide-svelte";
   import Matchings from "./Matchings.svelte";
-  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
-  import * as Select from "$lib/components/ui/select/index.js";
-  import type { OboSynonym } from "$lib/types/oboFiles";
+  import Badge from "../ui/badge/badge.svelte";
 
-  let { i, name, ontology }: { i: number; name: string; ontology: DerivedOntology } = $props();
+  let { ontology }: { ontology: DerivedOntology } = $props();
 
   let ontoName: string = $state("");
-  let ontos: ITerminologySearchResult[] = $state([]);
+  let ontologySearchResults: ITerminologySearchResult[] = $state([]);
 
   let loading = $state(false);
   let noResults = $state(false);
 
   onMount(() => {
-    ontoName = name;
+    ontoName = ontology.key;
   });
 
   async function getOntos() {
     loading = true;
     noResults = false;
-    const result = await searchTerms(fetch, ontoName, terminologyStore.selectedCollection?.id ?? "");
+    const result = await searchTerms(fetch, ontology.key, terminologyStore.selectedCollection?.id ?? "");
     console.log(result);
 
-    ontos = result;
+    ontologySearchResults = result;
     if (result.length === 0) {
       noResults = true;
     }
     loading = false;
   }
-
-  const selectOptions = $derived.by(() => {
-    return (
-      oboFileStore.oboJson?.terms.map((term) => {
-        return { value: term.id, label: term.id + " - " + term.name };
-      }) ?? []
-    );
-  });
 </script>
 
 <div class="grid grid-cols-2 gap-2 shadow text-wrap break-all p-4">
-  <h3 class="col-span-2">{name}</h3>
+  <div class="flex gap-2 items-center col-span-2">
+    <h3 class="">{ontology.key}</h3>
+    <Badge variant="outline" class="h-6">{ontology.ontologyAttribute}</Badge>
+  </div>
+
   <Input bind:value={ontoName} />
   <Button onclick={getOntos} variant="secondary"
     >Search Ontologies <Search size={22} />
@@ -56,7 +49,7 @@
     {/if}</Button
   >
   <div class="col-span-2">
-    <Matchings ontologies={ontos} {name} />
+    <Matchings bind:ontologies={ontologySearchResults} name={ontology.key} />
   </div>
 
   {#if noResults}
