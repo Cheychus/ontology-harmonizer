@@ -13,9 +13,6 @@ const config = {
 		}),
 		paths: {
 			base: '/ontology-harmonizer'
-		},
-		prerender: {
-			entries: []
 		}
 	}
 };
