@@ -34,7 +34,7 @@
         </Table.Body>
     </Table.Root> -->
 
-  <div class="flex gap-4 items-center" role="status" onmouseenter={() => preloadData(resolve("/collections"))}>
+  <div class="flex gap-4 items-center" role="status" onmouseenter={() => preloadData("./collections")}>
     <h3>Collection</h3>
     <Button
       variant={"outline"}
