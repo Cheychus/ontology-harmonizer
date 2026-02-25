@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { arcStore } from "$lib/stores/ArcStore.svelte";
+  import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
   import Button from "../ui/button/button.svelte";
   import { goto, preloadData } from "$app/navigation";

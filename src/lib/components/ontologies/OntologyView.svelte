@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DerivedOntology } from "$lib/stores/ArcStore.svelte";
+  import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import type { SvelteMap } from "svelte/reactivity";
   import OntologyCard from "./OntologyCard.svelte";
@@ -16,7 +16,7 @@
   let unmappedOntos = $derived(derivedOntos.filter((onto) => oboFileStore.findTermByName(onto.key) === null));
 </script>
 
-<h2 class="underline py-2">Mapped Ontology Values ({mappedOntos.length})</h2>
+<h2 class="underline py-2">Mapped Ontology Values ({mappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
 <div class="flex flex-col gap-2">
   {#each mappedOntos as ontology (ontology.key)}
     <div class="shadow p-2">
@@ -32,7 +32,7 @@
 </div>
 
 <div class="flex gap-4 items-center">
-  <h2 class="underline py-2">Unmapped Ontology Values ({unmappedOntos.length})</h2>
+  <h2 class="underline py-2">Unmapped Ontology Values ({unmappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
 </div>
 
 <div class="flex flex-col gap-2">

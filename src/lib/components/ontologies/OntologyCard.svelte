@@ -1,7 +1,7 @@
 <script lang="ts">
   import Input from "../ui/input/input.svelte";
   import Button from "../ui/button/button.svelte";
-  import { type DerivedOntology } from "$lib/stores/ArcStore.svelte";
+  import { type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
   import { onMount } from "svelte";
   import { searchTerms } from "$lib/api/terminology";
   import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";

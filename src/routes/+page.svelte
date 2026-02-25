@@ -1,29 +1,15 @@
 <script lang="ts">
-  import OntologyCard from "$lib/components/ontologies/OntologyCard.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { downloadJson, loadArcFile } from "$lib/services/arcs/arcFile.service";
-  import { arcStore } from "$lib/stores/ArcStore.svelte";
-  import { mapStore } from "$lib/stores/MapStore.svelte";
-  import { onMount } from "svelte";
-  import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+  import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import OboStringView from "$lib/components/mapping/OboStringView.svelte";
-  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
   import Status from "$lib/components/ontologies/Status.svelte";
-  import { ChevronRight, Download, Upload } from "lucide-svelte";
+  import { Download, Upload } from "lucide-svelte";
   import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
-
-  const ALLOWED_FORMAT = "application/json,.json";
 
   let fileInput: HTMLInputElement;
   let statusMessage = $state("");
-
-  let definedToggle = $state(true),
-    undefinedToggle = $state(true);
-
-  onMount(() => {
-    mapStore.init();
-  });
 
   /**
    * Import JSON Files
@@ -37,11 +23,9 @@
     await loadArcFile(file);
     arcStore.filename = file.name;
   }
-
-  function handleSave() {}
 </script>
 
-<input class="hidden" type="file" accept={ALLOWED_FORMAT} bind:this={fileInput} onchange={handleChange} />
+<input class="hidden" type="file" accept="application/json,.json" bind:this={fileInput} onchange={handleChange} />
 
 <div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
   <div class="flex gap-2 py-16">
