@@ -4,6 +4,8 @@
   import type { SvelteMap } from "svelte/reactivity";
   import OntologyCard from "./OntologyCard.svelte";
   import Badge from "../ui/badge/badge.svelte";
+  import { ChevronRight } from "lucide-svelte";
+  import { Button } from "../ui/button";
 
   interface Props {
     ontologies: SvelteMap<string, DerivedOntology>;
@@ -14,10 +16,16 @@
   let derivedOntos = $derived(ontologies.values().toArray());
   let mappedOntos = $derived(derivedOntos.filter((onto) => oboFileStore.findTermByName(onto.key)));
   let unmappedOntos = $derived(derivedOntos.filter((onto) => oboFileStore.findTermByName(onto.key) === null));
+  let toggleMapped = $state(true),
+    toggleUnmapped = $state(false);
 </script>
 
-<h2 class="underline py-2">Mapped Ontology Values ({mappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
-<div class="flex flex-col gap-2">
+<div class="flex gap-2 items-center">
+  <h2 class="underline py-2">Mapped Ontology Values ({mappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button>
+</div>
+
+<div class="flex flex-col gap-2" class:hidden={toggleMapped}>
   {#each mappedOntos as ontology (ontology.key)}
     <div class="shadow p-2">
       <div class="flex gap-2 items-center col-span-2">
@@ -31,11 +39,12 @@
   {/each}
 </div>
 
-<div class="flex gap-4 items-center">
+<div class="flex gap-2 items-center">
   <h2 class="underline py-2">Unmapped Ontology Values ({unmappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button>
 </div>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2" class:hidden={toggleUnmapped}>
   {#each unmappedOntos as ontology, i (ontology.key)}
     <OntologyCard {ontology} />
   {/each}
