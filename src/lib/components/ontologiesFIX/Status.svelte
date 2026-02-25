@@ -7,6 +7,7 @@
   import Collection from "../terminology/Collection.svelte";
   import { Settings, X } from "lucide-svelte";
   import { base } from "$service-worker";
+  import { resolve } from "$app/paths";
 
   let statusLog: string[] = $state([]);
 </script>
@@ -40,7 +41,7 @@
       variant={"outline"}
       size={"icon"}
       onclick={() => {
-        goto(`${base}/collections`);
+        goto(resolve("/collections"));
       }}><Settings class="w-6! h-6!" /></Button
     >
 

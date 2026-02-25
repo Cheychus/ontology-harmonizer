@@ -4,7 +4,7 @@
   import type { ICollection } from "$lib/types/terminologyService";
   import { tick } from "svelte";
   import Button from "../ui/button/button.svelte";
-  import { base } from "$service-worker";
+  import { resolve } from "$app/paths";
 
   interface Props {
     collection: ICollection;
@@ -28,7 +28,7 @@
       onclick={async () => {
         terminologyStore.selectCollection(collection);
         await tick();
-        goto(`${base}/`);
+        goto(resolve("/"));
       }}
       class="col-span-3">Select Collection</Button
     >
