@@ -2,7 +2,7 @@
   import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import type { SvelteMap } from "svelte/reactivity";
-  import OntologyCard from "./OntologyCard.svelte";
+  import OntologyCard from "./OntologyMapCard.svelte";
   import Badge from "../ui/badge/badge.svelte";
   import { ChevronRight } from "lucide-svelte";
   import { Button } from "../ui/button";
@@ -22,7 +22,9 @@
 
 <div class="flex gap-2 items-center">
   <h2 class="underline py-2">Mapped Ontology Values ({mappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
-  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button>
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}
+    ><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button
+  >
 </div>
 
 <div class="flex flex-col gap-2" class:hidden={toggleMapped}>
@@ -41,7 +43,9 @@
 
 <div class="flex gap-2 items-center">
   <h2 class="underline py-2">Unmapped Ontology Values ({unmappedOntos.length}/{arcStore.ontologyCandidates.size})</h2>
-  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button>
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}
+    ><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button
+  >
 </div>
 
 <div class="flex flex-col gap-2" class:hidden={toggleUnmapped}>

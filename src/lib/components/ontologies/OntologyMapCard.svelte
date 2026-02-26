@@ -12,20 +12,20 @@
 
   let { ontology }: { ontology: DerivedOntology } = $props();
 
-  let ontoName: string = $state("");
+  let searchInput: string = $state("");
   let ontologySearchResults: ITerminologySearchResult[] = $state([]);
 
   let loading = $state(false);
   let noResults = $state(false);
 
   onMount(() => {
-    ontoName = ontology.key;
+    searchInput = ontology.key;
   });
 
   async function getOntos() {
     loading = true;
     noResults = false;
-    const result = await searchTerms(fetch, ontology.key, terminologyStore.selectedCollection?.id ?? "");
+    const result = await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "");
     console.log(result);
 
     ontologySearchResults = result;
@@ -42,7 +42,7 @@
     <Badge variant="outline" class="h-6">{ontology.ontologyAttribute}</Badge>
   </div>
 
-  <Input bind:value={ontoName} />
+  <Input bind:value={searchInput} />
   <Button onclick={getOntos} variant="secondary"
     >Search Ontologies <Search size={22} />
     {#if loading}<LoaderCircle class="animate-spin" />
