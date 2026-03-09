@@ -5,7 +5,7 @@
   import OboStringView from "$lib/components/mapping/OboStringView.svelte";
   import OboMapping from "$lib/components/mapping/OboMapping.svelte";
   import Status from "$lib/components/ontologies/Status.svelte";
-  import { Download, Upload } from "lucide-svelte";
+  import { BoxSelect, Download, Pointer, Upload } from "lucide-svelte";
   import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
 
   let fileInput: HTMLInputElement;
@@ -27,12 +27,15 @@
 
 <input class="hidden" type="file" accept="application/json,.json" bind:this={fileInput} onchange={handleChange} />
 
-<div class="min-h-screen w-full max-w-full flex flex-col justify-center items-center p-8">
-  <div class="flex gap-2 py-16">
-    <Button class="p-6 px-16" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File <Upload size={22} /></Button>
+<div class="pt-32 w-full max-w-full flex flex-col justify-center items-center">
+  <div class="flex gap-2">
+    <Button class="p-6 px-16" variant="default" href="./login">Select ARC from Gitlab Instance</Button>
+    <Button class="p-6" variant="outline" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File <Upload size={22} /></Button>
 
     {#if arcStore.initialised}
-      <Button class="p-6 px-16" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File <Download size={22} /></Button>
+      <Button class="p-6 px-16" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}
+        >Export ARC-RO-Crate JSON File <Download size={22} /></Button
+      >
     {/if}
   </div>
 
