@@ -1,5 +1,6 @@
 import { GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET, REDIRECT_URI } from '$env/static/private';
-import { gitlabInstances } from '$lib/config/gitlabInstances.js';
+import { gitlabInstances } from '$lib/config/gitlabInstances';
+
 import { redirect } from '@sveltejs/kit';
 
 export const GET = async ({ url, fetch, cookies }) => {
