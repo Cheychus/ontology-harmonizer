@@ -11,7 +11,7 @@ export class GitLabStore {
     public async downloadProject(id: number) {
         // get project data from projects
         const arcRoCrateURL = `https://git.nfdi4plants.org/api/v4/projects/${id}/packages/generic/isa_arc_json/0.0.1/arc-ro-crate-metadata.json`;
-        const project = await fetch("https://git.nfdi4plants.org/api/v4/projects/" + id);
+        const project = await fetch(`/api?target=${encodeURIComponent("https://git.nfdi4plants.org/api/v4/projects/" + id)}`);
 
         if (!project) {
             console.log(`Could not download project with id ${id}!`);
