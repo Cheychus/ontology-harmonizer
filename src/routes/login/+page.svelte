@@ -21,7 +21,7 @@
 <section class="w-full pt-32 flex flex-col justify-center gap-16 pb-32">
     <div class="flex gap-2">
         {#each gitlabInstances as instance}
-            <Button variant="outline" size="lg" href="/ontology-harmonizer/auth/gitlab">Login to {instance.name}</Button>
+            <Button variant="outline" size="lg" href="/auth/gitlab">Login to {instance.name}</Button>
         {/each}
     </div>
 
