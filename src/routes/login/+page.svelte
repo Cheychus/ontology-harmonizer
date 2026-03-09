@@ -7,7 +7,7 @@
     let privateProjects = $derived(projects.filter((p) => p.visibility === "private"));
     let publicProjects = $derived(projects.filter((p) => p.visibility === "public"));
     onMount(async () => {
-        const res = await fetch("/ontology-harmonizer/api/projects?membership=true&per_page=50");
+        const res = await fetch("/api/projects?membership=true&per_page=50");
         if (res.ok) {
             projects = await res.json();
         } else {
