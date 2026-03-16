@@ -1,20 +1,19 @@
 <script lang="ts">
   import { Button } from "../ui/button";
   import * as Item from "$lib/components/ui/item/index.js";
-  import { gitLabStore } from "$lib/stores/gitlab/GitLabStore.svelte";
   import { goto } from "$app/navigation";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-  import type { GitLabProject } from "$lib/types/gitLab";
+  import type { IGitLabProject } from "$lib/types/gitLab";
+  import { getArcJson } from "$lib/services/gitlab/gitlab";
 
   interface Props {
-    project: GitLabProject;
+    project: IGitLabProject;
   }
 
   let { project }: Props = $props();
 
   async function selectArc() {
-    const arc = await gitLabStore.getArcJson(Number(project.id));
-    gitLabStore.downloadedArc = arc;
+    const arc = await getArcJson(Number(project.id));
     arcStore.init(arc);
     arcStore.filename = project.name;
 

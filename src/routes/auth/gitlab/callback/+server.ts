@@ -1,18 +1,18 @@
-import { DATAHUB_ID, DATAHUB_SECRET, GITLAB_CLIENT_SECRET, REDIRECT_URI } from "$env/static/private";
-import { gitlabInstances } from "$lib/config/gitlabInstances.js";
+import { APPLICATION_ID, SECRET, REDIRECT_URI } from "$env/static/private";
+import { GITLAB_INSTANCE_BASE } from "$lib/config/settings.js";
 import { redirect } from "@sveltejs/kit";
 
 export const GET = async ({ url, fetch, cookies }) => {
   const code = url.searchParams.get("code");
 
-  const res = await fetch(`${gitlabInstances[0].baseUrl}/oauth/token`, {
+  const res = await fetch(`${GITLAB_INSTANCE_BASE}/oauth/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      client_id: DATAHUB_ID,
-      client_secret: DATAHUB_SECRET,
+      client_id: APPLICATION_ID,
+      client_secret: SECRET,
       code: code,
       grant_type: "authorization_code",
       redirect_uri: REDIRECT_URI,
@@ -27,7 +27,8 @@ export const GET = async ({ url, fetch, cookies }) => {
   cookies.set("gitlab_token", accessToken, {
     path: "/",
     httpOnly: true,
-    secure: false,
+    secure: true,
+    sameSite: "lax",
   });
-  throw redirect(302, "/");
+  throw redirect(302, "/select-arc");
 };
