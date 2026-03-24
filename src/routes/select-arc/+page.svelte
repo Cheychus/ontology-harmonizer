@@ -3,7 +3,7 @@
   import GitLabUser from "$lib/components/gitlab/GitLabUser.svelte";
   import { Button } from "$lib/components/ui/button";
   import Input from "$lib/components/ui/input/input.svelte";
-  import { getCurrentUser, getProject, getProjects } from "$lib/services/gitlab/gitlab";
+  import { getArcJson, getCurrentUser, getProject, getProjects } from "$lib/services/gitlab/gitlab";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import { GitLabStore } from "$lib/stores/gitlab/GitLabStore.svelte";
   import type { IGitLabProject, IGitLabUser } from "$lib/types/gitLab";
@@ -45,7 +45,8 @@
           if (arcProjectId) {
             const project = await getProject(arcProjectId);
             console.log(project, " selected");
-            // arcStore.init(arcJson);
+            const arcJson = await getArcJson(arcProjectId);
+            arcStore.init(arcJson);
           }
         }}>Select</Button
       >

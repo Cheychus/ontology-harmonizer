@@ -7,6 +7,7 @@
   import Status from "$lib/components/ontologies/Status.svelte";
   import { BoxSelect, Download, Gitlab, Pointer, Upload } from "lucide-svelte";
   import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
+  import { ARC } from "@nfdi4plants/arctrl";
 
   let fileInput: HTMLInputElement;
   let statusMessage = $state("");
@@ -22,6 +23,10 @@
 
     await loadArcFile(file);
     arcStore.filename = file.name;
+    const arcJson = JSON.stringify(arcStore.json);
+    let arc = ARC.fromROCrateJsonString(arcJson);
+
+    console.log(arc);
   }
 </script>
 

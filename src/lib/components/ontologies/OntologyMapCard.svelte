@@ -40,6 +40,7 @@
   <div class="flex gap-2 items-center col-span-2">
     <h3 class="">{ontology.key}</h3>
     <Badge variant="outline" class="h-6">{ontology.ontologyAttribute}</Badge>
+    <Badge variant="outline" class="h-6">{ontology.value}</Badge>
   </div>
 
   <Input bind:value={searchInput} />

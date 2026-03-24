@@ -4,7 +4,8 @@
   import { goto } from "$app/navigation";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import type { IGitLabProject } from "$lib/types/gitLab";
-  import { getArcJson } from "$lib/services/gitlab/gitlab";
+  import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
+  import { Projector } from "lucide-svelte";
 
   interface Props {
     project: IGitLabProject;
@@ -14,6 +15,8 @@
 
   async function selectArc() {
     const arc = await getArcJson(Number(project.id));
+    const p = await getProject(Number(project.id));
+    console.log(p);
     arcStore.init(arc);
     arcStore.filename = project.name;
 
