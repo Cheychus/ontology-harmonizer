@@ -3,6 +3,7 @@
   import GitLabUser from "$lib/components/gitlab/GitLabUser.svelte";
   import { Button } from "$lib/components/ui/button";
   import Input from "$lib/components/ui/input/input.svelte";
+  import { extractGroundTruth } from "$lib/helpers/groundTruth";
   import { getArcJson, getCurrentUser, getProject, getProjects } from "$lib/services/gitlab/gitlab";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import { GitLabStore } from "$lib/stores/gitlab/GitLabStore.svelte";
@@ -29,10 +30,6 @@
 <section class="w-full pt-32 flex flex-col justify-center gap-16 pb-32">
   <h3>Selected ARC: {arcStore.filename}</h3>
 
-  <div class="flex gap-2">
-    <Button variant="outline" size="lg" href="/auth/gitlab">Login to GitLab Instance <Leaf size={20} class="text-green-500" /></Button>
-  </div>
-
   <div class="flex flex-col gap-2">
     <div>
       <Button variant="default" onclick={() => loadArcs()}><RefreshCwIcon class={load ? "animate-spin" : ""} /> Load ARCs</Button>
@@ -47,6 +44,7 @@
             console.log(project, " selected");
             const arcJson = await getArcJson(arcProjectId);
             arcStore.init(arcJson);
+            console.log(extractGroundTruth());
           }
         }}>Select</Button
       >
