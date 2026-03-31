@@ -8,6 +8,7 @@
   import { BoxSelect, Download, Gitlab, Pointer, Upload } from "lucide-svelte";
   import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
   import { ARC } from "@nfdi4plants/arctrl";
+  import { pushToGitlab } from "$lib/services/arcs/arctrl";
 
   let fileInput: HTMLInputElement;
   let statusMessage = $state("");
@@ -59,15 +60,15 @@
 
   <Status />
   {#if arcStore.initialised}
-    <div class="w-full flex flex-col gap-2 pb-4">
+    <div class="w-full flex gap-2">
       <Button
-        class="max-w-96"
+        class="w-96"
         onclick={() => {
           statusMessage = arcStore.mapOBOtoARC() + " Ontologies were updated";
         }}>Apply Mapping</Button
       >
+      <Button onclick={() => pushToGitlab()} class="w-64" variant="outline">Push to Gitlab</Button>
     </div>
-    {statusMessage}
   {/if}
 
   {#if arcStore.initialised}

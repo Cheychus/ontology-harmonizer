@@ -3,6 +3,7 @@ import type { OboFile } from "$lib/types/oboFiles";
 import { SvelteMap } from "svelte/reactivity";
 import { oboFileStore } from "../oboFiles/OboFileStore.svelte";
 import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
+import type { IGitLabProject } from "$lib/types/gitLab";
 
 export type DerivedOntology = {
   source: GraphNode;
@@ -13,6 +14,7 @@ export type DerivedOntology = {
 
 class ArcStore {
   filename: string = $state("");
+  project: IGitLabProject | null = $state(null);
   json: ARC_RO_JSON | null = $state(null);
   graph: GraphNode[] = $derived(this.json?.["@graph"] ?? []);
   ontologyCandidates: SvelteMap<string, DerivedOntology> = $state(new SvelteMap());

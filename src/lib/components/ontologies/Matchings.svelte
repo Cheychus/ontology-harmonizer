@@ -8,6 +8,7 @@
   import type { OboTerm } from "$lib/types/oboFiles";
   import Input from "../ui/input/input.svelte";
   import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
+  import { Label } from "../ui/label";
 
   interface Props {
     ontologies: ITerminologySearchResult[];
@@ -20,7 +21,9 @@
   let currentOntology = $derived(ontologies[idx]);
   let selectValue = $derived("");
   let selectedTerm: OboTerm | null = $state(null);
-  let referenceInput: string = $derived(iriToCurie(ontologies[idx]?.short_form ?? ""));
+  let iriInput: string = $derived(ontologies[idx]?.iri ?? "");
+  let shortFormInput: string = $derived(iriToCurie(ontologies[idx]?.short_form ?? ""));
+  let referenceInput: string = $derived(ontologies[idx]?.iri ?? "");
 
   // Derive select options from the existing obo file mapping terms
   const selectOptions = $derived.by(() => {
@@ -33,16 +36,16 @@
   const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping term");
 
   function mapOntology() {
-    if (!selectedTerm && !referenceInput) {
-      console.error("No Mapping defined");
+    if (!selectedTerm && (!iriInput || !shortFormInput)) {
+      console.error("No Mapping defined. Please select a existing mapping or specify iri and short form");
       return;
     }
 
     if (selectedTerm) {
       oboFileStore.addSynonym(selectedTerm, name);
-      oboFileStore.addXref(selectedTerm, referenceInput);
+      oboFileStore.addXref(selectedTerm, shortFormInput);
     } else {
-      let xref = referenceInput;
+      let xref = shortFormInput;
       oboFileStore.mapOntology(currentOntology?.label ?? name, name, xref);
     }
   }
@@ -82,7 +85,17 @@
         </Select.Group>
       </Select.Content>
     </Select.Root>
-    <Input placeholder="Manually define reference e.g. OBI:00001" bind:value={referenceInput} />
-    <Button class="" onclick={() => mapOntology()}>Map</Button>
+    <div class="flex col-span-2 items-end w-full py-2">
+      <div class="flex flex-col w-full gap-2">
+        <Label for="iri-input">IRI</Label>
+        <Input id="iri-input" placeholder="e.g. http://purl.obolibrary.org/obo/OBI_1234" bind:value={iriInput} />
+      </div>
+
+      <div class="flex flex-col gap-2 w-1/3">
+        <Label for="iri-input">Short Form</Label>
+        <Input id="iri-input" placeholder="e.g. OBI:1234" bind:value={shortFormInput} />
+      </div>
+      <Button class="w-64" onclick={() => mapOntology()}>Map</Button>
+    </div>
   </div>
 </div>

@@ -18,6 +18,7 @@
     const p = await getProject(Number(project.id));
     console.log(p);
     arcStore.init(arc);
+    arcStore.project = p;
     arcStore.filename = project.name;
 
     goto("/");

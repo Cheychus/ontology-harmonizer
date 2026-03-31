@@ -9,6 +9,7 @@ export interface IGitLabProject {
   name: string;
   name_with_namespace: string;
   description: string | null;
+  default_branch: string;
 }
 
 export interface IGitLabUser {

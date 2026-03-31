@@ -27,6 +27,6 @@ export function searchTerms(fetch: typeof globalThis.fetch, query: string, colle
   return apiGet<ITerminologySearchResult[]>(fetch, "/search", {
     query,
     collectionId,
-    display: "short_form,descriptions,label",
+    display: "iri,short_form,descriptions,label",
   });
 }
