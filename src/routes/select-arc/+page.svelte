@@ -6,7 +6,6 @@
   import { extractGroundTruth } from "$lib/helpers/groundTruth";
   import { getArcJson, getCurrentUser, getProject, getProjects } from "$lib/services/gitlab/gitlab";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-  import { GitLabStore } from "$lib/stores/gitlab/GitLabStore.svelte";
   import type { IGitLabProject, IGitLabUser } from "$lib/types/gitLab";
   import { Leaf, RefreshCwIcon, Sprout } from "lucide-svelte";
   import { onMount } from "svelte";
@@ -43,6 +42,7 @@
             const project = await getProject(arcProjectId);
             console.log(project, " selected");
             const arcJson = await getArcJson(arcProjectId);
+            if (!arcJson) throw new Error("No Arc JSON");
             arcStore.init(arcJson);
             console.log(extractGroundTruth());
           }

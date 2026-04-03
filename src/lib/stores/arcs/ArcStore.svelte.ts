@@ -4,6 +4,7 @@ import { SvelteMap } from "svelte/reactivity";
 import { oboFileStore } from "../oboFiles/OboFileStore.svelte";
 import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
 import type { IGitLabProject } from "$lib/types/gitLab";
+import { mappingStore } from "../mapping/MappingStore.svelte";
 
 export type DerivedOntology = {
   source: GraphNode;
@@ -17,7 +18,11 @@ class ArcStore {
   project: IGitLabProject | null = $state(null);
   json: ARC_RO_JSON | null = $state(null);
   graph: GraphNode[] = $derived(this.json?.["@graph"] ?? []);
+
   ontologyCandidates: SvelteMap<string, DerivedOntology> = $state(new SvelteMap());
+  allOntologyValues: DerivedOntology[] = $state([]);
+  arcIriMap: SvelteMap<string, string[]> = $state(new SvelteMap());
+
   initialised: boolean = $state(false);
 
   /**
@@ -33,15 +38,30 @@ class ArcStore {
   private searchOntologies() {
     // To reset the map after a new arc was initialised
     this.ontologyCandidates.clear();
+    this.allOntologyValues = [];
+    this.arcIriMap.clear();
 
     this.graph.forEach((node) => {
       if (node["@type"] === "PropertyValue") {
         const ontologies = extractOntologies(node);
+        this.allOntologyValues.push(...ontologies);
         ontologies.forEach((onto) => {
           this.ontologyCandidates.set(onto.key, onto);
         });
       }
     });
+
+    this.ontologyCandidates.forEach((o) => this.filterDuplicateIris(o.key))
+    console.log(this)
+  }
+
+  private filterDuplicateIris(ontologyKey: string) {
+    const arcOccurences = this.allOntologyValues.filter((o) => o.key === ontologyKey);
+    const iris = new Set<string>();
+    arcOccurences.forEach((o) => iris.add(o.value));
+    this.arcIriMap.set(ontologyKey, iris.values().toArray()) // key = IRI1, IRI2...
+
+    return iris;
   }
 
   saveOntologyValue(key: string, value: string) {
@@ -65,6 +85,31 @@ class ArcStore {
     this.updateArcJson();
     return count;
   }
+
+  changedOntologies: IChangedOntology[] = [];
+  applyMapping() {
+    let count = 0;
+    this.allOntologyValues?.forEach((onto) => {
+      const mapping = mappingStore.findMapping(onto.key);
+      if (mapping && mapping.iri !== onto.value) {
+        onto.source[onto.ontologyAttribute] = mapping.iri; // change in ARC JSON
+        // onto.value = mapping.iri; // change in store
+        this.changedOntologies.push({
+          old: onto,
+          new: mapping.iri,
+        })
+        count++;
+      }
+    });
+    this.init(this.json!)
+    console.log(count);
+    return count;
+  }
+}
+
+export interface IChangedOntology {
+  old: DerivedOntology;
+  new: string;
 }
 
 export const arcStore = new ArcStore();

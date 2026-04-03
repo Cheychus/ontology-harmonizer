@@ -19,3 +19,8 @@ export interface IGitLabUser {
   web_url: string;
   commit_email: string;
 }
+
+export interface IGitlabResponse {
+  title: string;
+  web_url: string;
+}

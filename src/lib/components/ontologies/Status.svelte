@@ -6,8 +6,15 @@
   import Collection from "../terminology/Collection.svelte";
   import { Settings, X } from "lucide-svelte";
   import { resolve } from "$app/paths";
+  import { statusStore } from "$lib/stores/status/StatusStore.svelte";
 
-  let statusLog: string[] = $state([]);
+  interface Props {
+    status: string[];
+  }
+
+  let { status = $bindable() }: Props = $props();
+
+  $inspect(status);
 </script>
 
 <div class="flex w-full flex-col gap-2 py-4">
@@ -43,7 +50,7 @@
   {/if}
 
   <h4 class="underline">Status Messages</h4>
-  {#each statusLog as log}
+  {#each status as log}
     <p class="text-green-400">{log}</p>
   {/each}
 </div>

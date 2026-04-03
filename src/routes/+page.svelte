@@ -2,16 +2,17 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { downloadJson, loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-  import OboStringView from "$lib/components/mapping/OboStringView.svelte";
-  import OboMapping from "$lib/components/mapping/OboMapping.svelte";
+  import Mappings from "$lib/components/mapping/Mappings.svelte";
   import Status from "$lib/components/ontologies/Status.svelte";
-  import { BoxSelect, Download, Gitlab, Pointer, Upload } from "lucide-svelte";
+  import { Download, Upload } from "lucide-svelte";
   import OntologyView from "$lib/components/ontologies/OntologyView.svelte";
-  import { ARC } from "@nfdi4plants/arctrl";
-  import { pushToGitlab } from "$lib/services/arcs/arctrl";
+  import { StatusStore } from "$lib/stores/status/StatusStore.svelte";
+  import { toast } from "@zerodevx/svelte-toast";
+  import { success } from "$lib/services/toasts/toastService";
 
   let fileInput: HTMLInputElement;
-  let statusMessage = $state("");
+  let statusMessages: string[] = $state(["No messages"]);
+  let mainStatus = new StatusStore();
 
   /**
    * Import JSON Files
@@ -24,16 +25,12 @@
 
     await loadArcFile(file);
     arcStore.filename = file.name;
-    const arcJson = JSON.stringify(arcStore.json);
-    let arc = ARC.fromROCrateJsonString(arcJson);
-
-    console.log(arc);
   }
 </script>
 
 <input class="hidden" type="file" accept="application/json,.json" bind:this={fileInput} onchange={handleChange} />
 
-<div class="pt-32 w-full max-w-full flex flex-col justify-center items-center">
+<div class="pt-32 w-full max-w-full flex flex-col gap-4 justify-center items-center">
   <div class="flex gap-2 justify-start w-full">
     <Button class="p-6 px-16" variant="default" href="./select-arc">
       <svg class="h-4 w-4 fill-orange-500" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
@@ -46,34 +43,35 @@
     <Button class="p-6" variant="outline" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File <Upload size={22} /></Button>
 
     {#if arcStore.initialised}
-      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File <Download size={22} /></Button>
+      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}
+        >Export ARC-RO-Crate JSON File <Download size={22} /></Button
+      >
     {/if}
   </div>
 
-  <div class="py-4 w-full">
+  <!-- <div class="py-4 w-full">
     <OboStringView />
-  </div>
+  </div> -->
 
   <div class="py-4 w-full">
-    <OboMapping />
+    <Mappings />
   </div>
 
-  <Status />
-  {#if arcStore.initialised}
+  <!-- <Status bind:status={mainStatus.status} /> -->
+  {#if arcStore.initialised || true}
     <div class="w-full flex gap-2">
       <Button
         class="w-96"
         onclick={() => {
-          statusMessage = arcStore.mapOBOtoARC() + " Ontologies were updated";
+          arcStore.applyMapping();
         }}>Apply Mapping</Button
       >
-      <Button onclick={() => pushToGitlab()} class="w-64" variant="outline">Push to Gitlab</Button>
     </div>
   {/if}
 
   {#if arcStore.initialised}
     <div class="flex w-full flex-col">
-      <OntologyView ontologies={arcStore.ontologyCandidates} />
+      <OntologyView />
     </div>
   {/if}
 </div>

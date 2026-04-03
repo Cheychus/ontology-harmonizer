@@ -40,7 +40,11 @@
   <div class="flex gap-2 items-center col-span-2">
     <h3 class="">{ontology.key}</h3>
     <Badge variant="outline" class="h-6">{ontology.ontologyAttribute}</Badge>
-    <Badge variant="outline" class="h-6">{ontology.value}</Badge>
+    {#if ontology.value !== ""}
+      <Badge variant="outline" class="h-6">{ontology.value}</Badge>
+    {:else}
+      <Badge variant="outline" class="h-6 ml-auto">ARC Value not defined</Badge>
+    {/if}
   </div>
 
   <Input bind:value={searchInput} />
@@ -50,7 +54,7 @@
     {/if}</Button
   >
   <div class="col-span-2">
-    <Matchings bind:ontologies={ontologySearchResults} name={ontology.key} />
+    <Matchings bind:searchResults={ontologySearchResults} arcOntologyName={ontology.key} />
   </div>
 
   {#if noResults}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "MAPPING:00001",
+    "name": "organism",
+    "synonyms": [
+      "Organism",
+      "Organismus"
+    ],
+    "iri": "https://purl.obolibrary.org/obo/MS_1000005",
+    "shortForm": "OBI:1234"
+  },
+  {
+    "id": "MAPPING:00002",
+    "name": "Genetische Maus",
+    "synonyms": [
+      "Gentic Mouse",
+      "Enginereed Mouse"
+    ],
+    "iri": "https://purl.obolibrary.org/obo/MS_1000005",
+    "shortForm": "OBI:1234"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/NCBITaxon_4513",
+    "name": "Hordeum vulgare",
+    "synonyms": [
+      "Hordeum vulgare",
+      "Hordeum",
+      "Hordeum vulgare subsp. vulgare",
+      "Gerste",
+      "Barley"
+    ],
+    "shortForm": "NCBITaxon:4513"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/FLOPO_0002741",
+    "name": "awn length",
+    "synonyms": [
+      "AL_M_cm"
+    ],
+    "shortForm": "FLOPO:0002741"
+  }
+]

@@ -9,72 +9,84 @@
   import Input from "../ui/input/input.svelte";
   import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
   import { Label } from "../ui/label";
+  import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
 
   interface Props {
-    ontologies: ITerminologySearchResult[];
-    name: string;
+    searchResults: ITerminologySearchResult[];
+    arcOntologyName: string;
   }
 
-  let { ontologies = $bindable(), name }: Props = $props();
+  let { searchResults = $bindable(), arcOntologyName }: Props = $props();
 
-  let idx = $derived(ontologies.length / ontologies.length - 1); // this will reset the idx when ontologies are updated
-  let currentOntology = $derived(ontologies[idx]);
+  let idx = $derived(searchResults.length / searchResults.length - 1); // this will reset the idx when ontologies are updated
+  let selectedOntology = $derived(searchResults[idx] ?? arcOntologyName);
   let selectValue = $derived("");
-  let selectedTerm: OboTerm | null = $state(null);
-  let iriInput: string = $derived(ontologies[idx]?.iri ?? "");
-  let shortFormInput: string = $derived(iriToCurie(ontologies[idx]?.short_form ?? ""));
-  let referenceInput: string = $derived(ontologies[idx]?.iri ?? "");
+  let selectedMapping: IMapping | null = $state(null);
+  let iriInput: string = $derived(searchResults[idx]?.iri ?? "");
+  let shortFormInput: string = $derived(iriToCurie(searchResults[idx]?.short_form ?? ""));
+  let referenceInput: string = $derived(searchResults[idx]?.iri ?? "");
 
   // Derive select options from the existing obo file mapping terms
   const selectOptions = $derived.by(() => {
     return (
-      oboFileStore.oboJson?.terms.map((term) => {
-        return { value: term.id, label: term.id + " - " + term.name };
+      mappingStore.mappingJson.map((m) => {
+        return { value: m.name, label: m.name };
       }) ?? []
     );
   });
-  const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping term");
+  const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping");
 
   function mapOntology() {
-    if (!selectedTerm && (!iriInput || !shortFormInput)) {
+    if (!selectedMapping && (!iriInput || !shortFormInput)) {
       console.error("No Mapping defined. Please select a existing mapping or specify iri and short form");
       return;
     }
 
-    if (selectedTerm) {
-      oboFileStore.addSynonym(selectedTerm, name);
-      oboFileStore.addXref(selectedTerm, shortFormInput);
+    const ontology = selectedOntology;
+    // console.log("Map ontologie with name", ontology);
+
+    if (selectedMapping) {
+      mappingStore.addSynonym(selectedMapping, arcOntologyName);
+      selectedMapping.shortForm = shortFormInput;
     } else {
-      let xref = shortFormInput;
-      oboFileStore.mapOntology(currentOntology?.label ?? name, name, xref);
+      const iri = iriInput;
+      const label = selectedOntology.label;
+      const xref = shortFormInput;
+      mappingStore.addMapping(label, iri, arcOntologyName, xref);
+      // oboFileStore.mapOntology(currentOntology?.label ?? name, name, xref);
     }
+
+    mappingStore.compareMappingWithArc();
   }
 </script>
 
 <div class="flex flex-col gap-2">
-  {#if ontologies.length > 0}
+  {#if searchResults.length > 0}
     <div class="flex justify-between gap-4 items-center">
       <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx - 1 < 0 ? idx : idx - 1)}><ArrowLeft /></Button>
-      <p class="font-bold">Match: {idx + 1} / {ontologies.length}</p>
-      <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx + 1 >= ontologies.length ? idx : idx + 1)}><ArrowRight /></Button>
+      <p class="font-bold">Match: {idx + 1} / {searchResults.length}</p>
+      <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx + 1 >= searchResults.length ? idx : idx + 1)}
+        ><ArrowRight /></Button
+      >
     </div>
 
-    <Matching ontology={ontologies[idx]} />
+    <Matching ontology={searchResults[idx]} />
   {/if}
   <div class="grid grid-cols-2 w-full gap-2">
     <Select.Root
       type="single"
       bind:value={selectValue}
       onValueChange={() => {
-        selectedTerm = oboFileStore.findTermById(selectValue);
-        referenceInput = selectedTerm?.xrefs.join(", ") ?? referenceInput;
+        selectedMapping = mappingStore.findMapping(selectValue)!;
+        shortFormInput = selectedMapping.shortForm;
+        iriInput = selectedMapping.iri;
       }}
     >
       <Select.Trigger class="w-full col-span-2">
         {triggerContent}
       </Select.Trigger>
       <Select.Content>
-        <Select.Item value={"new-term"} label={"Create a new term"}></Select.Item>
+        <Select.Item value={"new-mapping"} label={"Create a new mapping"}></Select.Item>
         <Select.Group>
           <Select.Label>Terms</Select.Label>
           {#each selectOptions as option}
