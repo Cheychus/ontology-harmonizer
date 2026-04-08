@@ -25,6 +25,8 @@ export async function apiSend<T>(fetch: typeof globalThis.fetch, { method, path,
     throw new Error(`API error ${res.status}`);
   }
 
+  console.log(res);
+
   const text = await res.text();
 
   return text ? (JSON.parse(text) as T) : ({} as T);

@@ -15,9 +15,7 @@
 
 <div class="flex gap-2 items-center">
   <h2 class="underline py-2">Mapped Ontology Values ({mappingStore.mappedOntologies.length}/{arcStore.ontologyCandidates.size})</h2>
-  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}
-    ><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button
-  >
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button>
 </div>
 
 <div class="flex flex-col gap-2" class:hidden={toggleMapped}>
@@ -26,11 +24,10 @@
   {/each}
 </div>
 
-<div class="flex gap-2 items-center">
+<div class="pt-4 flex gap-2 items-center">
   <h2 class="underline py-2">Unmapped Ontology Values ({mappingStore.unmappedOntologies.length}/{arcStore.ontologyCandidates.size})</h2>
-  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}
-    ><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button
-  >
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button>
+  <Button variant="default" class="ml-auto">Match All</Button>
 </div>
 
 <div class="flex flex-col gap-2" class:hidden={toggleUnmapped}>

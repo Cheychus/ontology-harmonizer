@@ -9,6 +9,7 @@
   import { LoaderCircle, Search } from "lucide-svelte";
   import Matchings from "./Matchings.svelte";
   import Badge from "../ui/badge/badge.svelte";
+  import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
 
   let { ontology }: { ontology: DerivedOntology } = $props();
 
@@ -34,6 +35,8 @@
     }
     loading = false;
   }
+
+  let matchingResults: IMatchingServiceData[] = $state([]);
 </script>
 
 <div class="grid grid-cols-2 gap-2 shadow text-wrap break-all p-4">
@@ -48,13 +51,27 @@
   </div>
 
   <Input bind:value={searchInput} />
-  <Button onclick={getOntos} variant="secondary"
-    >Search Ontologies <Search size={22} />
-    {#if loading}<LoaderCircle class="animate-spin" />
-    {/if}</Button
-  >
+  <div class="flex gap-2">
+    <Button class="flex-1" onclick={getOntos} variant="secondary"
+      >Search Ontologies <Search size={22} />
+      {#if loading}<LoaderCircle class="animate-spin" />
+      {/if}</Button
+    >
+    <Button onclick={async () => (matchingResults = await matchingStore.query("organism"))} variant="secondary">Python Service</Button>
+  </div>
+
   <div class="col-span-2">
     <Matchings bind:searchResults={ontologySearchResults} arcOntologyName={ontology.key} />
+
+    <div>
+      {#each matchingResults as matching}
+        {matching.id}
+        {matching.label}
+        {matching.rank}
+        {matching.score}
+        {matching.short_id}
+      {/each}
+    </div>
   </div>
 
   {#if noResults}
