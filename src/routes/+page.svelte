@@ -43,9 +43,7 @@
     <Button class="p-6" variant="outline" onclick={() => fileInput.click()}>Upload ARC-RO-Crate JSON File <Upload size={22} /></Button>
 
     {#if arcStore.initialised}
-      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}
-        >Export ARC-RO-Crate JSON File <Download size={22} /></Button
-      >
+      <Button class="p-6" variant={"secondary"} onclick={() => downloadJson(arcStore.json, "updated-arc.json")}>Export ARC-RO-Crate JSON File <Download size={22} /></Button>
     {/if}
   </div>
 
@@ -57,7 +55,7 @@
     <Mappings />
   </div>
 
-  <!-- <Status bind:status={mainStatus.status} /> -->
+  <Status bind:status={mainStatus.status} />
   {#if arcStore.initialised || true}
     <div class="w-full flex gap-2">
       <Button
