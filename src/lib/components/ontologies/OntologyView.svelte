@@ -2,12 +2,14 @@
   import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
   import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
   import type { SvelteMap } from "svelte/reactivity";
-  import OntologyCard from "./OntologyMapCard.svelte";
+  import OntologyMapCard from "./OntologyMapCard.svelte";
   import Badge from "../ui/badge/badge.svelte";
   import { ChevronRight } from "lucide-svelte";
   import { Button } from "../ui/button";
   import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
   import Mapped from "./Mapped.svelte";
+  import Switch from "../ui/switch/switch.svelte";
+  import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
 
   let toggleMapped = $state(true),
     toggleUnmapped = $state(false);
@@ -15,7 +17,9 @@
 
 <div class="flex gap-2 items-center">
   <h2 class="underline py-2">Mapped Ontology Values ({mappingStore.mappedOntologies.length}/{arcStore.ontologyCandidates.size})</h2>
-  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button>
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleMapped = !toggleMapped)}
+    ><ChevronRight class={`transition-transform duration-75 ${!toggleMapped ? "rotate-90" : ""}`} /></Button
+  >
 </div>
 
 <div class="flex flex-col gap-2" class:hidden={toggleMapped}>
@@ -26,12 +30,17 @@
 
 <div class="pt-4 flex gap-2 items-center">
   <h2 class="underline py-2">Unmapped Ontology Values ({mappingStore.unmappedOntologies.length}/{arcStore.ontologyCandidates.size})</h2>
-  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button>
-  <Button variant="default" class="ml-auto">Match All</Button>
+  <Button variant={"ghost"} size={"icon"} onclick={() => (toggleUnmapped = !toggleUnmapped)}
+    ><ChevronRight class={`transition-transform duration-75 ${!toggleUnmapped ? "rotate-90" : ""}`} /></Button
+  >
+  <div class="ml-auto flex gap-2 items-center">
+    <p class="text-muted-foreground">Automatic Matching</p>
+    <Switch bind:checked={settingsStore.automaticMatching} />
+  </div>
 </div>
 
 <div class="flex flex-col gap-2" class:hidden={toggleUnmapped}>
   {#each mappingStore.unmappedOntologies as ontology, i (ontology.key)}
-    <OntologyCard {ontology} />
+    <OntologyMapCard {ontology} />
   {/each}
 </div>

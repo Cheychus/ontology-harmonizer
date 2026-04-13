@@ -7,14 +7,16 @@
   import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
   import type { ITerminologySearchResult } from "$lib/types/terminologyService";
   import { LoaderCircle, Search } from "lucide-svelte";
-  import Matchings from "./Matchings.svelte";
+  import Matchings, { type IMatchingViewModel } from "./Matchings.svelte";
   import Badge from "../ui/badge/badge.svelte";
   import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
+
+  import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
 
   let { ontology }: { ontology: DerivedOntology } = $props();
 
   let searchInput: string = $state("");
-  let ontologySearchResults: ITerminologySearchResult[] = $state([]);
+  let ontologySearchResults: IMatchingViewModel[] = $state([]);
 
   let loading = $state(false);
   let noResults = $state(false);
@@ -23,20 +25,59 @@
     searchInput = ontology.key;
   });
 
-  async function getOntos() {
+  $effect(() => {
+    if (settingsStore.automaticMatching) {
+      getMatchings("pythonService");
+    }
+  });
+
+  $inspect(settingsStore.automaticMatching);
+
+  export type matchingType = "terminology" | "pythonService";
+
+  function fromTerminology(result: ITerminologySearchResult): IMatchingViewModel {
+    return {
+      iri: result.iri,
+      label: result.label,
+      description: result.descriptions,
+      shortForm: result.short_form,
+      source: "terminology",
+    };
+  }
+
+  function fromMatchingService(result: IMatchingServiceData): IMatchingViewModel {
+    return {
+      iri: result.id,
+      label: result.label,
+      description: result.definition,
+      shortForm: result.short_id,
+      rank: result.rank,
+      score: result.score,
+      source: "pythonService",
+    };
+  }
+
+  async function getMatchings(method: matchingType) {
     loading = true;
     noResults = false;
-    const result = await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "");
-    console.log(result);
 
-    ontologySearchResults = result;
-    if (result.length === 0) {
+    if (method === "terminology") {
+      const result = (await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
+      ontologySearchResults = result.map((r) => fromTerminology(r));
+    } else if (method === "pythonService") {
+      const result = await matchingStore.query(searchInput);
+      ontologySearchResults = result.map((r) => fromMatchingService(r));
+    }
+
+    if (ontologySearchResults.length === 0) {
       noResults = true;
     }
     loading = false;
   }
 
-  let matchingResults: IMatchingServiceData[] = $state([]);
+  export function matchAll() {
+    console.log("match all");
+  }
 </script>
 
 <div class="grid grid-cols-2 gap-2 shadow text-wrap break-all p-4">
@@ -52,26 +93,16 @@
 
   <Input bind:value={searchInput} />
   <div class="flex gap-2">
-    <Button class="flex-1" onclick={getOntos} variant="secondary"
+    <Button class="flex-1" onclick={() => getMatchings("terminology")} variant="secondary"
       >Search Ontologies <Search size={22} />
       {#if loading}<LoaderCircle class="animate-spin" />
       {/if}</Button
     >
-    <Button onclick={async () => (matchingResults = await matchingStore.query("organism"))} variant="secondary">Python Service</Button>
+    <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Python Service</Button>
   </div>
 
   <div class="col-span-2">
     <Matchings bind:searchResults={ontologySearchResults} arcOntologyName={ontology.key} />
-
-    <div>
-      {#each matchingResults as matching}
-        {matching.id}
-        {matching.label}
-        {matching.rank}
-        {matching.score}
-        {matching.short_id}
-      {/each}
-    </div>
   </div>
 
   {#if noResults}

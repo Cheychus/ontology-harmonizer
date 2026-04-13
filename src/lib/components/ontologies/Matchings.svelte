@@ -10,9 +10,20 @@
   import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
   import { Label } from "../ui/label";
   import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
+  import type { matchingType } from "./OntologyMapCard.svelte";
+
+  export interface IMatchingViewModel {
+    iri: string;
+    label: string;
+    shortForm: string;
+    description?: string[];
+    score?: number;
+    rank?: number;
+    source: matchingType;
+  }
 
   interface Props {
-    searchResults: ITerminologySearchResult[];
+    searchResults: IMatchingViewModel[];
     arcOntologyName: string;
   }
 
@@ -23,7 +34,7 @@
   let selectValue = $derived("");
   let selectedMapping: IMapping | null = $state(null);
   let iriInput: string = $derived(searchResults[idx]?.iri ?? "");
-  let shortFormInput: string = $derived(iriToCurie(searchResults[idx]?.short_form ?? ""));
+  let shortFormInput: string = $derived(iriToCurie(searchResults[idx]?.shortForm ?? ""));
 
   // Derive select options from the existing obo file mapping terms
   const selectOptions = $derived.by(() => {
@@ -60,7 +71,9 @@
     <div class="flex justify-between gap-4 items-center">
       <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx - 1 < 0 ? idx : idx - 1)}><ArrowLeft /></Button>
       <p class="font-bold">Match: {idx + 1} / {searchResults.length}</p>
-      <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx + 1 >= searchResults.length ? idx : idx + 1)}><ArrowRight /></Button>
+      <Button class="w-32" variant="outline" size="icon" onclick={() => (idx = idx + 1 >= searchResults.length ? idx : idx + 1)}
+        ><ArrowRight /></Button
+      >
     </div>
 
     <Matching ontology={searchResults[idx]} />
