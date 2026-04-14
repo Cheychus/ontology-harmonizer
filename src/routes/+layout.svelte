@@ -6,6 +6,7 @@
 	import Button from "$lib/components/ui/button/button.svelte";
 	import { goto } from "$app/navigation";
 	import { SvelteToast } from "@zerodevx/svelte-toast";
+	import Stepper from "$lib/components/application/Stepper.svelte";
 
 	let { data, children }: LayoutProps = $props();
 
@@ -20,10 +21,10 @@
 <SvelteToast {options} />
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<div class="w-full flex">
-	<GitLabUser user={data.user} />
-	<Button variant="link" onclick={() => goto("/commit")}>Commit</Button>
-</div>
-<div class="flex flex-col justify-center items-center w-full md:max-w-5xl mx-auto pb-32">
-	{@render children()}
-</div>
+<Stepper></Stepper>
+
+<main class="pt-32 flex flex-col justify-start items-center w-full h-screen md:max-w-5xl mx-auto pb-32">
+	<div class="w-full h-full">
+		{@render children()}
+	</div>
+</main>

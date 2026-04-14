@@ -6,6 +6,7 @@
   import type { IGitLabProject } from "$lib/types/gitLab";
   import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
   import { Projector } from "lucide-svelte";
+  import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
 
   interface Props {
     project: IGitLabProject;
@@ -21,7 +22,8 @@
     arcStore.project = p;
     arcStore.filename = project.name;
 
-    goto("/");
+    applicationStore.stepState.arcSelected = true;
+    goto("/mapping");
   }
 </script>
 

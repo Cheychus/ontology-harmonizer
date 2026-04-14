@@ -5,6 +5,7 @@ import { oboFileStore } from "../oboFiles/OboFileStore.svelte";
 import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
 import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
+import { applicationStore } from "../application/ApplicationStore.svelte";
 
 export type DerivedOntology = {
   source: GraphNode;

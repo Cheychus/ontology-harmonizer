@@ -139,6 +139,10 @@ a {
   @apply underline text-blue-500
 }
 
+p {
+  @apply text-muted-foreground
+}
+
 }
 
 @custom-variant data-open {
