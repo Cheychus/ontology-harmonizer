@@ -61,8 +61,6 @@
       const xref = shortFormInput;
       mappingStore.addMapping(label, iri, arcOntologyName, xref);
     }
-
-    mappingStore.compareMappingWithArc();
   }
 </script>
 

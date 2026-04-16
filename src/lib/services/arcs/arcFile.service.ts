@@ -10,9 +10,10 @@ export async function readJsonFile<T>(file: File): Promise<T> {
   }
 }
 
-export async function loadArcFile(file: File): Promise<void> {
+export async function loadArcFile(file: File): Promise<ARC_RO_JSON> {
   const json = await readJsonFile<ARC_RO_JSON>(file);
-  arcStore.init(json);
+  return json;
+
 }
 
 export function downloadJson(data: unknown, fileName: string) {

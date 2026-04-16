@@ -3,7 +3,7 @@
     import { onMount } from "svelte";
     import Badge from "../ui/badge/badge.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
-    import { ArrowRight, CircleCheck } from "lucide-svelte";
+    import { ArrowRight, CircleCheck, FileWarningIcon, OctagonAlert } from "lucide-svelte";
     import Label from "../ui/label/label.svelte";
     import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
 
@@ -32,18 +32,27 @@
         <Badge variant="outline" class="h-6">{ontology.ontologyAttribute}</Badge>
         <div class="ml-auto">
             {#if arcIris && arcIris?.length > 1}
-                <Badge variant="destructive">Multiple IRIs exist in ARC. Mapping will set new value!</Badge>
+                <div class="flex gap-2">
+                    <Badge variant="secondary">Multiple IRIs exist in ARC. Mapping will set new value!</Badge>
+                    <OctagonAlert class="text-orange-400" />
+                </div>
             {:else if arcIri === ""}
-                <Badge class="bg-orange-400">Mapping will set ARC Value!</Badge>
+                <Badge variant="secondary">Mapping will set ARC Value!</Badge>
             {:else if arcIri === mapIri}
-                <CircleCheck class="text-green-400" />
+                <div class="flex gap-2">
+                    <Badge variant="outline">Mapping value and ARC value are identical</Badge>
+                    <CircleCheck class="text-green-400" />
+                </div>
             {:else if mapping && mappingStore.iriIncludesShortForm(arcIri, mapping.shortForm)}
                 <div class="flex gap-2">
                     <Badge variant="outline">Mapping value and ARC value share the same short form.</Badge>
                     <CircleCheck class="text-green-400" />
                 </div>
             {:else if arcIri !== mapIri}
-                <Badge variant="destructive">Mapping will overwrite ARC IRI Value!</Badge>
+                <div class="flex gap-2">
+                    <Badge variant="secondary">Mapping will overwrite ARC IRI Value!</Badge>
+                    <OctagonAlert class="text-orange-400" />
+                </div>
             {/if}
         </div>
     </div>

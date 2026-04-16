@@ -13,7 +13,7 @@
         index: number;
     }
 
-    let { mapping = $bindable(), index }: Props = $props();
+    let { mapping, index }: Props = $props();
 
     let synonymInput: string = $state("");
     let editMode = $state(false);

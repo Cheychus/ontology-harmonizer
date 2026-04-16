@@ -1,3 +1,5 @@
+import { warning } from "$lib/services/toasts/toastService";
+
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ApiSendParams {
@@ -24,8 +26,6 @@ export async function apiSend<T>(fetch: typeof globalThis.fetch, { method, path,
   if (!res.ok) {
     throw new Error(`API error ${res.status}`);
   }
-
-  // console.log(res);
 
   const text = await res.text();
 

@@ -1,13 +1,15 @@
-import { toast } from "@zerodevx/svelte-toast"
+import { toast, type SvelteToastOptions } from "@zerodevx/svelte-toast"
 
-export const success = m => toast.push(m, {
-    theme: {
-        '--toastBackground': 'green',
-        '--toastColor': 'white',
-        '--toastBarBackground': ''
-    }
+export const success = (m: string) => toast.push(m, {
+    classes: ["success"],
 })
 
-// export const warning = m => toast.push(m, { theme: { ... } })
+export const warning = (m: string, options?: SvelteToastOptions) => toast.push(m, {
+    classes: ["warning"],
+    ...options,
+})
 
-// export const failure = m => toast.push(m, { theme: { ... } })
+export const failure = (m: string) => toast.push(m, {
+    classes: ["failure"],
+})
+

@@ -1,6 +1,6 @@
 import mappingStr from "$lib/assets/mappings/mapping.json?raw";
 import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
-import { arcStore } from "../arcs/ArcStore.svelte";
+import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
 
 
 export interface IMapping {
@@ -12,36 +12,53 @@ export interface IMapping {
 
 
 class MappingStore {
+    fileName: string = $state("");
     mappingJson: IMapping[] = $state([])
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.findMapping(o.key)));
     unmappedOntologies = $derived(this.arcOntologies.filter((o) => mappingStore.findMapping(o.key) === null));
 
+    currentIndex = $state(0);
+
+    current: DerivedOntology | null = $state(null);
+    queue: DerivedOntology[] = $state([]);
+    skipped: DerivedOntology[] = $state([]);
+
+    moveNext() {
+        this.current = this.queue[0] ?? null;
+        this.queue = this.queue.slice(1);
+    }
+
+    skip() {
+        if (!this.current) return;
+        this.skipped = [...this.skipped, this.current];
+        this.moveNext();
+    }
+
+    undoSkip(index: number) {
+        const item = this.skipped[index];
+        this.skipped = this.skipped.filter((_, i) => i !== index);
+        this.queue = [item, ...this.queue];
+
+        if (!this.current) {
+            this.moveNext();
+        }
+    }
+
+
+
     constructor(mappingStr: IMapping[]) {
         // this.load(mappingStr)
+    }
+
+    reset() {
+        this.fileName = "";
+        this.mappingJson = [];
     }
 
     load(mapping: IMapping[]) {
         console.log("Mapping json loaded: ", mapping);
         this.mappingJson = mapping;
-    }
-
-    compareMappingWithArc() {
-        const newValues = [];
-        const overwrites = [];
-        const same = [];
-        this.mappedOntologies.forEach((o) => {
-            const map = this.findMapping(o.key)!;
-
-            if (o.value === map.iri) {
-                console.log("MAP Value and ARC Value are the same",)
-
-            } else if (o.value === "") {
-                console.log("No IRI in ARC for this Ontology term. New Value will be: ", map.iri)
-            } else if (o.value !== map.iri) {
-                console.log("MAP Value: ", map.iri, "will overwrite ARC Value: ", o.value);
-            }
-        })
     }
 
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
@@ -64,6 +81,16 @@ class MappingStore {
 
     findMapping(name: string) {
         return this.mappingJson.find((m) => m.name === name || m.synonyms.find((s) => s === name)) ?? null;
+    }
+
+    findMappings(query: string) {
+        if (!query) return this.mappingJson;
+        const q = query.toLowerCase();
+        return this.mappingJson.filter(
+            (m) =>
+                m.name.toLowerCase().includes(q) ||
+                m.synonyms.some((s) => s.toLowerCase().includes(q))
+        );
     }
 
     removeMapping(index: number) {

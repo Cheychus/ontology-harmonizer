@@ -10,6 +10,7 @@ export interface IGitLabProject {
   name_with_namespace: string;
   description: string | null;
   default_branch: string;
+  visibility: "public" | "private";
 }
 
 export interface IGitLabUser {

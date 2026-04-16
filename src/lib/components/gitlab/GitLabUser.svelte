@@ -6,6 +6,7 @@
     import { apiGet } from "$lib/api/api";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { goto } from "$app/navigation";
+    import { success } from "$lib/services/toasts/toastService";
 
     let user: IGitLabUser | null = $state(null);
 

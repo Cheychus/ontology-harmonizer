@@ -18,11 +18,11 @@ class ApplicationStore {
         },
         {
             label: "Map Ontology Values",
-            href: "/",
+            href: "/map",
         },
         {
             label: "Apply Mapping",
-            href: "/",
+            href: "/apply",
         },
         {
             label: "Commit",
@@ -32,6 +32,9 @@ class ApplicationStore {
 
 
     currentStep = $state(0);
+
+    isAuthenticated = $state(false);
+
 
     stepState = $state({
         isLoggedIn: false,

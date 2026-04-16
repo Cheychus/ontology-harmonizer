@@ -6,7 +6,7 @@
     let currentStep = $derived(applicationStore.getStepIndex(page.url.pathname));
 </script>
 
-<nav class="fixed top-0 w-full flex justify-center shadow py-6 overflow-hidden">
+<nav class="fixed top-0 z-50 w-full flex justify-center shadow bg-white py-4 overflow-hidden">
     <div class="relative w-full overflow-hidden">
         <div class="flex justify-center gap-4">
             {#each applicationStore.steps as step, i}

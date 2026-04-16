@@ -6,6 +6,8 @@ import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
 import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 import { applicationStore } from "../application/ApplicationStore.svelte";
+import { getProjects } from "$lib/services/gitlab/gitlab";
+import { failure, warning } from "$lib/services/toasts/toastService";
 
 export type DerivedOntology = {
   source: GraphNode;
@@ -17,6 +19,11 @@ export type DerivedOntology = {
 class ArcStore {
   filename: string = $state("");
   project: IGitLabProject | null = $state(null);
+  arcProjectId: number | null = $state(null);
+  projects: IGitLabProject[] = $state([]);
+  privateProjects = $derived(this.projects.filter((p) => p.visibility === "private"));
+  publicProjects = $derived(this.projects.filter((p) => p.visibility === "public"));
+
   json: ARC_RO_JSON | null = $state(null);
   graph: GraphNode[] = $derived(this.json?.["@graph"] ?? []);
 
@@ -34,6 +41,22 @@ class ArcStore {
     this.json = json;
     this.searchOntologies();
     this.initialised = true;
+  }
+
+  loading = $state(false);
+  async loadArcs() {
+    if (!applicationStore.isAuthenticated) {
+      failure("You need to authenticate first");
+      return;
+    }
+    this.loading = true;
+    try {
+      this.projects = await getProjects();
+    } catch (e) {
+      console.log("Error: ", e);
+    } finally {
+      this.loading = false;
+    }
   }
 
   private searchOntologies() {

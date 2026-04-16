@@ -7,6 +7,7 @@
   import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
   import { Projector } from "lucide-svelte";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
+  import { failure, success, warning } from "$lib/services/toasts/toastService";
 
   interface Props {
     project: IGitLabProject;
@@ -24,6 +25,7 @@
 
     applicationStore.stepState.arcSelected = true;
     goto("/mapping");
+    success("Selected " + p.name);
   }
 </script>
 

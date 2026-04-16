@@ -1,6 +1,6 @@
 export class SettingsStore {
 
-    automaticMatching = $state(false)
+    automaticMatching = $state(true)
 
 }
 

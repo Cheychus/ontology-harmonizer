@@ -139,8 +139,32 @@ a {
   @apply underline text-blue-500
 }
 
-p {
-  @apply text-muted-foreground
+
+.toast {
+  --toastWidth: min(90vw, 20rem);
+ --toastBorderRadius: 0.25rem;
+ --toastBoxShadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.toast.success {
+  --toastBackground: theme(colors.green.50);
+  --toastColor: theme(colors.green.800);
+  --toastBorder: 1px solid theme(colors.green.200);
+  --toastBarBackground: theme(colors.green.500);
+}
+
+.toast.warning {
+  --toastBackground: theme(colors.orange.50);
+  --toastColor: theme(colors.orange.800);
+  --toastBorder: 1px solid theme(colors.orange.200);
+  --toastBarBackground: theme(colors.orange.500);
+}
+
+.toast.failure {
+  --toastBackground: theme(colors.red.50);
+  --toastColor: theme(colors.red.800);
+  --toastBorder: 1px solid theme(colors.red.200);
+  --toastBarBackground: theme(colors.red.500);
 }
 
 }

@@ -3,13 +3,13 @@ import { applicationStore } from "$lib/stores/application/ApplicationStore.svelt
 import { redirect } from "@sveltejs/kit";
 
 
-export function load({ url }) {
-    const expectedRoute = applicationStore.getCurrentStep();
+// export function load({ url }) {
+//     const expectedRoute = applicationStore.getCurrentStep();
 
-    const currentIndex = applicationStore.getStepIndex(url.pathname);
-    const expectedIndex = applicationStore.getStepIndex(expectedRoute);
+//     const currentIndex = applicationStore.getStepIndex(url.pathname);
+//     const expectedIndex = applicationStore.getStepIndex(expectedRoute);
 
-    if (currentIndex > expectedIndex) {
-        throw redirect(302, expectedRoute);
-    }
-}
+//     if (currentIndex > expectedIndex) {
+//         throw redirect(302, expectedRoute);
+//     }
+// }
