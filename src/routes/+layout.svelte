@@ -7,6 +7,9 @@
 	import { goto } from "$app/navigation";
 	import { SvelteToast } from "@zerodevx/svelte-toast";
 	import Stepper from "$lib/components/application/Stepper.svelte";
+	import { page } from "$app/state";
+	import { onMount } from "svelte";
+	import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
 
 	let { data, children }: LayoutProps = $props();
 
@@ -17,13 +20,19 @@
 		pausable: true,
 	};
 
+	onMount(() => {
+		settingsStore.init();
+	});
+
 	// 	$inspect("data:", data);
 </script>
 
 <SvelteToast {options} />
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<Stepper></Stepper>
+{#if page.url.pathname !== "/"}
+	<Stepper></Stepper>
+{/if}
 
 <main class="pt-25 flex flex-col justify-start items-center w-full min-h-screen md:max-w-5xl mx-auto pb-32">
 	{@render children()}

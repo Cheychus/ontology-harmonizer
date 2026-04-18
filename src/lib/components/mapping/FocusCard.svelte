@@ -16,7 +16,7 @@
     import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
     import { onMount } from "svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
-    import { warning } from "$lib/services/toasts/toastService";
+    import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
 
     interface Props {
@@ -51,7 +51,7 @@
 
     onMount(() => {
         if (settingsStore.automaticMatching) {
-            getMatchings("terminology");
+            getMatchings(settingsStore.matchingMethod);
         }
         refocus();
     });
@@ -81,21 +81,25 @@
     async function getMatchings(method: matchingType) {
         loading = true;
         noResults = false;
+        try {
+            if (method === "terminology") {
+                const result = (await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
+                // filter duplicate results with the same label + iri
+                const unique = Array.from(new Map(result.map((r) => [`${r.label}-${r.iri}`, r])).values());
+                ontologySearchResults = unique.map((r) => fromTerminology(r));
+            } else if (method === "pythonService") {
+                const result = await matchingStore.query(searchInput);
+                ontologySearchResults = result.map((r) => fromMatchingService(r));
+            }
 
-        if (method === "terminology") {
-            const result = (await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
-            // filter duplicate results with the same label + iri
-            const unique = Array.from(new Map(result.map((r) => [`${r.label}-${r.iri}`, r])).values());
-            ontologySearchResults = unique.map((r) => fromTerminology(r));
-        } else if (method === "pythonService") {
-            const result = await matchingStore.query(searchInput);
-            ontologySearchResults = result.map((r) => fromMatchingService(r));
+            if (ontologySearchResults.length === 0) {
+                noResults = true;
+            }
+        } catch (e) {
+            failure(`Failed to fetch ontology values [${e}]`);
+        } finally {
+            loading = false;
         }
-
-        if (ontologySearchResults.length === 0) {
-            noResults = true;
-        }
-        loading = false;
     }
 
     function switchSearchResult(change: number) {
@@ -136,7 +140,7 @@
     <Switch
         onCheckedChange={() => {
             if (settingsStore.automaticMatching) {
-                getMatchings("terminology");
+                getMatchings(settingsStore.matchingMethod);
             }
             refocus();
         }}
@@ -178,9 +182,17 @@
     </div>
     <div class="flex gap-2 pt-2">
         <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">Terminology Service <Search size={22} /></Button>
-        <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Matching Service <Search size={22} /></Button>
+        {#if settingsStore.enablePythonMatchingService}
+            <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Matching Service <Search size={22} /></Button>
+        {/if}
 
-        <Input placeholder="search for a value..." bind:value={searchInput} />
+        <Input
+            onkeydown={(e) => {
+                if (e.key === "Enter") getMatchings("terminology");
+            }}
+            placeholder="search for a value..."
+            bind:value={searchInput}
+        />
     </div>
 
     <!-- <Label class="pt-2">Search Results</Label> -->
