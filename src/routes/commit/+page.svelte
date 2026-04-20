@@ -1,12 +1,13 @@
 <script lang="ts">
     import Badge from "$lib/components/ui/badge/badge.svelte";
     import { Button } from "$lib/components/ui/button";
+    import { downloadJson } from "$lib/services/arcs/arcFile.service";
     import { pushToGitlab } from "$lib/services/arcs/arctrl";
     import { failure, success } from "$lib/services/toasts/toastService";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
     import { toast } from "@zerodevx/svelte-toast";
-    import { ArrowRight, LoaderCircle, Minus, Plus } from "lucide-svelte";
+    import { ArrowRight, Download, LoaderCircle, Minus, Plus } from "lucide-svelte";
     import { onMount } from "svelte";
 
     let commitUrl = $state("");
@@ -46,14 +47,21 @@
             can be replaced by this process, so if you import the ARC again, some values may have changed.
         </div>
 
-        <Button
-            onclick={async () => {
-                commit();
-            }}
-            class="w-64"
-            variant="outline"
-            >Push to Gitlab
-        </Button>
+        <div class="flex gap-2">
+            <Button
+                onclick={async () => {
+                    commit();
+                }}
+                class="w-64"
+                variant="default"
+                >Push to Gitlab
+            </Button>
+            <Button
+                onclick={() => downloadJson(mappingStore.mappingJson, mappingStore.fileName === "" ? "mapping.json" : mappingStore.fileName)}
+                class="ml-auto"
+                variant="secondary"><Download /> Save Mapping</Button
+            >
+        </div>
 
         <div class="flex flex-col">
             {#if commited}

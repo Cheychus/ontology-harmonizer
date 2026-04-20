@@ -1,8 +1,9 @@
 import { browser } from "$app/environment";
 import type { matchingType } from "$lib/components/ontologies/OntologyMapCard.svelte";
 import { failure } from "$lib/services/toasts/toastService";
+import { mappingStore } from "../mapping/MappingStore.svelte";
 
-const STORAGE_KEY = "ontologyHarmonizer_settings";
+const STORAGE_KEY = "ontologyHarmonizer";
 
 export class SettingsStore {
     // matching service
@@ -32,18 +33,31 @@ export class SettingsStore {
     private loadAll() {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            Object.assign(this, JSON.parse(stored));
+            const data = JSON.parse(stored);
+            if (data.settings) {
+                Object.assign(this, data.settings);
+            }
+            if (data.mapping && data.mappingName) {
+                mappingStore.load(data.mapping);
+                mappingStore.fileName = data.mappingName;
+            }
         }
     }
 
     private setupAutoSave() {
         $effect(() => {
             if (!this.loaded) return;
+
             const data = {
-                enablePythonMatchingService: this.enablePythonMatchingService,
-                pythonMatchingServiceUrl: this.pythonMatchingServiceUrl,
-                automaticMatching: this.automaticMatching,
-                matchingMethod: this.matchingMethod,
+                mapping: mappingStore.mappingJson,
+                mappingName: mappingStore.fileName,
+                settings: {
+                    enablePythonMatchingService: this.enablePythonMatchingService,
+                    pythonMatchingServiceUrl: this.pythonMatchingServiceUrl,
+                    automaticMatching: this.automaticMatching,
+                    matchingMethod: this.matchingMethod,
+                }
+
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         });

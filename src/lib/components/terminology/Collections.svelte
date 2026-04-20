@@ -12,11 +12,11 @@
     });
 </script>
 
-<div class="flex flex-col gap-2 py-16">
+<div class="flex flex-col gap-2">
     <h2 class="w-full">{terminologyStore.collections.length} Collections loaded</h2>
     <div class="pb-4 relative flex items-center">
         <Search class="absolute left-2" />
-        <Input aria-label={"Collection"} placeholder="Search Collection..." class="max-w-2/3 py-6 pl-10 text-lg" bind:value={inputValue}></Input>
+        <Input aria-label={"Collection"} placeholder="Search Collection..." class="max-w-2/3 pl-10 text-lg" bind:value={inputValue}></Input>
     </div>
 
     {#each searchResults as collection}

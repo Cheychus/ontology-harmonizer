@@ -4,10 +4,12 @@
     import Label from "$lib/components/ui/label/label.svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
     import * as Select from "$lib/components/ui/select/index.js";
-    import { Circle, CircleAlert, CircleCheck } from "lucide-svelte";
+    import { Circle, CircleAlert, CircleCheck, X } from "lucide-svelte";
     import { apiGet } from "$lib/api/api";
     import Button from "$lib/components/ui/button/button.svelte";
     import { failure, success } from "$lib/services/toasts/toastService";
+    import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
+    import Collection from "$lib/components/terminology/Collection.svelte";
 
     const matchingMethod = [
         { value: "terminology", label: "API" },
@@ -105,5 +107,33 @@
             </div>
         </div>
         <div class="w-full h-px border border-b"></div>
+
+        <div class="flex flex-col w-full gap-2">
+            <Label>Collection</Label>
+            <div class="flex flex-col gap-2">
+                <p>Choose a collection to filter the ontology search for relevant ontologies</p>
+                <Button class="w-64" variant="outline" href="/collections">Select Collection</Button>
+            </div>
+            <div class="flex">
+                <Label>Current collection</Label>
+                {#if terminologyStore.selectedCollection}
+                    <Button
+                        class="ml-auto"
+                        size="icon-sm"
+                        variant={"outline"}
+                        onclick={() => {
+                            terminologyStore.removeSelection();
+                        }}
+                        ><X />
+                    </Button>
+                {/if}
+            </div>
+
+            {#if terminologyStore.selectedCollection}
+                <Collection collection={terminologyStore.selectedCollection} selectButton={false} />
+            {:else}
+                <p>No collection selected</p>
+            {/if}
+        </div>
     </section>
 {/if}

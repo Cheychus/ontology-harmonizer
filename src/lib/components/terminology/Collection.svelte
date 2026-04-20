@@ -25,10 +25,9 @@
 
   {#if selectButton}
     <Button
+      href="/settings"
       onclick={async () => {
         terminologyStore.selectCollection(collection);
-        await tick();
-        goto(resolve("/"));
       }}
       class="col-span-3">Select Collection</Button
     >

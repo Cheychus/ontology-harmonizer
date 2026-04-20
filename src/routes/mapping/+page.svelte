@@ -48,7 +48,17 @@
                 size="icon-sm"
                 class="flex items-center"><X /></Button
             >
+
             <Button class="ml-auto px-16" href="/map" size="lg">Continue</Button>
+        </div>
+        <div class="flex gap-2 pb-2">
+            <Button variant={"outline"} class="" onclick={() => fileInput.click()}><Upload />Upload mapping file</Button>
+            <Button
+                variant={"outline"}
+                class=""
+                onclick={() => downloadJson(mappingStore.mappingJson, mappingStore.fileName === "" ? "mapping.json" : mappingStore.fileName)}
+                ><Download />Download mapping file</Button
+            >
         </div>
 
         <Mappings />
