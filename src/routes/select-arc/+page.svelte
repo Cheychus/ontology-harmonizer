@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { apiGet } from "$lib/api/api";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
   import GitLabUser from "$lib/components/gitlab/GitLabUser.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -21,10 +22,19 @@
 
   // let load = $state(false);
   // let arcProjectId: number | null = $state(null);
-
-  onMount(() => {
+  let user: IGitLabUser | null = $state(null);
+  onMount(async () => {
     if (applicationStore.isAuthenticated && arcStore.projects.length <= 0) {
       arcStore.loadArcs();
+    }
+
+    try {
+      user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
+    } catch (e) {
+      user = null;
+    }
+    if (user) {
+      applicationStore.isAuthenticated = true;
     }
   });
 
