@@ -24,10 +24,6 @@
   // let arcProjectId: number | null = $state(null);
   let user: IGitLabUser | null = $state(null);
   onMount(async () => {
-    if (applicationStore.isAuthenticated && arcStore.projects.length <= 0) {
-      arcStore.loadArcs();
-    }
-
     try {
       user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
     } catch (e) {
@@ -35,6 +31,8 @@
     }
     if (user) {
       applicationStore.isAuthenticated = true;
+    }
+    if (applicationStore.isAuthenticated && arcStore.projects.length <= 0) {
       arcStore.loadArcs();
     }
   });
