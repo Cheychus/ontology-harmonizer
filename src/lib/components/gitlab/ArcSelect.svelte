@@ -31,7 +31,7 @@
 
 <Item.Root variant="outline">
   <Item.Content>
-    <Item.Title>{project.name} - {project.id}</Item.Title>
+    <Item.Title>{project.name} - ID: {project.id}</Item.Title>
     <Item.Description>{project.description}</Item.Description>
   </Item.Content>
   <Item.Actions>

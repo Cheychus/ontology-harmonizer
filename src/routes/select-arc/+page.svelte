@@ -35,6 +35,7 @@
     }
     if (user) {
       applicationStore.isAuthenticated = true;
+      arcStore.loadArcs();
     }
   });
 
