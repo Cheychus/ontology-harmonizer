@@ -25,6 +25,7 @@ export async function pushToGitlab() {
     toast.set(id, { next: 0.2 })
 
     const contracts = arc.GetWriteContracts();
+    console.log(contracts)
     const gitActions = await fullfillWriteContractsGIT(contracts);
     toast.set(id, { next: 0.3 })
     const newBranch = "ontologyHarmonizer/" + Date.now();
@@ -79,7 +80,7 @@ async function fullfillWriteContractsGIT(contracts: Contract[]): Promise<GitActi
   for (const contract of contracts) {
     if (contract.Operation === "CREATE" || (contract.Operation === "UPDATE" && contract.DTO !== undefined)) {
       // Only Assay, Study and Investigation are relevant for ontologies
-      if (contract.DTOType === "ISA_Assay" || contract.DTOType === "ISA_Study" || contract.DTOType === "ISA_Investigation") {
+      if (contract.DTOType === "ISA_Assay" || contract.DTOType === "ISA_Study" || contract.DTOType === "ISA_Investigation" || contract.DTOType === "ISA_Datamap") {
         let xlsxBytes = await Xlsx.toBytes(contract.DTO);
         const base64String = bytesToBase64(xlsxBytes);
         actions.push({
