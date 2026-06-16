@@ -82,11 +82,11 @@ async function fullfillWriteContractsGIT(contracts: Contract[]): Promise<GitActi
       // Only Assay, Study and Investigation are relevant for ontologies
       if (contract.DTOType === "ISA_Assay" || contract.DTOType === "ISA_Study" || contract.DTOType === "ISA_Investigation" || contract.DTOType === "ISA_Datamap") {
         let xlsxBytes = await Xlsx.toBytes(contract.DTO);
-        const base64String = bytesToBase64(xlsxBytes);
+        // const base64String = bytesToBase64(xlsxBytes);
         actions.push({
           action: "update",
           file_path: contract.Path,
-          content: base64String,
+          content: xlsxBytes,
           encoding: "base64",
         });
       }

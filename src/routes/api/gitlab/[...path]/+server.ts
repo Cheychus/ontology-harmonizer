@@ -5,11 +5,11 @@ export const GET = async ({ params, url, cookies, fetch }) => {
   const token = cookies.get("gitlab_token");
   const path = `${GITLAB_API_PATH}/${params.path}/${url.search}`;
 
-  const res = await fetch(path, {
+  const res = await fetch(path, token ? {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  });
+  } : {});
 
   if (!res.ok) {
     return res;

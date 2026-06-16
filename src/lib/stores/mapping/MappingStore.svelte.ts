@@ -72,7 +72,7 @@ class MappingStore {
         mapping = {
             iri,
             name,
-            synonyms: [synonym],
+            synonyms: name === synonym ? [] : [synonym],
             shortForm
         }
         this.mappingJson.push(mapping)

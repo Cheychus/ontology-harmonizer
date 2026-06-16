@@ -79,6 +79,7 @@
       <Input class="max-w-64" bind:value={arcStore.arcProjectId} type="number" placeholder="ARC Project ID" />
       <Button variant="outline" onclick={() => selectARC()}>Select</Button>
       <Button variant="secondary" onclick={() => fileInput.click()}>ARC-RO-Crate JSON<Upload size={22} /></Button>
+      <Button variant="secondary" onclick={() => console.log(extractGroundTruth())}>Ground Truth Extract</Button>
     </div>
   </div>
 

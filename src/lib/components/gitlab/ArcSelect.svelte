@@ -17,7 +17,7 @@
 
   async function selectArc() {
     const arc = await getArcJson(Number(project.id));
-    const p = await getProject(Number(project.id));
+    const p = await getProject(Number(project.id)); 
     console.log(p);
     arcStore.init(arc);
     arcStore.project = p;
