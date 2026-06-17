@@ -21,6 +21,7 @@ export async function pushToGitlab() {
 
     const arcRoJson = JSON.stringify(arcStore.json);
     let arc: ARC = ARC.fromROCrateJsonString(arcRoJson);
+    console.log(arcRoJson);
     toast.set(id, { next: 0.2 });
 
     const contracts = arc.GetWriteContracts();
@@ -80,11 +81,11 @@ async function fullfillWriteContractsGIT(contracts: Contract[]): Promise<GitActi
       // Only Assay, Study and Investigation are relevant for ontologies
       if (contract.DTOType === "ISA_Assay" || contract.DTOType === "ISA_Study" || contract.DTOType === "ISA_Investigation" || contract.DTOType === "ISA_Datamap") {
         let xlsxBytes = await Xlsx.toBytes(contract.DTO);
-        // const base64String = bytesToBase64(xlsxBytes);
+        const base64String = bytesToBase64(xlsxBytes);
         actions.push({
           action: "update",
           file_path: contract.Path,
-          content: xlsxBytes,
+          content: base64String,
           encoding: "base64",
         });
       }
