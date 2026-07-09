@@ -5,7 +5,7 @@ export interface IMatchingServiceData {
   label: string;
   rank: number;
   score: number;
-  short_id: string;
+  short_form: string;
   definition: string[];
   ontologies: string[];
   embedding_input: string;

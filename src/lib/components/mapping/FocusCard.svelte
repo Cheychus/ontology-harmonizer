@@ -29,6 +29,8 @@
     let searchResultIdx = $state(0);
     let currentSearchResult = $derived(ontologySearchResults?.[searchResultIdx] ?? null);
 
+    $inspect(currentSearchResult);
+
     let loading = $state(false);
     let noResults = $state(false);
 
@@ -71,7 +73,7 @@
             iri: result.id,
             label: result.label,
             description: result.definition,
-            shortForm: result.short_id,
+            shortForm: result.short_form,
             rank: result.rank,
             score: result.score,
             source: "pythonService",
@@ -81,6 +83,7 @@
     async function getMatchings(method: matchingType) {
         loading = true;
         noResults = false;
+        searchResultIdx = 0;
         try {
             if (method === "terminology") {
                 const result = (await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
@@ -88,7 +91,7 @@
                 const unique = Array.from(new Map(result.map((r) => [`${r.label}-${r.iri}`, r])).values());
                 ontologySearchResults = unique.map((r) => fromTerminology(r));
             } else if (method === "pythonService") {
-                const result = await matchingStore.query(searchInput);
+                const result = await matchingStore.query(searchInput.toLowerCase());
                 ontologySearchResults = result.map((r) => fromMatchingService(r));
             }
 
@@ -200,7 +203,7 @@
         {#if currentSearchResult}
             <div class="p-2 flex flex-col min-h-0 flex-1">
                 <div class="flex justify-between shrink-0">
-                    <h4>{currentSearchResult.label} - {iriToCurie(currentSearchResult.shortForm)}</h4>
+                    <h4>{currentSearchResult.label} - {iriToCurie(currentSearchResult?.shortForm ?? "") ?? "undefined"}</h4>
                     <p class="font-bold">{searchResultIdx + 1}/{ontologySearchResults.length}</p>
                 </div>
 
