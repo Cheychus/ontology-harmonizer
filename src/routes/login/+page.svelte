@@ -1,53 +1,50 @@
-<script>
-    import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
-    import { Button } from "$lib/components/ui/button";
-    import { gitlabInstances } from "$lib/config/gitlabInstances";
-    import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-    import { Leaf, Sprout } from "lucide-svelte";
+<script lang="ts">
+    import type { IGitLabUser } from "$lib/types/gitLab";
+    import { Leaf } from "lucide-svelte";
     import { onMount } from "svelte";
+    import { apiGet } from "$lib/api/api";
+    import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
+    import { goto } from "$app/navigation";
+    import { success } from "$lib/services/toasts/toastService";
+    import { Button } from "$lib/components/ui/button";
 
-    let projects = $state([]);
-    let privateProjects = $derived(projects.filter((p) => p.visibility === "private"));
-    let publicProjects = $derived(projects.filter((p) => p.visibility === "public"));
+    let user: IGitLabUser | null = $state(null);
 
-    let loaded = $state(false);
     onMount(async () => {
-        const res = await fetch("/api/projects?membership=true&per_page=50");
-        if (res.ok) {
-            projects = await res.json();
-        } else {
-            console.error("Error while loading projects");
+        try {
+            user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
+        } catch (e) {
+            user = null;
         }
-        loaded = true;
+        if (user) {
+            applicationStore.isAuthenticated = true;
+        }
     });
-
-    $inspect(projects);
 </script>
 
-<section class="w-full pt-32 flex flex-col justify-center gap-16 pb-32">
-    <div class="flex gap-2">
-        {#each gitlabInstances as instance}
-            <Button variant="outline" size="lg" href="/auth/gitlab">Login to {instance.name} <Leaf size={20} class="text-green-500" /></Button>
-        {/each}
-    </div>
+<section class="w-full min-h-full flex-1 flex items-center justify-center">
+    {#if !user}
+        <div class="flex flex-col gap-2">
+            <Button variant="outline" size="lg" href="/auth/gitlab">Login to GitLab Instance <Leaf size={20} class="text-green-500" /></Button>
 
-    <p>Downloaded Arc: {arcStore.filename}</p>
-
-    {#if projects.length > 0}
-        <div class="flex flex-col gap-4">
-            <h1>Public Projects</h1>
-            {#each publicProjects as project}
-                <ArcSelect {project} />
-            {/each}
-
-            <h1>Private Projects</h1>
-            {#each privateProjects as project}
-                <ArcSelect {project} />
-            {/each}
+            <p class="text-center">Please authenticate first</p>
         </div>
-    {:else if !loaded}
-        <p>Loading Projects...</p>
-    {:else}
-        <p>No projects found</p>
+    {/if}
+
+    {#if user}
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-2 shadow p-4 rounded-md w-lg">
+                <p class="">Authenticated as</p>
+                <div class="flex gap-4 items-center">
+                    <img class="w-8 h-8 rounded-full" src={user?.avatar_url} alt="User Avatar" />
+                    <a href={user?.web_url}>{user?.username}</a>
+                    <p>-</p>
+                    <p>{user?.commit_email}</p>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <Button class="px-16" href="/select-arc">Continue</Button>
+            </div>
+        </div>
     {/if}
 </section>

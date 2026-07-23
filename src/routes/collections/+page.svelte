@@ -11,8 +11,6 @@
     onMount(() => {
         terminologyStore.collections = data.collections;
     });
-
-    $inspect(terminologyStore.collections);
 </script>
 
 <Collections />
