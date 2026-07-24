@@ -41,7 +41,8 @@ The project combines a SvelteKit frontend with GitLab OAuth, ARC-RO-Crate JSON p
 
 As part of my bachelor's thesis, I compared lexical and embedding-based approaches for ontology-term retrieval.
 
-The embedding-based matching service developed for this work is available in a separate repository: [Python Matching Service](https://github.com/Cheychus/python-matching).
+The embedding-based matching service developed for this work is available in a separate repository: [Bachelor's Thesis - Evaluation Prototyp](https://github.com/Cheychus/python-matching).
+If you want to deploy the Ontology-Harmonizer with the embedding-bases matching service, use this simplified repository: [Python Matching Service API](https://github.com/Cheychus/python-matching_v2.0)
 
 It can run as a [FastAPI](https://fastapi.tiangolo.com/) service and provide semantic ontology-term search for the web prototype. Before it can be used, the relevant ontologies need to be downloaded, parsed and converted into embedding vectors.
 
@@ -87,6 +88,3 @@ This is a research prototype, not a production-ready data platform.
 - The mapping format is JSON-based. A move to the [SSSOM](https://mapping-commons.github.io/sssom/dev/) standard is under consideration for better interoperability.
 - The main workflow needs a broader field test with real target data and domain users.
 
-## What I learned
-
-This project sharpened my skills in building reactive web applications, integrating OAuth-protected services and translating a specialised workflow into a focused interface. It also taught me to validate model and data choices earlier, automate repeatable evaluation steps and keep the first version of an architecture simpler.
