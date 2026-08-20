@@ -211,7 +211,7 @@
                     <ul class="list-disc pl-8 pr-2">
                         {#if currentSearchResult.description && currentSearchResult.description.length > 0}
                             {#each currentSearchResult.description as description}
-                                <li class="py-1 break-all">{description}</li>
+                                <li class="py-1 break-all">{description?.value ?? description}</li>
                             {/each}
                         {:else}
                             <li class="italic">No descriptions</li>

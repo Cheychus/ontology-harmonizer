@@ -16,7 +16,7 @@
     iri: string;
     label: string;
     shortForm: string;
-    description?: string[];
+    description?: string[] | any[];
     score?: number;
     rank?: number;
     source: matchingType;
