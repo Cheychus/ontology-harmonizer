@@ -7,6 +7,13 @@ Ontology Harmonizer is a prototype developed as part of my computer science bach
 
 The project was created for a FAIRagro-related research-data workflow. Its goal is to make metadata more consistent, searchable and interoperable, for example when different source databases use field names such as `Organism`, `Species` or `CountryOfOrigin`.
 
+## Demo
+
+<img width="800" height="364" alt="harmonizer-demo" src="https://github.com/user-attachments/assets/67092957-d5ba-4dcc-b3e2-beb51f767ccc" />
+
+The demo shows how a user selects a research-data container, creates a mapping and assigns ontology terms to metadata fields. Suggested terms can be reviewed, replaced through search and exported as a completed mapping.
+
+
 ## The problem
 
 Research-data containers often inherit different field names from their source systems. Mapping those labels to shared ontology terms by hand is repetitive, difficult to reuse and easy to apply inconsistently.
