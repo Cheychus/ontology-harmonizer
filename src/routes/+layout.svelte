@@ -12,6 +12,7 @@
 	import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
 
 	let { data, children }: LayoutProps = $props();
+	export const prerender = true;
 
 	// Optionally set default options here
 	const options = {

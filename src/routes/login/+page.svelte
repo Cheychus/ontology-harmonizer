@@ -4,9 +4,9 @@
     import { onMount } from "svelte";
     import { apiGet } from "$lib/api/api";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-    import { goto } from "$app/navigation";
-    import { success } from "$lib/services/toasts/toastService";
     import { Button } from "$lib/components/ui/button";
+    import { requestAuthorizationCodeUrl } from "$lib/services/authentication/login";
+    import { goto } from "$app/navigation";
 
     let user: IGitLabUser | null = $state(null);
 
@@ -25,7 +25,9 @@
 <section class="w-full min-h-full flex-1 flex items-center justify-center">
     {#if !user}
         <div class="flex flex-col gap-2">
-            <Button variant="outline" size="lg" href="/auth/gitlab">Login to GitLab Instance <Leaf size={20} class="text-green-500" /></Button>
+            <Button variant="outline" size="lg" onclick={async () => (window.location.href = await requestAuthorizationCodeUrl())}
+                >Login to GitLab Instance <Leaf size={20} class="text-green-500" /></Button
+            >
 
             <p class="text-center">Please authenticate first</p>
         </div>
