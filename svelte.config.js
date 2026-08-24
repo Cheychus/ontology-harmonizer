@@ -10,7 +10,7 @@ const config = {
 		}),
 		paths: {
 			base: process.env.NODE_ENV === "production"
-				? "/https://github.com/Cheychus/ontology-harmonizer"
+				? "https://cheychus.github.io/ontology-harmonizer/"
 				: ""
 		}
 	}
