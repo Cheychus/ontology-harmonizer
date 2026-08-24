@@ -1,16 +1,10 @@
-import adapter from "@sveltejs/adapter-static";
+import vercel from "@sveltejs/adapter-vercel";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		adapter: adapter({
-			fallback: "index.html"
-		}),
-		paths: {
-			base: process.env.NODE_ENV === "production"
-				? "/ontology-harmonizer"
-				: ""
-		}
+		adapter: vercel(),
+		paths: { base: "" }
 	}
 };
 
