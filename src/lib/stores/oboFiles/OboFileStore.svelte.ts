@@ -1,6 +1,6 @@
 import type { OboFile, OboSynonym, OboTerm } from "$lib/types/oboFiles";
 import rawOboString from "$lib/assets/mappings/testmapping.obo?raw";
-import { OboParseError, parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
+import { parseOntologyFile, writeOntologyFile } from "$lib/services/oboFiles/oboFile.service";
 
 export class OboFileStore {
 
@@ -19,11 +19,6 @@ export class OboFileStore {
         try {
             this.oboJson = parseOntologyFile(rawOboString);
         } catch (error) {
-            if (error instanceof OboParseError) {
-                console.error("OBO Parse error:", error.message, error.line);
-            } else {
-                console.error("Unknown error:", error);
-            }
             this.oboJson = null;
         }
     }
@@ -67,7 +62,6 @@ export class OboFileStore {
 
     public addXref(term: OboTerm, xref: string): boolean {
         if (term.xrefs.some((x) => x === xref)) {
-            console.log("Xref already exists:", xref);
             return false;
         }
         term.xrefs.push(xref);
@@ -128,8 +122,6 @@ export class OboFileStore {
 
     public mapOntology(ontologyName: string, termName: string, curie: string) {
         let term = this.findTermByName(ontologyName) ?? this.findTermByName(termName);
-        console.log("i found: ", term, ontologyName);
-
         if (!term) {
             this.addTerm(ontologyName)
             term = this.findTermByName(ontologyName)!; // to get the proxy instance again - definitely exists here after adding new term

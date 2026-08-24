@@ -29,8 +29,6 @@
     let searchResultIdx = $state(0);
     let currentSearchResult = $derived(ontologySearchResults?.[searchResultIdx] ?? null);
 
-    $inspect(currentSearchResult);
-
     let loading = $state(false);
     let noResults = $state(false);
 
@@ -115,7 +113,6 @@
 
     function map() {
         if (!selectedMapping && (!iriInput || !shortFormInput)) {
-            console.error("No Mapping defined. Please select a existing mapping or specify iri and short form");
             warning("IRI and Short Form required");
             return;
         }

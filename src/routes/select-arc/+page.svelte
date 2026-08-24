@@ -56,7 +56,6 @@
   async function selectARC() {
     if (arcStore.arcProjectId) {
       const project = await getProject(arcStore.arcProjectId);
-      console.log(project, " selected");
       const arcJson = await getArcJson(arcStore.arcProjectId);
       if (!arcJson) throw new Error("No Arc JSON");
       arcStore.init(arcJson);

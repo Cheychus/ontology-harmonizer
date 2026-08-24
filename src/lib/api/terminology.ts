@@ -9,7 +9,6 @@ async function apiGet<T>(fetch: typeof globalThis.fetch, path: string, params?: 
     Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
   }
 
-  console.log(url.toString());
   const res = await fetch(url.toString());
 
   if (!res.ok) {

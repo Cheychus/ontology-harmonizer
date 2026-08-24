@@ -2,8 +2,6 @@ import type { RequestHandler } from "@sveltejs/kit";
 export const GET: RequestHandler = async ({ url, fetch }) => {
   const target = url.searchParams.get("target");
 
-  console.log("TARGET: ", target);
-
   if (!target) {
     return new Response(
       JSON.stringify({

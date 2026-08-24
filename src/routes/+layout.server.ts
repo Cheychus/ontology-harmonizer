@@ -8,7 +8,6 @@ export const load: LayoutServerLoad = async ({ fetch }) => {
         const user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
         return { user };
     } catch (e) {
-        console.log("error", e)
         return { user: null };
     }
 };

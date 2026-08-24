@@ -5,7 +5,6 @@ export async function readJsonFile<T>(file: File): Promise<T> {
   try {
     return JSON.parse(text) as T;
   } catch (error) {
-    console.error(error);
     throw new Error("Invalid JSON File");
   }
 }

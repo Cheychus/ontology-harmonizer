@@ -26,13 +26,10 @@ export async function getArcJson(id: number) {
 }
 
 export async function getCurrentUser() {
-    console.log("hey i run")
     try {
         const user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
-        console.log(user)
         return user;
     } catch (e) {
-        console.log("error", e)
         return null;
     }
 }

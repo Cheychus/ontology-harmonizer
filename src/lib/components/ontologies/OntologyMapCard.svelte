@@ -31,7 +31,6 @@
     }
   });
 
-  $inspect(settingsStore.automaticMatching);
 
   export type matchingType = "terminology" | "pythonService";
 
@@ -76,7 +75,6 @@
   }
 
   export function matchAll() {
-    console.log("match all");
   }
 </script>
 

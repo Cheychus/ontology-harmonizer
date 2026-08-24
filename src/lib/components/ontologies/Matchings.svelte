@@ -48,7 +48,6 @@
 
   function mapOntology() {
     if (!selectedMapping && (!iriInput || !shortFormInput)) {
-      console.error("No Mapping defined. Please select a existing mapping or specify iri and short form");
       return;
     }
 

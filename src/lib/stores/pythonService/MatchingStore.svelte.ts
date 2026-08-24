@@ -25,7 +25,6 @@ class MatchingStore {
   async query(q: string) {
     const data = await apiGet(fetch, `/api?target=${BASE_URL}?q=${q}`) as IMatchingServiceResponse;
 
-    console.log(data);
     return data.data.results as IMatchingServiceData[];
   }
 }

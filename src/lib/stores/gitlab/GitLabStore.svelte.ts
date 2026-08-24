@@ -14,19 +14,15 @@ export class GitLabStore {
         const project = await fetch(`/api?target=${encodeURIComponent("https://git.nfdi4plants.org/api/v4/projects/" + id)}`);
 
         if (!project) {
-            console.log(`Could not download project with id ${id}!`);
             return null;
         }
 
         const res = await fetch(`/api?target=${encodeURIComponent(arcRoCrateURL)}`);
         if (!res.ok) {
-            console.error("Download failed", res.status);
             return null;
         }
 
         const json = await res.json();
-        console.log(json, "downloaded Arc");
-
         return json;
     }
 }

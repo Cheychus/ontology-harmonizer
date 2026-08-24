@@ -21,11 +21,9 @@ export async function pushToGitlab() {
 
     const arcRoJson = JSON.stringify(arcStore.json);
     let arc: ARC = ARC.fromROCrateJsonString(arcRoJson);
-    console.log(arcRoJson);
     toast.set(id, { next: 0.2 });
 
     const contracts = arc.GetWriteContracts();
-    console.log(contracts);
     const gitActions = await fullfillWriteContractsGIT(contracts);
     toast.set(id, { next: 0.3 });
     const newBranch = "ontologyHarmonizer/" + Date.now();
@@ -43,7 +41,6 @@ export async function pushToGitlab() {
       mergeUrl,
     };
   } catch (e) {
-    console.error(e);
     failure("" + e);
   } finally {
     toast.pop(id);

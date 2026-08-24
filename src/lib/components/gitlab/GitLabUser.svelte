@@ -13,7 +13,6 @@
     onMount(async () => {
         try {
             user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
-            console.log(user);
         } catch (e) {
             user = null;
         }

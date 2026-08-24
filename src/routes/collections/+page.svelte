@@ -6,8 +6,6 @@
 
     let { data }: PageProps = $props();
 
-    $inspect(data);
-
     onMount(() => {
         terminologyStore.collections = data.collections;
     });

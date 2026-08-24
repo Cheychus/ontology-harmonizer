@@ -14,7 +14,6 @@
 
   let { status = $bindable() }: Props = $props();
 
-  $inspect(status);
 </script>
 
 <div class="flex w-full flex-col gap-2 py-4">

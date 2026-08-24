@@ -53,7 +53,6 @@ class ArcStore {
     try {
       this.projects = await getProjects();
     } catch (e) {
-      console.log("Error: ", e);
     } finally {
       this.loading = false;
     }
@@ -76,7 +75,6 @@ class ArcStore {
     });
 
     this.ontologyCandidates.forEach((o) => this.filterDuplicateIris(o.key))
-    console.log(this)
   }
 
   private filterDuplicateIris(ontologyKey: string) {
@@ -89,7 +87,6 @@ class ArcStore {
   }
 
   saveOntologyValue(key: string, value: string) {
-    console.log("SAVE: ", key, value);
   }
 
   private updateArcJson() {
@@ -126,7 +123,6 @@ class ArcStore {
       }
     });
     this.init(this.json!)
-    console.log(count);
     return count;
   }
 }

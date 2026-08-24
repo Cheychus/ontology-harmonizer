@@ -57,7 +57,6 @@ class MappingStore {
     }
 
     load(mapping: IMapping[]) {
-        console.log("Mapping json loaded: ", mapping);
         this.mappingJson = mapping;
     }
 
@@ -109,7 +108,6 @@ class MappingStore {
     iriIncludesShortForm(iri: string, shortForm: string) {
         const replacedIri = iri.replace("_", ":").toLowerCase();
         const replacedShortForm = shortForm.replace("_", ":").toLowerCase();
-        console.log(replacedIri, replacedShortForm)
         return replacedIri.includes(replacedShortForm);
     }
 

@@ -24,7 +24,6 @@
 		settingsStore.init();
 	});
 
-	// 	$inspect("data:", data);
 </script>
 
 <SvelteToast {options} />
