@@ -1,23 +1,9 @@
 <script lang="ts">
-    import { searchTerms } from "$lib/api/terminology";
     import FocusCard from "$lib/components/mapping/FocusCard.svelte";
-    import Mapping from "$lib/components/mapping/Mapping.svelte";
-    import type { IMatchingViewModel } from "$lib/components/ontologies/Matchings.svelte";
-    import type { matchingType } from "$lib/components/ontologies/OntologyMapCard.svelte";
-    import Unmapped from "$lib/components/ontologies/Unmapped.svelte";
-    import Badge from "$lib/components/ui/badge/badge.svelte";
     import Button from "$lib/components/ui/button/button.svelte";
-    import { Input } from "$lib/components/ui/input";
-    import { Label } from "$lib/components/ui/label";
-    import * as Select from "$lib/components/ui/select/index.js";
-    import { Switch } from "$lib/components/ui/switch";
-    import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
-    import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import { type IMatchingServiceData, matchingStore } from "$lib/stores/pythonService/MatchingStore.svelte";
-    import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
-    import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
-    import type { ITerminologySearchResult } from "$lib/types/terminologyService";
     import { ArrowLeft, ArrowRight, LoaderCircle, Search } from "lucide-svelte";
     import { onMount } from "svelte";
 

@@ -1,6 +1,5 @@
 import { browser } from "$app/environment";
 import type { matchingType } from "$lib/components/ontologies/OntologyMapCard.svelte";
-import { failure } from "$lib/services/toasts/toastService";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 
 const STORAGE_KEY = "ontologyHarmonizer";

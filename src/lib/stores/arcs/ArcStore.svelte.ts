@@ -1,5 +1,4 @@
 import { extractOntologies } from "$lib/services/arcs/arcOntology.service";
-import type { OboFile } from "$lib/types/oboFiles";
 import { SvelteMap } from "svelte/reactivity";
 import { oboFileStore } from "../oboFiles/OboFileStore.svelte";
 import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
@@ -7,7 +6,7 @@ import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 import { applicationStore } from "../application/ApplicationStore.svelte";
 import { getProjects } from "$lib/services/gitlab/gitlab";
-import { failure, warning } from "$lib/services/toasts/toastService";
+import { failure } from "$lib/services/toasts/toastService";
 
 export type DerivedOntology = {
   source: GraphNode;

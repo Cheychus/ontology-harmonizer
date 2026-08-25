@@ -1,4 +1,4 @@
-import { apiGet, apiSend } from "$lib/api/api";
+import { apiGet } from "$lib/api/api";
 
 export interface IMatchingServiceData {
   id: string;

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { ITerminologySearchResult } from "$lib/types/terminologyService";
-  import { onMount } from "svelte";
   import type { IMatchingViewModel } from "./Matchings.svelte";
 
   interface Props {

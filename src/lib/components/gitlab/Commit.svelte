@@ -1,7 +1,6 @@
 <script lang="ts">
     import { pushToGitlab } from "$lib/services/arcs/arctrl";
     import { StatusStore } from "$lib/stores/status/StatusStore.svelte";
-    import { onMount } from "svelte";
     import Button from "../ui/button/button.svelte";
 
     const status = new StatusStore();

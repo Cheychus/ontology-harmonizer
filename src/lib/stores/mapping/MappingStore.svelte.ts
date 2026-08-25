@@ -1,5 +1,4 @@
 import mappingStr from "$lib/assets/mappings/mapping.json?raw";
-import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
 
 

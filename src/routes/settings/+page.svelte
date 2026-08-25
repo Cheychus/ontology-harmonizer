@@ -4,8 +4,7 @@
     import Label from "$lib/components/ui/label/label.svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
     import * as Select from "$lib/components/ui/select/index.js";
-    import { Circle, CircleAlert, CircleCheck, X } from "lucide-svelte";
-    import { apiGet } from "$lib/api/api";
+    import { CircleAlert, CircleCheck, X } from "lucide-svelte";
     import Button from "$lib/components/ui/button/button.svelte";
     import { failure, success } from "$lib/services/toasts/toastService";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";

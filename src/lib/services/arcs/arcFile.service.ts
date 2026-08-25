@@ -1,5 +1,3 @@
-import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-
 export async function readJsonFile<T>(file: File): Promise<T> {
   const text = await file.text();
   try {

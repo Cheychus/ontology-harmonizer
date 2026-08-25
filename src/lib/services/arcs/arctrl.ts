@@ -2,8 +2,7 @@ import { createMergeRequest, updateProject } from "$lib/api/gitlab";
 import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
 import { ARC, Contract } from "@nfdi4plants/arctrl";
 import { Xlsx } from "@fslab/fsspreadsheet";
-import type { IGitLabProject, IGitlabResponse } from "$lib/types/gitLab";
-import { downloadJson } from "./arcFile.service";
+import type { IGitlabResponse } from "$lib/types/gitLab";
 import { toast } from "@zerodevx/svelte-toast";
 import { failure } from "../toasts/toastService";
 

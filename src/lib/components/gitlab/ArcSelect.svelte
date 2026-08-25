@@ -5,9 +5,8 @@
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import type { IGitLabProject } from "$lib/types/gitLab";
   import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
-  import { Projector } from "lucide-svelte";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-  import { failure, success, warning } from "$lib/services/toasts/toastService";
+  import { success } from "$lib/services/toasts/toastService";
 
   interface Props {
     project: IGitLabProject;

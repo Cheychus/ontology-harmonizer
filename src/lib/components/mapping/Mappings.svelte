@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { downloadJson } from "$lib/services/arcs/arcFile.service";
   import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
-  import Button from "../ui/button/button.svelte";
   import Input from "../ui/input/input.svelte";
   import Mapping from "./Mapping.svelte";
   import { ChevronRight, Download, Upload, X } from "lucide-svelte";

@@ -6,7 +6,6 @@
   import Collection from "../terminology/Collection.svelte";
   import { Settings, X } from "lucide-svelte";
   import { resolve } from "$app/paths";
-  import { statusStore } from "$lib/stores/status/StatusStore.svelte";
 
   interface Props {
     status: string[];

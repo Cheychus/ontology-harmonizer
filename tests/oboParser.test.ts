@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createOntologyTerm, parseOntologyFile, writeOntologyFile } from "../src/lib/services/oboFiles/oboFile.service";
+import { parseOntologyFile, writeOntologyFile } from "../src/lib/services/oboFiles/oboFile.service";
 import valid1 from "./fixtures/valid1.obo?raw";
 import valid2 from "./fixtures/valid2.obo?raw";
 import valid3 from "./fixtures/valid3.obo?raw";

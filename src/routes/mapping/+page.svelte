@@ -6,8 +6,7 @@
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
     import { Download, Upload, X } from "lucide-svelte";
-    import { toast } from "@zerodevx/svelte-toast";
-    import { failure, success, warning } from "$lib/services/toasts/toastService";
+    import { success } from "$lib/services/toasts/toastService";
 
     let fileInput: HTMLInputElement;
 

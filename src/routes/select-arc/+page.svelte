@@ -2,17 +2,15 @@
   import { goto } from "$app/navigation";
   import { apiGet } from "$lib/api/api";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
-  import GitLabUser from "$lib/components/gitlab/GitLabUser.svelte";
   import { Button } from "$lib/components/ui/button";
   import Input from "$lib/components/ui/input/input.svelte";
   import { loadArcFile } from "$lib/services/arcs/arcFile.service";
-  import { getArcJson, getCurrentUser, getProject, getProjects } from "$lib/services/gitlab/gitlab";
-  import { success, warning } from "$lib/services/toasts/toastService";
+  import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
+  import { success } from "$lib/services/toasts/toastService";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-  import type { IGitLabProject, IGitLabUser } from "$lib/types/gitLab";
-  import { toast } from "@zerodevx/svelte-toast";
-  import { Leaf, RefreshCwIcon, Sprout, Upload } from "lucide-svelte";
+  import type { IGitLabUser } from "$lib/types/gitLab";
+  import { RefreshCwIcon, Upload } from "lucide-svelte";
   import { onMount } from "svelte";
 
   // let projects: IGitLabProject[] = $state([]);

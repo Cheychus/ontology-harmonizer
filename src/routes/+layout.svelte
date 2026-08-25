@@ -2,16 +2,13 @@
 	import "./layout.css";
 	import favicon from "$lib/assets/favicon.svg";
 	import type { LayoutProps } from "./$types";
-	import GitLabUser from "$lib/components/gitlab/GitLabUser.svelte";
-	import Button from "$lib/components/ui/button/button.svelte";
-	import { goto } from "$app/navigation";
 	import { SvelteToast } from "@zerodevx/svelte-toast";
 	import Stepper from "$lib/components/application/Stepper.svelte";
 	import { page } from "$app/state";
 	import { onMount } from "svelte";
 	import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
 
-	let { data, children }: LayoutProps = $props();
+	let { children }: LayoutProps = $props();
 
 	// Optionally set default options here
 	const options = {

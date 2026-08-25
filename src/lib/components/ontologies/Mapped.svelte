@@ -3,9 +3,8 @@
     import { onMount } from "svelte";
     import Badge from "../ui/badge/badge.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
-    import { ArrowRight, CircleCheck, FileWarningIcon, OctagonAlert } from "lucide-svelte";
+    import { ArrowRight, CircleCheck, OctagonAlert } from "lucide-svelte";
     import Label from "../ui/label/label.svelte";
-    import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
 
     interface Props {
         ontology: DerivedOntology;

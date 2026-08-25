@@ -1,6 +1,6 @@
 import { apiGet } from "$lib/api/api";
-import { PATH_TO_ARC_JSON, SERVER_URL } from "$lib/config/settings";
-import type { GitLabApiResponse, GitLabError, IGitLabProject, IGitLabUser } from "$lib/types/gitLab";
+import { PATH_TO_ARC_JSON } from "$lib/config/settings";
+import type { IGitLabProject, IGitLabUser } from "$lib/types/gitLab";
 
 export async function getProjects() {
     const projects = await apiGet<IGitLabProject[]>(fetch, "/api/gitlab/projects?membership=true&per_page=50");

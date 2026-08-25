@@ -1,4 +1,4 @@
-import { type OboSynonym, type OboTerm, type OboFile, type ScopeIdentifier, isScopeIdentifier } from "$lib/types/oboFiles";
+import { type OboSynonym, type OboTerm, type OboFile, isScopeIdentifier } from "$lib/types/oboFiles";
 
 const OBO_VERSION = "1.4";
 

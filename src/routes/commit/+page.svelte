@@ -1,5 +1,4 @@
 <script lang="ts">
-    import Badge from "$lib/components/ui/badge/badge.svelte";
     import { Button } from "$lib/components/ui/button";
     import { downloadJson } from "$lib/services/arcs/arcFile.service";
     import { pushToGitlab } from "$lib/services/arcs/arctrl";
@@ -7,8 +6,7 @@
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { toast } from "@zerodevx/svelte-toast";
-    import { ArrowRight, Download, LoaderCircle, Minus, Plus } from "lucide-svelte";
+    import { Download, Minus, Plus } from "lucide-svelte";
     import { onMount } from "svelte";
 
     let commitUrl = $state("");

@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
   import type { ICollection } from "$lib/types/terminologyService";
-  import { tick } from "svelte";
   import Button from "../ui/button/button.svelte";
-  import { resolve } from "$app/paths";
 
   interface Props {
     collection: ICollection;

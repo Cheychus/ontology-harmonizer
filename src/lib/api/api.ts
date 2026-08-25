@@ -1,5 +1,3 @@
-import { warning } from "$lib/services/toasts/toastService";
-
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ApiSendParams {

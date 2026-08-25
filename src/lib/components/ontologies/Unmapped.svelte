@@ -1,15 +1,6 @@
 <script lang="ts">
   import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
-  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
-  import type { SvelteMap } from "svelte/reactivity";
-  import OntologyMapCard from "./OntologyMapCard.svelte";
-  import Badge from "../ui/badge/badge.svelte";
-  import { ChevronRight } from "lucide-svelte";
-  import { Button } from "../ui/button";
   import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-  import Mapped from "./Mapped.svelte";
-  import Switch from "../ui/switch/switch.svelte";
-  import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
   import FocusCard from "../mapping/FocusCard.svelte";
 
   let toggleMapped = $state(true),

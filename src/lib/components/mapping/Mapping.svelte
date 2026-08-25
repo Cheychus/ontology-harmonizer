@@ -1,8 +1,5 @@
 <script lang="ts">
-    import { curieToIri } from "$lib/services/oboFiles/oboFile.service";
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-    import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
-    import type { OboTerm } from "$lib/types/oboFiles";
     import Button from "../ui/button/button.svelte";
     import Input from "../ui/input/input.svelte";
     import Switch from "../ui/switch/switch.svelte";

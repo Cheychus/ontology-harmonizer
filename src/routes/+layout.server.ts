@@ -1,5 +1,4 @@
 import { apiGet } from "$lib/api/api";
-import { GITLAB_API_PATH } from "$lib/config/settings";
 import type { IGitLabUser } from "$lib/types/gitLab";
 import type { LayoutServerLoad } from "./$types";
 

@@ -1,9 +1,7 @@
-import { GITLAB_API_PATH } from "$lib/config/settings";
 import type { GitAction } from "$lib/services/arcs/arctrl";
-import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
 import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
 import type { IGitLabProject } from "$lib/types/gitLab";
-import { apiGet, apiSend } from "./api";
+import { apiSend } from "./api";
 
 export function updateProject(project: IGitLabProject, newBranch: string, gitActions: GitAction[]) {
   let commitMsg: string[] = []

@@ -1,11 +1,8 @@
 <script lang="ts">
-  import type { ITerminologySearchResult } from "$lib/types/terminologyService";
   import { ArrowLeft, ArrowRight } from "lucide-svelte";
   import Button from "../ui/button/button.svelte";
   import Matching from "./Matching.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
-  import { oboFileStore } from "$lib/stores/oboFiles/OboFileStore.svelte";
-  import type { OboTerm } from "$lib/types/oboFiles";
   import Input from "../ui/input/input.svelte";
   import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
   import { Label } from "../ui/label";
