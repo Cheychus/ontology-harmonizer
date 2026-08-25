@@ -1,3 +1,5 @@
+import { apiGet } from "$lib/api/api";
+
 export class GitLabStore {
 
     downloadedArc = $state(null);
@@ -9,21 +11,11 @@ export class GitLabStore {
      * @returns 
      */
     public async downloadProject(id: number) {
-        // get project data from projects
-        const arcRoCrateURL = `https://git.nfdi4plants.org/api/v4/projects/${id}/packages/generic/isa_arc_json/0.0.1/arc-ro-crate-metadata.json`;
-        const project = await fetch(`/api?target=${encodeURIComponent("https://git.nfdi4plants.org/api/v4/projects/" + id)}`);
-
-        if (!project) {
+        try {
+            return await apiGet<ARC_RO_JSON>(fetch, `/api/arcs/${id}`);
+        } catch {
             return null;
         }
-
-        const res = await fetch(`/api?target=${encodeURIComponent(arcRoCrateURL)}`);
-        if (!res.ok) {
-            return null;
-        }
-
-        const json = await res.json();
-        return json;
     }
 }
 

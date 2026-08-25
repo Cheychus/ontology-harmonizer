@@ -1,5 +1,4 @@
 import { apiGet } from "$lib/api/api";
-import { PATH_TO_ARC_JSON } from "$lib/config/settings";
 import type { IGitLabProject, IGitLabUser } from "$lib/types/gitLab";
 
 export async function getProjects() {
@@ -19,7 +18,7 @@ export async function getProject(id: number) {
  */
 export async function getArcJson(id: number) {
     try {
-        return await apiGet<ARC_RO_JSON>(fetch, `/api/gitlab/projects/${id}/${PATH_TO_ARC_JSON}`)
+        return await apiGet<ARC_RO_JSON>(fetch, `/api/arcs/${id}`)
     } catch (e) {
         return null;
     }
