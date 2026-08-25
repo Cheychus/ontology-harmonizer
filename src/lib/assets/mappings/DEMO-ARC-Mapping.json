@@ -1,0 +1,70 @@
+[
+  {
+    "iri": "http://purl.obolibrary.org/obo/PATO_0000146",
+    "name": "temperature",
+    "synonyms": [],
+    "shortForm": "PATO:0000146"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/NCIT_C42559",
+    "name": "Degree Celsius",
+    "synonyms": [
+      "degree Celsius"
+    ],
+    "shortForm": "NCIT:C42559"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/NCIT_C16410",
+    "name": "Centrifugation",
+    "synonyms": [
+      "centrifugation"
+    ],
+    "shortForm": "NCIT:C16410"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/MS_1000005",
+    "name": "sample volume",
+    "synonyms": [],
+    "shortForm": "MS:1000005"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/NCIT_C28254",
+    "name": "Milliliter",
+    "synonyms": [
+      "milliliter"
+    ],
+    "shortForm": "NCIT:C28254"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/UO_0000107",
+    "name": "force unit",
+    "synonyms": [],
+    "shortForm": "UO:0000107"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/UO_0000010",
+    "name": "second",
+    "synonyms": [],
+    "shortForm": "UO:0000010"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/OBI_0001952",
+    "name": "flash freezing",
+    "synonyms": [
+      "flash frozen in liquid nitrogen"
+    ],
+    "shortForm": "OBI:0001952"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/NCIT_C14250",
+    "name": "Organism",
+    "synonyms": [],
+    "shortForm": "NCIT:C14250"
+  },
+  {
+    "iri": "http://purl.obolibrary.org/obo/NCBITaxon_4513",
+    "name": "Hordeum vulgare",
+    "synonyms": [],
+    "shortForm": "NCBITaxon:4513"
+  }
+]

@@ -50,20 +50,15 @@ class MappingStore {
         this.current = this.queue.shift() ?? null;
     }
 
-
-    constructor(mappingStr: IMapping[]) {
-        // this.load(mappingStr)
-    }
-
-
-
     reset() {
         this.fileName = "";
         this.mappingJson = [];
+        this.startMapping(this.unmappedOntologies)
     }
 
     load(mapping: IMapping[]) {
         this.mappingJson = mapping;
+        this.startMapping(this.unmappedOntologies);
     }
 
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
@@ -85,7 +80,7 @@ class MappingStore {
     }
 
     findMapping(name: string) {
-        return this.mappingJson.find((m) => m.name === name || m.synonyms.find((s) => s === name)) ?? null;
+        return this.mappingJson.find((m) => m.name.toLowerCase() === name.toLowerCase() || m.synonyms.find((s) => s.toLowerCase() === name.toLowerCase())) ?? null;
     }
 
     findMappings(query: string) {
@@ -119,4 +114,4 @@ class MappingStore {
 
 }
 
-export const mappingStore = new MappingStore(JSON.parse(mappingStr) as IMapping[]);
+export const mappingStore = new MappingStore();

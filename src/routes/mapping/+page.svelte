@@ -7,11 +7,18 @@
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
     import { Download, Upload, X } from "lucide-svelte";
     import { success } from "$lib/services/toasts/toastService";
+    import MappingFile from "$lib/components/mapping/MappingFile.svelte";
+    import { onMount } from "svelte";
 
     let fileInput: HTMLInputElement;
+    const modules = import.meta.glob<IMapping[]>("$lib/assets/mappings/*.json", {
+        eager: true,
+        import: "default",
+    });
+    const files: IMapping[][] = Object.values(modules);
 
     /**
-     * Import OBO Files
+     * Import Files
      * @param event
      */
     async function handleChange(event: Event) {
@@ -26,13 +33,33 @@
         success("Mapping was uploaded");
     }
 
+    function selectBundledMapping(mappingFile: string, mappingJson: IMapping[]) {
+        mappingStore.fileName = mappingFile.split("/").pop() ?? "mapping.json";
+        mappingStore.load(mappingJson);
+        success("Mapping was selected");
+    }
+
     function next() {
         applicationStore.stepState.mappingConfigured = true;
         goto("/map");
     }
+
+    onMount(() => {});
 </script>
 
 <input class="hidden" type="file" accept="application/json,.mapping.json" bind:this={fileInput} onchange={handleChange} />
+
+<!-- Here some example or official mappings should be loaded -->
+
+<div class="w-full flex flex-wrap gap-2 pb-8">
+    {#each Object.entries(modules) as [mappingFile, mappingJson]}
+        <MappingFile
+            name={mappingFile.split("/").pop() ?? mappingFile}
+            size={mappingJson.length}
+            onSelect={() => selectBundledMapping(mappingFile, mappingJson)}
+        />
+    {/each}
+</div>
 
 {#if mappingStore.mappingJson.length > 0}
     <div class="w-full flex-1">
