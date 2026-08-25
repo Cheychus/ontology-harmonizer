@@ -1,8 +1,9 @@
 <script lang="ts">
     import { page } from "$app/state";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-    import { Settings } from "lucide-svelte";
+    import { Play, Settings } from "lucide-svelte";
     import { Button } from "../ui/button";
+    import { startDemo } from "$lib/services/demo/demo";
 
     let currentStep = $derived(applicationStore.getStepIndex(page.url.pathname));
 </script>
@@ -21,6 +22,9 @@
                     {i + 1}. {step.label}
                 </Button>
             {/each}
+        </div>
+        <div class="absolute right-4">
+            <Button href="/map" variant="secondary" size="default" onclick={() => startDemo()}>Demo <Play size={20} /></Button>
         </div>
     </div>
 </nav>

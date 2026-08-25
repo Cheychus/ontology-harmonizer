@@ -3,9 +3,6 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { type IMatchingServiceData, matchingStore } from "$lib/stores/pythonService/MatchingStore.svelte";
-    import { ArrowLeft, ArrowRight, LoaderCircle, Search } from "lucide-svelte";
-    import { onMount } from "svelte";
 
     let progress = $derived(((mappingStore.mappedOntologies.length + mappingStore.skipped.length) / arcStore.ontologyCandidates.size) * 100),
         done = $derived(mappingStore.mappedOntologies.length),
@@ -13,13 +10,6 @@
 
     let queue = $derived(mappingStore.queue);
     let currentOntology: DerivedOntology | null = $derived(mappingStore.current);
-
-    onMount(() => {
-        // BUG, queue gets filled with all ontologies even after mapping
-        const unmapped = [...mappingStore.unmappedOntologies];
-        mappingStore.queue = unmapped.filter((o) => !mappingStore.skipped.some((skipped) => skipped.key === o.key));
-        mappingStore.current = mappingStore.queue.shift() ?? null;
-    });
 </script>
 
 {#if !arcStore.initialised}

@@ -41,9 +41,8 @@
         <h2>GitLab Commit</h2>
 
         <div>
-            Here you can commit your changes directly to GitLab. View the changes first and then press the button to create a new commit and merge
-            request. After commiting, the Gitlab Pipeline will automatically run a pipeline to create a new ARC RO CRATE JSON. Some Ontology values
-            can be replaced by this process, so if you import the ARC again, some values may have changed.
+            Review your changes, then create a GitLab commit and merge request. The GitLab pipeline generates an updated ARC-RO-Crate JSON; when you
+            import it again, some ontology values may have changed.
         </div>
 
         <div class="flex gap-2">

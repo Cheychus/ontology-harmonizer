@@ -9,7 +9,7 @@ interface GraphNode {
     additionalType?: string;
 
     // This is were the ontologies are saved
-    name: string; // Key name
+    name?: string; // Key name
     propertyID?: string; // SHOULD be present (URL) - Key ontology reference
     unitText?: string; // Unit name
     unitCode?: string; // COULD be present (URL) - Unit ontology reference

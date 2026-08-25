@@ -44,11 +44,18 @@ class MappingStore {
         }
     }
 
+    startMapping(ontologies: DerivedOntology[]) {
+        this.skipped = [];
+        this.queue = ontologies;
+        this.current = this.queue.shift() ?? null;
+    }
 
 
     constructor(mappingStr: IMapping[]) {
         // this.load(mappingStr)
     }
+
+
 
     reset() {
         this.fileName = "";

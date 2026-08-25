@@ -39,6 +39,7 @@ class ArcStore {
   public init(json: ARC_RO_JSON) {
     this.json = json;
     this.searchOntologies();
+    mappingStore.startMapping(mappingStore.unmappedOntologies);
     this.initialised = true;
   }
 

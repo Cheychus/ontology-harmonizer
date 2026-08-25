@@ -13,3 +13,7 @@ export const failure = (m: string) => toast.push(m, {
     classes: ["failure"],
 })
 
+export const notification = (m: string) => toast.push(m, {
+    initial: 0
+})
+
