@@ -12,11 +12,14 @@
     let commitUrl = $state("");
     let mergeUrl = $state("");
     let commited = $state(false);
-    let loading = $state(false);
 
     async function commit() {
         if (!applicationStore.isAuthenticated) {
             failure("Not authenticated");
+            return;
+        }
+        if (!arcStore.arcProjectId) {
+            failure("No project selected. Project selection is only available when authenticated.");
             return;
         }
 

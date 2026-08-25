@@ -29,6 +29,8 @@ class ArcStore {
   ontologyCandidates: SvelteMap<string, DerivedOntology> = $state(new SvelteMap());
   allOntologyValues: DerivedOntology[] = $state([]);
   arcIriMap: SvelteMap<string, string[]> = $state(new SvelteMap());
+  changedOntologies: IChangedOntology[] = $state([]);
+
 
   initialised: boolean = $state(false);
 
@@ -40,6 +42,7 @@ class ArcStore {
     this.json = json;
     this.searchOntologies();
     mappingStore.startMapping(mappingStore.unmappedOntologies);
+    this.changedOntologies = [];
     this.initialised = true;
   }
 
@@ -124,21 +127,22 @@ class ArcStore {
     return count;
   }
 
-  changedOntologies: IChangedOntology[] = [];
+
   applyMapping() {
     let count = 0;
     this.allOntologyValues?.forEach((onto) => {
       const mapping = mappingStore.findMapping(onto.key);
       if (mapping && mapping.iri !== onto.value) {
+        const old = { ...onto };
         onto.source[onto.ontologyAttribute] = mapping.iri; // change in ARC JSON
         this.changedOntologies.push({
-          old: onto,
+          old,
           new: mapping.iri,
         })
         count++;
       }
     });
-    this.init(this.json!)
+    this.updateArcJson();
     return count;
   }
 }
