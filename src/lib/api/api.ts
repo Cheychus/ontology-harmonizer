@@ -4,14 +4,16 @@ interface ApiSendParams {
   method: Method;
   path: string;
   data?: unknown;
+  signal?: AbortSignal;
 }
 
-export async function apiSend<T>(fetch: typeof globalThis.fetch, { method, path, data }: ApiSendParams): Promise<T> {
+export async function apiSend<T>(fetch: typeof globalThis.fetch, { method, path, data, signal }: ApiSendParams): Promise<T> {
   const headers: HeadersInit = {};
 
   const opts: RequestInit = {
     method,
     headers,
+    signal,
   };
 
   if (data) {
@@ -30,6 +32,6 @@ export async function apiSend<T>(fetch: typeof globalThis.fetch, { method, path,
   return text ? (JSON.parse(text) as T) : ({} as T);
 }
 
-export function apiGet<T>(fetch: typeof globalThis.fetch, path: string) {
-  return apiSend<T>(fetch, { method: "GET", path });
+export function apiGet<T>(fetch: typeof globalThis.fetch, path: string, signal?: AbortSignal) {
+  return apiSend<T>(fetch, { method: "GET", path, signal });
 }

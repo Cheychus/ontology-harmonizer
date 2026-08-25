@@ -108,7 +108,7 @@
         <div class="w-full h-px border border-b"></div>
 
         <div class="flex flex-col w-full gap-2">
-            <Label>Collection</Label>
+            <Label>Collection (Only for Base4NFDI - API Gateway)</Label>
             <div class="flex flex-col gap-2">
                 <p>Choose a collection to filter the ontology search for relevant ontologies</p>
                 <Button class="w-64" variant="outline" href="/collections">Select Collection</Button>

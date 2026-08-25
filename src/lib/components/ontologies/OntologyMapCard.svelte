@@ -61,7 +61,7 @@
     noResults = false;
 
     if (method === "terminology") {
-      const result = (await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
+      const result = (await searchTerms(fetch, "base4nfdi", searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
       ontologySearchResults = result.map((r) => fromTerminology(r));
     } else if (method === "pythonService") {
       const result = await matchingStore.query(searchInput);

@@ -10,7 +10,7 @@
     import type { IMatchingViewModel } from "../ontologies/Matchings.svelte";
     import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
     import type { matchingType } from "../ontologies/OntologyMapCard.svelte";
-    import { searchTerms } from "$lib/api/terminology";
+    import { searchTerms, terminologyProviders } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
     import type { ITerminologySearchResult } from "$lib/types/terminologyService";
     import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
@@ -31,6 +31,8 @@
 
     let loading = $state(false);
     let noResults = $state(false);
+    let activeSearch: AbortController | null = null;
+    let searchId = 0;
 
     let selectValue = $derived("");
     let selectedMapping: IMapping | null = $state(null);
@@ -46,6 +48,9 @@
         );
     });
     const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping");
+    const terminologyProviderLabel = $derived(
+        terminologyProviders.find((provider) => provider.id === settingsStore.terminologyProvider)?.label ?? "Select a terminology service",
+    );
 
     let searchInput = $derived(currentOntology?.key ?? "");
 
@@ -79,27 +84,50 @@
     }
 
     async function getMatchings(method: matchingType) {
+        activeSearch?.abort();
+        const controller = new AbortController();
+        activeSearch = controller;
+        const currentSearchId = ++searchId;
+
         loading = true;
         noResults = false;
         searchResultIdx = 0;
+        ontologySearchResults = [];
         try {
+            let results: IMatchingViewModel[] = [];
+
             if (method === "terminology") {
-                const result = (await searchTerms(fetch, searchInput, terminologyStore.selectedCollection?.id ?? "")) as ITerminologySearchResult[];
+                const result = (await searchTerms(
+                    fetch,
+                    settingsStore.terminologyProvider,
+                    searchInput,
+                    terminologyStore.selectedCollection?.id ?? "",
+                    controller.signal,
+                )) as ITerminologySearchResult[];
+
                 // filter duplicate results with the same label + iri
                 const unique = Array.from(new Map(result.map((r) => [`${r.label}-${r.iri}`, r])).values());
-                ontologySearchResults = unique.map((r) => fromTerminology(r));
+                results = unique.map((r) => fromTerminology(r));
             } else if (method === "pythonService") {
-                const result = await matchingStore.query(searchInput.toLowerCase());
-                ontologySearchResults = result.map((r) => fromMatchingService(r));
+                const result = await matchingStore.query(searchInput.toLowerCase(), controller.signal);
+                results = result.map((r) => fromMatchingService(r));
             }
 
-            if (ontologySearchResults.length === 0) {
+            // A provider may still resolve after being aborted. Only the newest search may update the UI.
+            if (currentSearchId !== searchId) return;
+
+            ontologySearchResults = results;
+            if (results.length === 0) {
                 noResults = true;
             }
         } catch (e) {
+            if (controller.signal.aborted) return;
             failure(`Failed to fetch ontology values [${e}]`);
         } finally {
-            loading = false;
+            if (currentSearchId === searchId) {
+                loading = false;
+                activeSearch = null;
+            }
         }
     }
 
@@ -135,7 +163,20 @@
     }
 </script>
 
-<div class="flex gap-2 pt-4">
+<div class="flex gap-2 pt-4 items-center">
+    <Select.Root type="single" name="terminologyProvider" bind:value={settingsStore.terminologyProvider}>
+        <Select.Trigger class="w-64">
+            {terminologyProviderLabel}
+        </Select.Trigger>
+        <Select.Content>
+            <Select.Group>
+                <Select.Label>Terminology service</Select.Label>
+                {#each terminologyProviders as provider (provider.id)}
+                    <Select.Item value={provider.id} label={provider.label}>{provider.label}</Select.Item>
+                {/each}
+            </Select.Group>
+        </Select.Content>
+    </Select.Root>
     <Label>Automatic Search</Label>
     <Switch
         onCheckedChange={() => {
@@ -192,7 +233,7 @@
         <Button variant="secondary" class="shrink-0 ml-auto" onclick={() => mappingStore.skip()}>Skip</Button>
     </div>
     <div class="flex gap-2 pt-2">
-        <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">Terminology Service <Search size={22} /></Button>
+        <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">{terminologyProviderLabel} <Search size={22} /></Button>
         {#if settingsStore.enablePythonMatchingService}
             <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Matching Service <Search size={22} /></Button>
         {/if}

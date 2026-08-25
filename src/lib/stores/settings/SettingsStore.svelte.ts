@@ -1,4 +1,5 @@
 import { browser } from "$app/environment";
+import type { TerminologyProviderId } from "$lib/api/terminology";
 import type { matchingType } from "$lib/components/ontologies/OntologyMapCard.svelte";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 
@@ -7,10 +8,11 @@ const STORAGE_KEY = "ontologyHarmonizer";
 export class SettingsStore {
     // matching service
     loaded = $state(false);
-    enablePythonMatchingService = $state(true);
+    enablePythonMatchingService = $state(false);
     pythonMatchingServiceUrl = $state("http://localhost:8000");
     automaticMatching = $state(true);
     matchingMethod: matchingType = $state("terminology");
+    terminologyProvider: TerminologyProviderId = $state("base4nfdi");
     matchingServiceAvailable: boolean | null = $state(null);
 
 
@@ -55,6 +57,7 @@ export class SettingsStore {
                     pythonMatchingServiceUrl: this.pythonMatchingServiceUrl,
                     automaticMatching: this.automaticMatching,
                     matchingMethod: this.matchingMethod,
+                    terminologyProvider: this.terminologyProvider,
                 }
 
             };

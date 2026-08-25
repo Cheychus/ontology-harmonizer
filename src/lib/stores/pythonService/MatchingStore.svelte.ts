@@ -22,8 +22,8 @@ interface IMatchingServiceResponse {
 const BASE_URL = "http://127.0.0.1:8000/";
 
 class MatchingStore {
-  async query(q: string) {
-    const data = await apiGet(fetch, `/api?target=${BASE_URL}?q=${q}`) as IMatchingServiceResponse;
+  async query(q: string, signal?: AbortSignal) {
+    const data = await apiGet(fetch, `/api?target=${BASE_URL}?q=${q}`, signal) as IMatchingServiceResponse;
 
     return data.data.results as IMatchingServiceData[];
   }
