@@ -5,7 +5,7 @@ import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
 import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 import { applicationStore } from "../application/ApplicationStore.svelte";
-import { getProjects } from "$lib/services/gitlab/gitlab";
+import { getArcJson, getProject, getProjects } from "$lib/services/gitlab/gitlab";
 import { failure } from "$lib/services/toasts/toastService";
 
 export type DerivedOntology = {
@@ -44,6 +44,7 @@ class ArcStore {
   }
 
   loading = $state(false);
+  selecting = $state(false);
   async loadArcs() {
     if (!applicationStore.isAuthenticated) {
       failure("You need to authenticate first");
@@ -55,6 +56,22 @@ class ArcStore {
     } catch (e) {
     } finally {
       this.loading = false;
+    }
+  }
+
+  async selectArc(projectId: number) {
+    this.selecting = true;
+    try {
+      const [arcJson, project] = await Promise.all([getArcJson(projectId), getProject(projectId)]);
+      if (!arcJson) throw new Error("No Arc JSON");
+      this.init(arcJson);
+      this.project = project;
+      this.filename = project.name;
+      this.arcProjectId = projectId;
+      applicationStore.stepState.arcSelected = true;
+      return project;
+    } finally {
+      this.selecting = false;
     }
   }
 

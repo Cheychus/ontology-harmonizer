@@ -4,8 +4,6 @@
   import { goto } from "$app/navigation";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import type { IGitLabProject } from "$lib/types/gitLab";
-  import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
-  import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
   import { success } from "$lib/services/toasts/toastService";
 
   interface Props {
@@ -13,17 +11,18 @@
   }
 
   let { project }: Props = $props();
+  let selecting = $state(false);
 
   async function selectArc() {
-    const arc = await getArcJson(Number(project.id));
-    const p = await getProject(Number(project.id)); 
-    arcStore.init(arc);
-    arcStore.project = p;
-    arcStore.filename = project.name;
-
-    applicationStore.stepState.arcSelected = true;
-    goto("/mapping");
-    success("Selected " + p.name);
+    if (selecting) return;
+    selecting = true;
+    try {
+      const p = await arcStore.selectArc(Number(project.id));
+      goto("/mapping");
+      success("Selected " + p.name);
+    } finally {
+      selecting = false;
+    }
   }
 </script>
 
@@ -33,6 +32,6 @@
     <Item.Description>{project.description}</Item.Description>
   </Item.Content>
   <Item.Actions>
-    <Button variant="outline" size="sm" onclick={async () => selectArc()}>Select</Button>
+    <Button variant="outline" size="sm" disabled={selecting} onclick={selectArc}>{selecting ? "Downloading Arc..." : "Select"}</Button>
   </Item.Actions>
 </Item.Root>

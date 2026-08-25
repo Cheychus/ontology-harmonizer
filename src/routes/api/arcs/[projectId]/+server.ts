@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ params, cookies, fetch }) => {
     } : {});
 
     if (!response.ok) {
-        return json({ error: "Unable to download ARC metadata" }, { status: response.status });
+        return json({ error: "Unable to download ARC metadata", message: `${upstream}, ${response}` }, { status: response.status });
     }
 
     return new Response(response.body, {

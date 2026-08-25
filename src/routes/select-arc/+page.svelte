@@ -5,7 +5,6 @@
   import { Button } from "$lib/components/ui/button";
   import Input from "$lib/components/ui/input/input.svelte";
   import { loadArcFile } from "$lib/services/arcs/arcFile.service";
-  import { getArcJson, getProject } from "$lib/services/gitlab/gitlab";
   import { success } from "$lib/services/toasts/toastService";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
@@ -20,6 +19,7 @@
   // let load = $state(false);
   // let arcProjectId: number | null = $state(null);
   let user: IGitLabUser | null = $state(null);
+  let selecting = $state(false);
   onMount(async () => {
     try {
       user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
@@ -52,16 +52,14 @@
   }
 
   async function selectARC() {
-    if (arcStore.arcProjectId) {
-      const project = await getProject(arcStore.arcProjectId);
-      const arcJson = await getArcJson(arcStore.arcProjectId);
-      if (!arcJson) throw new Error("No Arc JSON");
-      arcStore.init(arcJson);
-
-      applicationStore.stepState.arcSelected = true;
-
+    if (!arcStore.arcProjectId || selecting) return;
+    selecting = true;
+    try {
+      const project = await arcStore.selectArc(arcStore.arcProjectId);
       goto("/mapping");
       success("Selected " + project.name);
+    } finally {
+      selecting = false;
     }
   }
 </script>
@@ -73,7 +71,7 @@
     <Button variant="outline" onclick={() => arcStore.loadArcs()}><RefreshCwIcon class={arcStore.loading ? "animate-spin" : ""} /> Load ARCs</Button>
     <div class="ml-auto flex gap-1">
       <Input class="max-w-64" bind:value={arcStore.arcProjectId} type="number" placeholder="ARC Project ID" />
-      <Button variant="outline" onclick={() => selectARC()}>Select</Button>
+      <Button variant="outline" disabled={selecting} onclick={selectARC}>{selecting ? "Downloading Arc..." : "Select"}</Button>
       <Button variant="secondary" onclick={() => fileInput.click()}>ARC-RO-Crate JSON<Upload size={22} /></Button>
     </div>
   </div>
