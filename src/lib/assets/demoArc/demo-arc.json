@@ -26,12 +26,97 @@
             "columnIndex": "0"
         },
         {
-            "@id": "#CharacteristicValue_1",
+            "@id": "#FactorValue_temperature_40",
             "@type": "PropertyValue",
-            "additionalType": "CharacteristicValue",
-            "name": "ACCENAME",
-            "value": "HOR 29",
+            "additionalType": "FactorValue",
+            "name": "temperature",
+            "value": "40",
+            "propertyID": "https://bioregistry.io/PATO:0000146",
+            "unitCode": "https://bioregistry.io/UO:0000027",
+            "unitText": "degree Celsius",
+            "columnIndex": "1"
+        },
+        {
+            "@id": "#ParameterValue_harvesting_method_centrifugation",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "harvesting method",
+            "value": "centrifugation",
+            "valueReference": "https://bioregistry.io/OBI:0302886",
             "columnIndex": "0"
+        },
+        {
+            "@id": "#ParameterValue_sample_volume_2",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "sample volume",
+            "value": "2",
+            "propertyID": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1000005",
+            "unitCode": "https://bioregistry.io/UO:0000098",
+            "unitText": "milliliter",
+            "columnIndex": [
+                "3",
+                "1"
+            ]
+        },
+        {
+            "@id": "#ParameterValue_centrifugation_force",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "centrifugation force",
+            "unitCode": "https://bioregistry.io/UO:0000107",
+            "unitText": "force unit",
+            "columnIndex": "2"
+        },
+        {
+            "@id": "#ParameterValue_centrifugation_temperature",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "centrifugation temperature",
+            "unitCode": "http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_user-specific",
+            "unitText": "degree Celsius",
+            "columnIndex": "3"
+        },
+        {
+            "@id": "#ParameterValue_centrifugation_duration",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "centrifugation duration",
+            "unitCode": "https://bioregistry.io/UO:0000010",
+            "unitText": "second",
+            "columnIndex": "4"
+        },
+        {
+            "@id": "#ParameterValue_freezing_method_flash_frozen_in_liquid_nitrogen",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "freezing method",
+            "value": "flash frozen in liquid nitrogen",
+            "valueReference": [
+                "http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_user-specific",
+                "http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_user-specific"
+            ],
+            "columnIndex": [
+                "8",
+                "5",
+                "3"
+            ]
+        },
+        {
+            "@id": "#ParameterValue_storage_temperature_-80",
+            "@type": "PropertyValue",
+            "additionalType": "ParameterValue",
+            "name": "storage temperature",
+            "value": "-80",
+            "unitCode": [
+                "http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_user-specific",
+                "http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_http://purl.obolibrary.org/obo/user-specific_user-specific"
+            ],
+            "unitText": "degree Celsius",
+            "columnIndex": [
+                "9",
+                "6"
+            ]
         }
     ]
 }

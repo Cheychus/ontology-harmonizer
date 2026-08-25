@@ -1,10 +1,11 @@
 <script lang="ts">
     import type { IGitLabUser } from "$lib/types/gitLab";
-    import { Leaf } from "lucide-svelte";
+    import { Leaf, Play } from "lucide-svelte";
     import { onMount } from "svelte";
     import { apiGet } from "$lib/api/api";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { Button } from "$lib/components/ui/button";
+    import { startDemo } from "$lib/services/demo/demo";
 
     let user: IGitLabUser | null = $state(null);
 
@@ -22,12 +23,9 @@
 
 <section class="w-full min-h-full flex-1 flex items-center justify-center">
     {#if !user}
-        <div class="flex flex-col gap-2">
-            <Button variant="outline" size="lg" href="/auth/gitlab"
-                >Login to GitLab Instance <Leaf size={20} class="text-green-500" /></Button
-            >
-
-            <p class="text-center">Please authenticate first</p>
+        <div class="flex gap-2">
+            <Button variant="default" size="lg" href="/auth/gitlab">Login (GitLab Instance)<Leaf size={20} class="text-green-500" /></Button>
+            <Button href="/map" variant="outline" size="default" onclick={() => startDemo()}>Try DEMO-ARC <Play size={20} /></Button>
         </div>
     {/if}
 

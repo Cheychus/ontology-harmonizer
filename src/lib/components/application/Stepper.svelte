@@ -23,8 +23,5 @@
                 </Button>
             {/each}
         </div>
-        <div class="absolute right-4">
-            <Button href="/map" variant="secondary" size="default" onclick={() => startDemo()}>Demo <Play size={20} /></Button>
-        </div>
     </div>
 </nav>

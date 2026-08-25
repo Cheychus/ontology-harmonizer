@@ -170,15 +170,26 @@
         }
     }}
 >
-    <div class="flex gap-2 items-center">
-        <h3 class="min-w-0 max-w-full truncate whitespace-nowrap">{currentOntology.key}</h3>
-        <Badge variant="outline" class="h-6">{currentOntology.ontologyAttribute}</Badge>
+    <div class="flex min-w-0 gap-2 items-center">
+        <h3 class="basis-1/3 min-w-0 shrink-0 truncate whitespace-nowrap">
+            {currentOntology.key}
+        </h3>
+
+        <Badge variant="outline" class="h-6 shrink-0">
+            {currentOntology.ontologyAttribute}
+        </Badge>
+
         {#if currentOntology.value !== ""}
-            <Badge variant="outline" class="h-6"><a target="_blank" href={currentOntology.value}>{currentOntology.value}</a></Badge>
+            <Badge variant="outline" class="h-6 min-w-0 flex-initial">
+                <a target="_blank" class="block truncate" href={currentOntology.value} title={currentOntology.value}>
+                    {currentOntology.value}
+                </a>
+            </Badge>
         {:else}
-            <Badge variant="outline" class="h-6 ml-auto">ARC Value not defined</Badge>
+            <Badge variant="outline" class="h-6 min-w-0">ARC Value not defined</Badge>
         {/if}
-        <Button variant="secondary" class="ml-auto" onclick={() => mappingStore.skip()}>Skip</Button>
+
+        <Button variant="secondary" class="shrink-0 ml-auto" onclick={() => mappingStore.skip()}>Skip</Button>
     </div>
     <div class="flex gap-2 pt-2">
         <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">Terminology Service <Search size={22} /></Button>

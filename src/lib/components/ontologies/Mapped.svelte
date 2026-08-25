@@ -18,9 +18,7 @@
     let mapping: IMapping | null = $state(null);
 
     onMount(() => {
-        arcIri = ontology.value;
         mapping = mappingStore.findMapping(ontology.key);
-
         mapIri = mapping?.iri ?? "";
     });
 </script>
@@ -42,7 +40,7 @@
                     <Badge variant="outline">Mapping value and ARC value are identical</Badge>
                     <CircleCheck class="text-green-400" />
                 </div>
-            {:else if mapping && mappingStore.iriIncludesShortForm(arcIri, mapping.shortForm)}
+            {:else if mapping && typeof arcIri == "string" && mappingStore.iriIncludesShortForm(arcIri, mapping.shortForm)}
                 <div class="flex gap-2">
                     <Badge variant="outline">Mapping value and ARC value share the same short form.</Badge>
                     <CircleCheck class="text-green-400" />

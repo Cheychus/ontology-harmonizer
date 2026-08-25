@@ -114,7 +114,6 @@ class ArcStore {
       const mapping = mappingStore.findMapping(onto.key);
       if (mapping && mapping.iri !== onto.value) {
         onto.source[onto.ontologyAttribute] = mapping.iri; // change in ARC JSON
-        // onto.value = mapping.iri; // change in store
         this.changedOntologies.push({
           old: onto,
           new: mapping.iri,
