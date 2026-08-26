@@ -24,10 +24,12 @@ Ontology Harmonizer turns those decisions into a reusable mapping. A domain expe
 
 - imports an ARC-RO-Crate JSON file or retrieves an ARC from a configured NFDI4Plants GitLab instance ([DataHUB](https://www.nfdi4plants.org/arc-data-hub/))
 - extracts ontology-related metadata candidates from the ARC graph
-- lets users create, load and edit an mapping file
-- searches the [TS4NFDI - API Gateway](https://ts4nfdi.github.io/api-gateway/) for ontology terms
+- lets users create, load and edit a mapping file
+- searches the [Base4NFDI Terminology Service](https://ts4nfdi.github.io/api-gateway/) or [TIB Terminology Service](https://terminology.tib.eu/) for ontology terms
 - supports selecting a search result, creating a mapping term and adding references/synonyms
+- supports optional automatic suggestions from a separately hosted Python matching service
 - applies the mapping to the loaded ARC metadata and exports the updated JSON file
+- for authenticated GitLab projects, creates a branch, commit and merge request containing the updated ARC files
 
 ## Implementation
 
@@ -41,7 +43,7 @@ The project combines a SvelteKit frontend with GitLab OAuth, ARC-RO-Crate JSON p
 - **Frontend:** [Svelte 5, SvelteKit](https://svelte.dev/), [TypeScript](https://www.typescriptlang.org/)
 - **UI:** [Tailwind CSS](https://tailwindcss.com/), [shadcn-svelte](https://www.shadcn-svelte.com/), [Lucide icons](https://lucide.dev/)
 - **Data formats:** ARC-RO-Crate JSON
-- **Integrations:** GitLab OAuth, GitLab API, [TS4NFDI - API Gateway](https://ts4nfdi.github.io/api-gateway/)
+- **Integrations:** GitLab OAuth, GitLab API, [Base4NFDI Terminology Service](https://ts4nfdi.github.io/api-gateway/), [TIB Terminology Service](https://terminology.tib.eu/)
 - **Deployment:** Vercel
 
 ## Research context
@@ -59,7 +61,7 @@ The web prototype also works without this service. In that case, ontology terms 
 
 ### Prerequisites
 
-- Node.js 20 or later
+- Node.js 24 or later
 - a GitLab OAuth application for the configured GitLab instance
 
 ### Configuration
@@ -84,6 +86,12 @@ npm run dev
 ```
 
 Open `http://localhost:5173`.
+
+### Optional: Python matching service
+
+The web prototype works without the Python matching service; terminology search remains available through the configured terminology provider.
+
+To enable semantic suggestions, start a compatible matching service, then open **Settings** in the application, enable **Python matching service**, enter its URL, and use **Check** to verify the connection. The default local URL is `http://localhost:8000`.
 
 
 ## Current status and limitations
