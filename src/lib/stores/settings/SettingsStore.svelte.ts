@@ -1,6 +1,6 @@
 import { browser } from "$app/environment";
 import type { TerminologyProviderId } from "$lib/api/terminology";
-import type { matchingType } from "$lib/components/ontologies/OntologyMapCard.svelte";
+import type { matchingType } from "$lib/types/terminologyService";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 
 const STORAGE_KEY = "ontologyHarmonizer";

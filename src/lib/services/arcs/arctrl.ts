@@ -70,7 +70,7 @@ function bytesToBase64(bytes: Uint8Array) {
   return btoa(binary);
 }
 
-async function fullfillWriteContractsGIT(contracts: Contract[]): Promise<GitAction[]> {
+async function fullfillWriteContractsGIT(contracts: Iterable<Contract>): Promise<GitAction[]> {
   const actions: GitAction[] = [];
   for (const contract of contracts) {
     if (contract.Operation === "CREATE" || (contract.Operation === "UPDATE" && contract.DTO !== undefined)) {

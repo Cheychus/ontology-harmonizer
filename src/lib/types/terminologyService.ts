@@ -19,3 +19,5 @@ export interface ITerminologySearchResult {
   short_form: string;
   descriptions: string[];
 }
+
+export type matchingType = "terminology" | "pythonService";

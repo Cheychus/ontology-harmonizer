@@ -16,11 +16,13 @@ export function extractOntologies(node: GraphNode): DerivedOntology[] {
 
   const derivedOntologies: DerivedOntology[] = [];
 
+
+
   if (name && propertyID != null) {
     derivedOntologies.push({
       source: jsonSource,
       key: name,
-      value: propertyID,
+      value: Array.isArray(propertyID) ? propertyID.join(",") : propertyID,
       ontologyAttribute: "propertyID",
     });
   }
@@ -29,7 +31,7 @@ export function extractOntologies(node: GraphNode): DerivedOntology[] {
     derivedOntologies.push({
       source: jsonSource,
       key: unitText,
-      value: unitCode,
+      value: Array.isArray(unitCode) ? unitCode.join(",") : unitCode,
       ontologyAttribute: "unitCode",
     });
   }
@@ -38,7 +40,7 @@ export function extractOntologies(node: GraphNode): DerivedOntology[] {
     derivedOntologies.push({
       source: jsonSource,
       key: value,
-      value: valueReference,
+      value: Array.isArray(valueReference) ? valueReference.join(",") : valueReference,
       ontologyAttribute: "valueReference",
     });
   }

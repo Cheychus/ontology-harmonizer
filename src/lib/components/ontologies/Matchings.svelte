@@ -7,7 +7,7 @@
   import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
   import { Label } from "../ui/label";
   import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-  import type { matchingType } from "./OntologyMapCard.svelte";
+  import type { matchingType } from "$lib/types/terminologyService";
 
   export interface IMatchingViewModel {
     iri: string;

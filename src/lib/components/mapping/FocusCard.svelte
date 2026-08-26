@@ -9,10 +9,9 @@
     import * as Select from "$lib/components/ui/select/index.js";
     import type { IMatchingViewModel } from "../ontologies/Matchings.svelte";
     import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
-    import type { matchingType } from "../ontologies/OntologyMapCard.svelte";
     import { searchTerms, terminologyProviders } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
-    import type { ITerminologySearchResult } from "$lib/types/terminologyService";
+    import type { ITerminologySearchResult, matchingType } from "$lib/types/terminologyService";
     import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
     import { onMount } from "svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
