@@ -17,6 +17,7 @@ export async function parseSssomInServer(file: File) {
   return await response.json();
 }
 
+// SSSOM-Parser will fail to parse tsv files containing \n at the end, so this function removes them. 
 function normalizeSssom(content: string): string {
   return content
     .replace(/^\uFEFF/, "")       // remove optional UTF-8 BOM
