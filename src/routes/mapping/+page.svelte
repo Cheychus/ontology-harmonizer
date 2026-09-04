@@ -8,7 +8,9 @@
     import { Download, Upload, X } from "lucide-svelte";
     import { success } from "$lib/services/toasts/toastService";
     import MappingFile from "$lib/components/mapping/MappingFile.svelte";
+    import MappingSetMetadata from "$lib/components/mapping/MappingSetMetadata.svelte";
     import { onMount } from "svelte";
+    import { parseSssomInServer } from "$lib/services/sssom/sssom";
 
     let fileInput: HTMLInputElement;
     const modules = import.meta.glob<IMapping[]>("$lib/assets/mappings/*.json", {
@@ -40,6 +42,7 @@
     }
 
     function next() {
+        mappingStore.createMappingSet();
         applicationStore.stepState.mappingConfigured = true;
         goto("/map");
     }
@@ -61,7 +64,20 @@
     {/each}
 </div>
 
-{#if mappingStore.mappingJson.length > 0}
+<input
+    type="file"
+    accept=".tsv"
+    onchange={async (event) => {
+        const file = event.currentTarget.files?.[0];
+
+        if (file) {
+            const result = await parseSssomInServer(file);
+            console.log(result);
+        }
+    }}
+/>
+
+{#if mappingStore.hasMappingSet}
     <div class="w-full flex-1">
         <div class="flex gap-2 items-center pb-8">
             <h2>Mapping: {mappingStore.fileName.replace(".json", "")}</h2>
@@ -86,6 +102,8 @@
                 ><Download />Download mapping file</Button
             >
         </div>
+
+        <MappingSetMetadata />
 
         <Mappings />
     </div>

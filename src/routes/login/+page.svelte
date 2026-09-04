@@ -6,7 +6,6 @@
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { Button } from "$lib/components/ui/button";
     import { startDemo } from "$lib/services/demo/demo";
-    import { parseSssomInServer } from "$lib/services/sssom/sssom";
 
     let user: IGitLabUser | null = $state(null);
 
@@ -27,18 +26,6 @@
         <div class="flex gap-2">
             <Button variant="default" size="lg" href="/auth/gitlab">Login (GitLab Instance)<Leaf size={20} class="text-green-500" /></Button>
             <Button href="/map" variant="outline" size="default" onclick={() => startDemo()}>Try DEMO-ARC <Play size={20} /></Button>
-            <input
-                type="file"
-                accept=".tsv"
-                onchange={async (event) => {
-                    const file = event.currentTarget.files?.[0];
-
-                    if (file) {
-                        const result = await parseSssomInServer(file);
-                        console.log(result);
-                    }
-                }}
-            />
         </div>
     {/if}
 

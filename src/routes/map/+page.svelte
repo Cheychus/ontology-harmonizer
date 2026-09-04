@@ -3,6 +3,7 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
+    import { Settings } from "lucide-svelte";
 
     let progress = $derived(((mappingStore.mappedOntologies.length + mappingStore.skipped.length) / arcStore.ontologyCandidates.size) * 100),
         done = $derived(mappingStore.mappedOntologies.length),
@@ -19,8 +20,9 @@
     </div>
 {:else}
     <div class="min-h-0 h-screen w-full flex-1 flex flex-col gap-2">
-        <div class="shrink-0 flex justify-between items-center pb-4">
+        <div class="shrink-0 flex justify-between items-center pb-4 gap-2">
             <h2>Map Ontology Values</h2>
+            <Button variant="outline" class="ml-auto px-16" href="/mapping" size="lg"><Settings /> Mapping</Button>
             <Button class="px-16" href="/apply" size="lg">Continue</Button>
         </div>
 

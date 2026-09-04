@@ -1,5 +1,6 @@
 import mappingStr from "$lib/assets/mappings/mapping.json?raw";
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
+import type { MappingSet } from "$lib/types/mapping";
 
 
 export interface IMapping {
@@ -13,6 +14,8 @@ export interface IMapping {
 class MappingStore {
     fileName: string = $state("");
     mappingJson: IMapping[] = $state([])
+    hasMappingSet = $state(true);
+    mappingSetMetadata: MappingSet["metadata"] = $state(this.createDefaultMetadata());
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.findMapping(o.key)));
     unmappedOntologies = $derived(this.arcOntologies.filter((o) => mappingStore.findMapping(o.key) === null));
@@ -53,12 +56,32 @@ class MappingStore {
     reset() {
         this.fileName = "";
         this.mappingJson = [];
+        this.hasMappingSet = false;
+        this.mappingSetMetadata = this.createDefaultMetadata();
         this.startMapping(this.unmappedOntologies)
     }
 
     load(mapping: IMapping[]) {
         this.mappingJson = mapping;
+        this.hasMappingSet = true;
+        this.mappingSetMetadata = this.createDefaultMetadata();
         this.startMapping(this.unmappedOntologies);
+    }
+
+    createMappingSet() {
+        this.fileName = "";
+        this.mappingJson = [];
+        this.hasMappingSet = true;
+        this.mappingSetMetadata = this.createDefaultMetadata();
+        this.startMapping(this.unmappedOntologies);
+    }
+
+    addCurieMapEntry() {
+        this.mappingSetMetadata.curieMap.push({ prefix: "", iri: "" });
+    }
+
+    removeCurieMapEntry(index: number) {
+        this.mappingSetMetadata.curieMap.splice(index, 1);
     }
 
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
@@ -110,6 +133,31 @@ class MappingStore {
         const replacedIri = iri.replace("_", ":").toLowerCase();
         const replacedShortForm = shortForm.replace("_", ":").toLowerCase();
         return replacedIri.includes(replacedShortForm);
+    }
+
+    private createDefaultMetadata(): MappingSet["metadata"] {
+        return {
+            mappingSetId: "mapping",
+            license: "CC-BY-4.0",
+            curieMap: [
+                {
+                    prefix: "skos",
+                    iri: "http://www.w3.org/2004/02/skos/core#"
+                },
+                {
+                    prefix: "semapv",
+                    iri: "https://w3id.org/semapv/vocab/"
+                },
+                {
+                    prefix: "orcid",
+                    iri: "https://orcid.org/"
+                }
+            ],
+            title: "",
+            description: "",
+            version: "1.0.0",
+            comment: "",
+        };
     }
 
 }

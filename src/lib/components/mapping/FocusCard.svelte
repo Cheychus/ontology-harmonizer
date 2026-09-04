@@ -17,6 +17,7 @@
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
     import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
+    import SSSOMInput from "./SSSOM_Input.svelte";
 
     interface Props {
         currentOntology: DerivedOntology;
@@ -191,8 +192,9 @@
     bind:this={container}
     tabindex="0"
     role="button"
-    class="min-h-112.5 max-h-112.5 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
+    class="min-h-130 max-h-130 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
     onkeydown={(e) => {
+        // Allows user to handle mapping with the keyboard
         if (e.target instanceof HTMLInputElement) return;
         switch (e.key) {
             case "ArrowLeft":
@@ -287,6 +289,8 @@
     </div>
 
     <div class="mt-auto flex flex-col w-full gap-2">
+        <SSSOMInput subjectId={"ARC:" + currentOntology.key} objectId={shortFormInput} objectLabel={currentSearchResult?.label ?? ""} />
+
         <div class="flex gap-2 items-end w-full py-2">
             <div class="flex flex-col w-full gap-2">
                 <Label for="iri-input">IRI</Label>
