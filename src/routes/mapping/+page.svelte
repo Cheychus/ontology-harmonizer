@@ -13,6 +13,7 @@
     import { parseSssomInServer } from "$lib/services/sssom/sssom";
 
     let fileInput: HTMLInputElement;
+    let sssomFileInput: HTMLInputElement;
     const modules = import.meta.glob<IMapping[]>("$lib/assets/mappings/*.json", {
         eager: true,
         import: "default",
@@ -62,6 +63,7 @@
 </script>
 
 <input class="hidden" type="file" accept="application/json,.mapping.json" bind:this={fileInput} onchange={handleChange} />
+<input class="hidden" type="file" accept=".tsv,text/tab-separated-values" bind:this={sssomFileInput} onchange={handleSssomChange} />
 
 <!-- Here some example or official mappings should be loaded -->
 
@@ -75,16 +77,10 @@
     {/each}
 </div>
 
-<input
-    type="file"
-    accept=".tsv"
-    onchange={handleSssomChange}
-/>
-
 {#if mappingStore.hasMappingSet}
     <div class="w-full flex-1">
         <div class="flex gap-2 items-center pb-8">
-            <h2>Mapping: {mappingStore.fileName.replace(".json", "")}</h2>
+            <h2>Mapping: {mappingStore.fileName.replace(/\.(json|tsv)$/, "")}</h2>
             <Button
                 onclick={() => {
                     mappingStore.reset();
@@ -98,13 +94,14 @@
             <Button class="ml-auto px-16" href="/map" size="lg">Continue</Button>
         </div>
         <div class="flex gap-2 pb-2">
-            <Button variant={"outline"} class="" onclick={() => fileInput.click()}><Upload />Upload mapping file</Button>
+            <Button variant="outline" onclick={() => fileInput.click()}><Upload />Upload JSON mapping</Button>
             <Button
-                variant={"outline"}
-                class=""
+                variant="outline"
                 onclick={() => downloadJson(mappingStore.mappingJson, mappingStore.fileName === "" ? "mapping.json" : mappingStore.fileName)}
-                ><Download />Download mapping file</Button
+                ><Download />Download JSON mapping</Button
             >
+            <Button variant="outline" onclick={() => sssomFileInput.click()}><Upload />Upload SSSOM TSV</Button>
+            <Button variant="outline" disabled title="SSSOM export will be added in a future update"><Download />Export SSSOM (coming soon)</Button>
         </div>
 
         <MappingSetMetadata />
@@ -115,6 +112,7 @@
     <div class="w-full h-full min-h-full flex-1 flex flex-col gap-4 justify-center items-center">
         <div class="flex items-center gap-4">
             <Button variant={"secondary"} class="" onclick={() => fileInput.click()}><Upload />Upload Mapping file</Button>
+            <Button variant="secondary" onclick={() => sssomFileInput.click()}><Upload />Upload SSSOM TSV</Button>
             <Button variant="default" onclick={() => next()}>Create new Mapping</Button>
         </div>
         <p>You can upload an existing mapping here or skip this step and create a new mapping</p>
