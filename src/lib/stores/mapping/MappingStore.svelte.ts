@@ -1,6 +1,6 @@
 import mappingStr from "$lib/assets/mappings/mapping.json?raw";
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
-import type { MappingSet } from "$lib/types/mapping";
+import type { MappingSet, ParsedSssomDocument } from "$lib/types/mapping";
 
 
 export interface IMapping {
@@ -16,6 +16,7 @@ class MappingStore {
     mappingJson: IMapping[] = $state([])
     hasMappingSet = $state(true);
     mappingSetMetadata: MappingSet["metadata"] = $state(this.createDefaultMetadata());
+    importedSssom: ParsedSssomDocument | null = $state(null);
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.findMapping(o.key)));
     unmappedOntologies = $derived(this.arcOntologies.filter((o) => mappingStore.findMapping(o.key) === null));
@@ -58,6 +59,7 @@ class MappingStore {
         this.mappingJson = [];
         this.hasMappingSet = false;
         this.mappingSetMetadata = this.createDefaultMetadata();
+        this.importedSssom = null;
         this.startMapping(this.unmappedOntologies)
     }
 
@@ -65,6 +67,7 @@ class MappingStore {
         this.mappingJson = mapping;
         this.hasMappingSet = true;
         this.mappingSetMetadata = this.createDefaultMetadata();
+        this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
 
@@ -73,6 +76,28 @@ class MappingStore {
         this.mappingJson = [];
         this.hasMappingSet = true;
         this.mappingSetMetadata = this.createDefaultMetadata();
+        this.importedSssom = null;
+        this.startMapping(this.unmappedOntologies);
+    }
+
+    loadSssom(sssom: ParsedSssomDocument) {
+        const defaults = this.createDefaultMetadata();
+
+        this.mappingJson = [];
+        this.hasMappingSet = true;
+        this.importedSssom = sssom;
+        this.mappingSetMetadata = {
+            ...defaults,
+            mappingSetId: sssom.mapping_set_id as string,
+            license: sssom.license as string,
+            curieMap: sssom.curie_map
+                ? Object.entries(sssom.curie_map as Record<string, string>).map(([prefix, iri]) => ({ prefix, iri }))
+                : [],
+            title: (sssom.mapping_set_title as string | undefined) ?? "",
+            description: (sssom.mapping_set_description as string | undefined) ?? "",
+            version: (sssom.mapping_set_version as string | undefined) ?? "",
+            comment: (sssom.comment as string | undefined) ?? "",
+        };
         this.startMapping(this.unmappedOntologies);
     }
 

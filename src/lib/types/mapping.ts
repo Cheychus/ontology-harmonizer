@@ -3,6 +3,13 @@ export interface CurieMapEntry {
     iri: string;
 }
 export type CurieMap = CurieMapEntry[];
+
+/** Complete document returned by the SSSOM parser, retained for a future merge/export. */
+export interface ParsedSssomDocument {
+    mappings: Record<string, unknown>[];
+    [headerKey: string]: unknown;
+}
+
 export type SupportedPredicate = "skos:exactMatch" | "skos:relatedMatch" | "skos:closeMatch";
 export type MappingJustification = "semapv:ManualMappingCuration";
 

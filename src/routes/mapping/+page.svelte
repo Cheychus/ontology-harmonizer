@@ -35,6 +35,17 @@
         success("Mapping was uploaded");
     }
 
+    async function handleSssomChange(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (!file) return;
+
+        const result = await parseSssomInServer(file);
+        mappingStore.fileName = file.name;
+        mappingStore.loadSssom(result);
+        success("SSSOM mapping was uploaded");
+    }
+
     function selectBundledMapping(mappingFile: string, mappingJson: IMapping[]) {
         mappingStore.fileName = mappingFile.split("/").pop() ?? "mapping.json";
         mappingStore.load(mappingJson);
@@ -67,14 +78,7 @@
 <input
     type="file"
     accept=".tsv"
-    onchange={async (event) => {
-        const file = event.currentTarget.files?.[0];
-
-        if (file) {
-            const result = await parseSssomInServer(file);
-            console.log(result);
-        }
-    }}
+    onchange={handleSssomChange}
 />
 
 {#if mappingStore.hasMappingSet}
