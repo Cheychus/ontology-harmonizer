@@ -20,6 +20,8 @@
     import SSSOMInput from "./SSSOM_Input.svelte";
     import type { MappingAssertion } from "$lib/types/mapping";
 
+    $inspect(mappingStore.mappingSet);
+
     interface Props {
         currentOntology: DerivedOntology;
     }
@@ -157,6 +159,10 @@
             return;
         }
         searchResultIdx = newIdx;
+    }
+
+    function addMapping() {
+        mappingStore.addAssertion(mappingAssertion);
     }
 
     function map() {
@@ -316,7 +322,7 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <Button class="w-1/3" onclick={() => map()}>Map</Button>
+            <Button class="w-1/3" onclick={() => addMapping()}>Map</Button>
             <Select.Root
                 type="single"
                 bind:value={selectValue}

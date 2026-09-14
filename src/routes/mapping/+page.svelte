@@ -9,6 +9,7 @@
     import { success } from "$lib/services/toasts/toastService";
     import MappingFile from "$lib/components/mapping/MappingFile.svelte";
     import MappingSetMetadata from "$lib/components/mapping/MappingSetMetadata.svelte";
+    import SssomAssertions from "$lib/components/mapping/SssomAssertions.svelte";
     import { onMount } from "svelte";
     import { parseSssomInServer } from "$lib/services/sssom/sssom";
 
@@ -105,6 +106,8 @@
         </div>
 
         <MappingSetMetadata />
+
+        <SssomAssertions />
 
         <Mappings />
     </div>

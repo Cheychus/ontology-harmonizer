@@ -10,9 +10,9 @@ describe("SSSOM mapping-set metadata import", () => {
 
         mappingStore.loadSssom(parsed);
 
-        expect(mappingStore.mappingSetMetadata.title).toBe("Imported mapping set");
-        expect(mappingStore.mappingSetMetadata.mappingSetId).toBe("https://example.org/mapping-set.sssom.tsv");
-        expect(mappingStore.mappingSetMetadata.license).toBe("https://creativecommons.org/licenses/by/4.0/");
+        expect(mappingStore.mappingSet.metadata.title).toBe("Imported mapping set");
+        expect(mappingStore.mappingSet.metadata.mappingSetId).toBe("https://example.org/mapping-set.sssom.tsv");
+        expect(mappingStore.mappingSet.metadata.license).toBe("https://creativecommons.org/licenses/by/4.0/");
     });
 
     it("retains unknown parsed header fields for a future merge", async () => {

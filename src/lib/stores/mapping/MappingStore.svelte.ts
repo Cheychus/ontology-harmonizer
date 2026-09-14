@@ -1,6 +1,6 @@
 import mappingStr from "$lib/assets/mappings/mapping.json?raw";
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
-import type { MappingSet, ParsedSssomDocument } from "$lib/types/mapping";
+import type { MappingAssertion, MappingSet, ParsedSssomDocument } from "$lib/types/mapping";
 
 
 export interface IMapping {
@@ -15,7 +15,7 @@ class MappingStore {
     fileName: string = $state("");
     mappingJson: IMapping[] = $state([])
     hasMappingSet = $state(true);
-    mappingSetMetadata: MappingSet["metadata"] = $state(this.createDefaultMetadata());
+    mappingSet: MappingSet = $state(this.createDefaultMappingSet());
     importedSssom: ParsedSssomDocument | null = $state(null);
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.findMapping(o.key)));
@@ -58,7 +58,7 @@ class MappingStore {
         this.fileName = "";
         this.mappingJson = [];
         this.hasMappingSet = false;
-        this.mappingSetMetadata = this.createDefaultMetadata();
+        this.mappingSet = this.createDefaultMappingSet();
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies)
     }
@@ -66,7 +66,7 @@ class MappingStore {
     load(mapping: IMapping[]) {
         this.mappingJson = mapping;
         this.hasMappingSet = true;
-        this.mappingSetMetadata = this.createDefaultMetadata();
+        this.mappingSet = this.createDefaultMappingSet();
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
@@ -75,39 +75,50 @@ class MappingStore {
         this.fileName = "";
         this.mappingJson = [];
         this.hasMappingSet = true;
-        this.mappingSetMetadata = this.createDefaultMetadata();
+        this.mappingSet = this.createDefaultMappingSet();
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
 
     loadSssom(sssom: ParsedSssomDocument) {
-        const defaults = this.createDefaultMetadata();
+        const defaults = this.createDefaultMappingSet();
 
         this.mappingJson = [];
         this.hasMappingSet = true;
         this.importedSssom = sssom;
-        this.mappingSetMetadata = {
+        this.mappingSet = {
             ...defaults,
-            mappingSetId: sssom.mapping_set_id as string,
-            license: sssom.license as string,
-            curieMap: sssom.curie_map
+            metadata: {
+                ...defaults.metadata,
+                mappingSetId: sssom.mapping_set_id as string,
+                license: sssom.license as string,
+                curieMap: sssom.curie_map
                 ? Object.entries(sssom.curie_map as Record<string, string>).map(([prefix, iri]) => ({ prefix, iri }))
                 : [],
-            title: (sssom.mapping_set_title as string | undefined) ?? "",
-            description: (sssom.mapping_set_description as string | undefined) ?? "",
-            version: (sssom.mapping_set_version as string | undefined) ?? "",
-            comment: (sssom.comment as string | undefined) ?? "",
+                title: (sssom.mapping_set_title as string | undefined) ?? "",
+                description: (sssom.mapping_set_description as string | undefined) ?? "",
+                version: (sssom.mapping_set_version as string | undefined) ?? "",
+                comment: (sssom.comment as string | undefined) ?? "",
+            },
         };
         this.startMapping(this.unmappedOntologies);
         console.log(sssom)
     }
 
     addCurieMapEntry() {
-        this.mappingSetMetadata.curieMap.push({ prefix: "", iri: "" });
+        this.mappingSet.metadata.curieMap.push({ prefix: "", iri: "" });
     }
 
     removeCurieMapEntry(index: number) {
-        this.mappingSetMetadata.curieMap.splice(index, 1);
+        this.mappingSet.metadata.curieMap.splice(index, 1);
+    }
+
+    addAssertion(assertion: MappingAssertion) {
+        this.mappingSet.assertions.push({
+            ...assertion,
+            authorIds: assertion.authorIds?.map((authorId) => authorId.trim()).filter(Boolean),
+            comment: assertion.comment?.trim() || undefined,
+        });
     }
 
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
@@ -161,28 +172,32 @@ class MappingStore {
         return replacedIri.includes(replacedShortForm);
     }
 
-    private createDefaultMetadata(): MappingSet["metadata"] {
+    private createDefaultMappingSet(): MappingSet {
         return {
-            mappingSetId: "mapping",
-            license: "CC-BY-4.0",
-            curieMap: [
-                {
-                    prefix: "skos",
-                    iri: "http://www.w3.org/2004/02/skos/core#"
-                },
-                {
-                    prefix: "semapv",
-                    iri: "https://w3id.org/semapv/vocab/"
-                },
-                {
-                    prefix: "orcid",
-                    iri: "https://orcid.org/"
-                }
-            ],
-            title: "",
-            description: "",
-            version: "1.0.0",
-            comment: "",
+            formatVersion: "1.0",
+            metadata: {
+                mappingSetId: "mapping",
+                license: "CC-BY-4.0",
+                curieMap: [
+                    {
+                        prefix: "skos",
+                        iri: "http://www.w3.org/2004/02/skos/core#"
+                    },
+                    {
+                        prefix: "semapv",
+                        iri: "https://w3id.org/semapv/vocab/"
+                    },
+                    {
+                        prefix: "orcid",
+                        iri: "https://orcid.org/"
+                    }
+                ],
+                title: "",
+                description: "",
+                version: "1.0.0",
+                comment: "",
+            },
+            assertions: [],
         };
     }
 

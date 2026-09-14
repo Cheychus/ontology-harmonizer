@@ -15,19 +15,19 @@
     <div class="grid gap-4 md:grid-cols-2">
         <div class="flex flex-col gap-2">
             <Label for="mapping-set-id">Mapping set ID</Label>
-            <Input id="mapping-set-id" bind:value={mappingStore.mappingSetMetadata.mappingSetId} />
+            <Input id="mapping-set-id" bind:value={mappingStore.mappingSet.metadata.mappingSetId} />
         </div>
         <div class="flex flex-col gap-2">
             <Label for="mapping-set-license">License</Label>
-            <Input id="mapping-set-license" bind:value={mappingStore.mappingSetMetadata.license} placeholder="e.g. CC-BY-4.0" />
+            <Input id="mapping-set-license" bind:value={mappingStore.mappingSet.metadata.license} placeholder="e.g. CC-BY-4.0" />
         </div>
         <div class="flex flex-col gap-2">
             <Label for="mapping-set-title">Title</Label>
-            <Input id="mapping-set-title" bind:value={mappingStore.mappingSetMetadata.title} />
+            <Input id="mapping-set-title" bind:value={mappingStore.mappingSet.metadata.title} />
         </div>
         <div class="flex flex-col gap-2">
             <Label for="mapping-set-version">Version</Label>
-            <Input id="mapping-set-version" bind:value={mappingStore.mappingSetMetadata.version} />
+            <Input id="mapping-set-version" bind:value={mappingStore.mappingSet.metadata.version} />
         </div>
     </div>
 
@@ -36,7 +36,7 @@
         <textarea
             id="mapping-set-description"
             class="border-input bg-background ring-offset-background focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-            bind:value={mappingStore.mappingSetMetadata.description}
+            bind:value={mappingStore.mappingSet.metadata.description}
         ></textarea>
     </div>
 
@@ -45,7 +45,7 @@
         <textarea
             id="mapping-set-comment"
             class="border-input bg-background ring-offset-background focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-            bind:value={mappingStore.mappingSetMetadata.comment}
+            bind:value={mappingStore.mappingSet.metadata.comment}
         ></textarea>
     </div>
 
@@ -54,9 +54,9 @@
             <Label>CURIE map</Label>
             <Button variant="outline" size="sm" onclick={() => mappingStore.addCurieMapEntry()}><Plus /> Add prefix</Button>
         </div>
-        {#if mappingStore.mappingSetMetadata.curieMap.length > 0}
+        {#if mappingStore.mappingSet.metadata.curieMap.length > 0}
             <div class="flex flex-col gap-2">
-                {#each mappingStore.mappingSetMetadata.curieMap as entry, index}
+                {#each mappingStore.mappingSet.metadata.curieMap as entry, index}
                     <div class="flex gap-2">
                         <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
                         <Input aria-label="CURIE prefix IRI" class="" bind:value={entry.iri} />
