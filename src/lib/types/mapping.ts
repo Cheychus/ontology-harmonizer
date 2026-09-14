@@ -28,7 +28,6 @@ export interface MappingSet {
 }
 
 export interface MappingAssertion {
-    id: string;     // internal ID
     subjectId: string;
     subjectLabel?: string;
     predicateId: SupportedPredicate;

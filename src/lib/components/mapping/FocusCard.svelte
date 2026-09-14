@@ -18,6 +18,7 @@
     import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
     import SSSOMInput from "./SSSOM_Input.svelte";
+    import type { MappingAssertion } from "$lib/types/mapping";
 
     interface Props {
         currentOntology: DerivedOntology;
@@ -53,6 +54,25 @@
     );
 
     let searchInput = $derived(currentOntology?.key ?? "");
+    let mappingAssertion = $state<MappingAssertion>({
+        subjectId: "",
+        subjectLabel: "",
+        predicateId: "skos:exactMatch",
+        objectId: "",
+        objectLabel: "",
+        mappingJustification: "semapv:ManualMappingCuration",
+        confidence: 1,
+        comment: "",
+        authorIds: [],
+    });
+
+    // Sync mapping assertion in child component object with current Focus Card ontology values and search results (iri, label)
+    $effect(() => {
+        mappingAssertion.subjectId = `EDAL:${currentOntology.key}`;
+        mappingAssertion.subjectLabel = currentOntology.key;
+        mappingAssertion.objectId = shortFormInput;
+        mappingAssertion.objectLabel = currentSearchResult?.label ?? "";
+    });
 
     onMount(() => {
         if (settingsStore.automaticMatching) {
@@ -192,7 +212,7 @@
     bind:this={container}
     tabindex="0"
     role="button"
-    class="min-h-130 max-h-130 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
+    class="min-h-200 max-h-200 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
     onkeydown={(e) => {
         // Allows user to handle mapping with the keyboard
         if (e.target instanceof HTMLInputElement) return;
@@ -238,7 +258,6 @@
         {#if settingsStore.enablePythonMatchingService}
             <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Matching Service <Search size={22} /></Button>
         {/if}
-
         <Input
             onkeydown={(e) => {
                 if (e.key === "Enter") getMatchings("terminology");
@@ -248,7 +267,6 @@
         />
     </div>
 
-    <!-- <Label class="pt-2">Search Results</Label> -->
     <div class={{ "rounded-sm min-h-0 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
         {#if currentSearchResult}
             <div class="p-2 flex flex-col min-h-0 flex-1">
@@ -256,56 +274,49 @@
                     <h4>{currentSearchResult.label} - {iriToCurie(currentSearchResult?.shortForm ?? "") ?? "undefined"}</h4>
                     <p class="font-bold">{searchResultIdx + 1}/{ontologySearchResults.length}</p>
                 </div>
-
                 <div class="flex-1 min-h-0 overflow-y-auto">
                     <ul class="list-disc pl-8 pr-2">
                         {#if currentSearchResult.description && currentSearchResult.description.length > 0}
-                            {#each currentSearchResult.description as description}
-                                <li class="py-1 break-all">{description?.value ?? description}</li>
-                            {/each}
-                        {:else}
-                            <li class="italic">No descriptions</li>
-                        {/if}
+                            {#each currentSearchResult.description as description}<li class="py-1 break-all">
+                                    {description?.value ?? description}
+                                </li>{/each}
+                        {:else}<li class="italic">No descriptions</li>{/if}
                     </ul>
                 </div>
             </div>
-
             <div class="mt-auto p-1 flex justify-between items-center">
                 <Button class="w-32" variant="outline" size="icon" onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button>
-
                 <Button class="w-32" variant="outline" size="icon" onclick={() => switchSearchResult(1)}><ArrowRight /></Button>
             </div>
         {:else}
             <div class="flex items-center justify-center h-full flex-1">
-                {#if loading}
-                    <LoaderCircle class="animate-spin" />
-                {:else if noResults}
-                    <p class="text-muted-foreground">No results for {searchInput}</p>
-                {:else}
-                    <p class="text-muted-foreground">Search for ontologies or define the mapping manually</p>
-                {/if}
+                {#if loading}<LoaderCircle class="animate-spin" />
+                {:else if noResults}<p class="text-muted-foreground">No results for {searchInput}</p>
+                {:else}<p class="text-muted-foreground">Search for ontologies or define the mapping manually</p>{/if}
             </div>
         {/if}
     </div>
 
     <div class="mt-auto flex flex-col w-full gap-2">
-        <SSSOMInput subjectId={"ARC:" + currentOntology.key} objectId={shortFormInput} objectLabel={currentSearchResult?.label ?? ""} />
-
+        <SSSOMInput bind:mapping={mappingAssertion} />
         <div class="flex gap-2 items-end w-full py-2">
             <div class="flex flex-col w-full gap-2">
-                <Label for="iri-input">IRI</Label>
-                <Input id="iri-input" placeholder="e.g. http://purl.obolibrary.org/obo/OBI_1234" bind:value={iriInput} />
+                <Label for="iri-input">IRI</Label><Input
+                    id="iri-input"
+                    placeholder="e.g. http://purl.obolibrary.org/obo/OBI_1234"
+                    bind:value={iriInput}
+                />
             </div>
-
             <div class="flex flex-col gap-2 w-1/3">
-                <Label for="iri-input">Short Form</Label>
-                <Input id="iri-input" placeholder="e.g. OBI:1234" bind:value={shortFormInput} />
+                <Label for="short-form-input">Short Form</Label><Input
+                    id="short-form-input"
+                    placeholder="e.g. OBI:1234"
+                    bind:value={shortFormInput}
+                />
             </div>
         </div>
-
         <div class="flex gap-2">
             <Button class="w-1/3" onclick={() => map()}>Map</Button>
-
             <Select.Root
                 type="single"
                 bind:value={selectValue}
@@ -315,18 +326,12 @@
                     iriInput = selectedMapping.iri;
                 }}
             >
-                <Select.Trigger class="w-full col-span-2">
-                    {triggerContent}
-                </Select.Trigger>
+                <Select.Trigger class="w-full col-span-2">{triggerContent}</Select.Trigger>
                 <Select.Content>
                     <Select.Item value={"new-mapping"} label={"Create a new mapping"}></Select.Item>
-                    <Select.Group>
-                        <Select.Label>Terms</Select.Label>
-                        {#each selectOptions as option}
-                            <Select.Item value={option.value} label={option.label}>
-                                {option.label}
-                            </Select.Item>
-                        {/each}
+                    <Select.Group
+                        ><Select.Label>Terms</Select.Label>
+                        {#each selectOptions as option}<Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>{/each}
                     </Select.Group>
                 </Select.Content>
             </Select.Root>

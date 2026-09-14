@@ -99,6 +99,7 @@ class MappingStore {
             comment: (sssom.comment as string | undefined) ?? "",
         };
         this.startMapping(this.unmappedOntologies);
+        console.log(sssom)
     }
 
     addCurieMapEntry() {
