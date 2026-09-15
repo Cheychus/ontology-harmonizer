@@ -2,6 +2,16 @@
     import { ArrowRight } from "lucide-svelte";
     import { Badge } from "$lib/components/ui/badge";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
+
+    interface Props {
+        onlyMapped?: boolean;
+    }
+
+    let { onlyMapped = false }: Props = $props();
+
+    const displayedMappings = $derived(
+        onlyMapped ? mappingStore.mappedSssomMappings : mappingStore.mappingSet.mappings,
+    );
 </script>
 
 <section class="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
@@ -10,12 +20,12 @@
             <h3>SSSOM mappings</h3>
             <p class="text-sm text-muted-foreground">Mappings created with SSSOM metadata.</p>
         </div>
-        <Badge variant="outline" class="ml-auto">{mappingStore.mappingSet.mappings.length}</Badge>
+        <Badge variant="outline" class="ml-auto">{displayedMappings.length}</Badge>
     </div>
 
-    {#if mappingStore.mappingSet.mappings.length > 0}
+    {#if displayedMappings.length > 0}
         <div class="flex flex-col gap-3">
-            {#each mappingStore.mappingSet.mappings as mapping}
+            {#each displayedMappings as mapping}
                 <article class="flex flex-col gap-3 rounded-md border p-3">
                     <div class="flex flex-wrap items-center gap-2">
                         <div class="min-w-40 flex-1">
@@ -48,6 +58,8 @@
             {/each}
         </div>
     {:else}
-        <p class="text-sm text-muted-foreground">No SSSOM mappings have been created yet.</p>
+        <p class="text-sm text-muted-foreground">
+            {onlyMapped ? "No SSSOM mappings are relevant to the current ARC." : "No SSSOM mappings have been created yet."}
+        </p>
     {/if}
 </section>

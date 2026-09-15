@@ -46,7 +46,7 @@
                 </Collapsible.Trigger>
             </div>
             <Collapsible.Content class="max-h-96 overflow-y-auto pt-3">
-                <SssomMappings />
+                <SssomMappings onlyMapped />
             </Collapsible.Content>
         </Collapsible.Root>
 

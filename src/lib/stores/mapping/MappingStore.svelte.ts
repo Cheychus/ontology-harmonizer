@@ -20,8 +20,14 @@ class MappingStore {
     subjectIdentifier = $state(this.createDefaultSubjectIdentifier());
     importedSssom: ParsedSssomDocument | null = $state(null);
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
-    mappedOntologies = $derived(this.arcOntologies.filter((o) => this.findMapping(o.key)));
-    unmappedOntologies = $derived(this.arcOntologies.filter((o) => mappingStore.findMapping(o.key) === null));
+    mappedOntologies = $derived(this.arcOntologies.filter((o) => this.hasSssomMapping(o)));
+    unmappedOntologies = $derived(this.arcOntologies.filter((o) => !this.hasSssomMapping(o)));
+    mappedSssomMappings = $derived(
+        this.mappedOntologies.flatMap((ontology) => {
+            const mapping = this.findSssomMapping(ontology);
+            return mapping ? [mapping] : [];
+        }),
+    );
 
     currentIndex = $state(0);
 
@@ -163,6 +169,15 @@ class MappingStore {
             comment: mapping.comment?.trim() || undefined,
         });
         return true;
+    }
+
+    findSssomMapping(ontology: DerivedOntology): SssomMapping | undefined {
+        const subjectId = `${this.subjectIdentifier.prefix}:${ontology.key}`;
+        return this.mappingSet.mappings.find((mapping) => mapping.subjectId === subjectId);
+    }
+
+    hasSssomMapping(ontology: DerivedOntology): boolean {
+        return this.findSssomMapping(ontology) !== undefined;
     }
 
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {

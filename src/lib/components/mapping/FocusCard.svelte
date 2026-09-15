@@ -162,7 +162,18 @@
     }
 
     function addSssomMapping() {
-        mappingStore.addSssomMapping(sssomMapping);
+        if (!selectedMapping && (!iriInput || !shortFormInput)) {
+            warning("IRI and Short Form required");
+            return;
+        }
+        if (selectedMapping) {
+        }
+
+        const mappingSuccess = mappingStore.addSssomMapping(sssomMapping);
+
+        if (mappingSuccess) {
+            mappingStore.moveNext();
+        }
     }
 
     function map() {
