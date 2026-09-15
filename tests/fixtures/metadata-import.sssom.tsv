@@ -2,6 +2,7 @@
 # mapping_set_title: Imported mapping set
 # license: https://creativecommons.org/licenses/by/4.0/
 # future_product_field: retain-this-value
+# subject_source: ex:database
 # curie_map:
 #   ex: https://example.org/
 #   skos: http://www.w3.org/2004/02/skos/core#

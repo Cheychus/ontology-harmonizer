@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { MappingAssertion } from "$lib/types/mapping";
+    import type { SssomMapping } from "$lib/types/mapping";
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import Label from "../ui/label/label.svelte";
@@ -7,7 +7,7 @@
     import { ArrowRight, MessageSquarePlus, UserPlus, X } from "lucide-svelte";
 
     interface Props {
-        mapping: MappingAssertion;
+        mapping: SssomMapping;
     }
     let { mapping = $bindable() }: Props = $props();
     const predicates = [

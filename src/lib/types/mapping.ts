@@ -23,11 +23,12 @@ export interface MappingSet {
         description?: string;
         version?: string;
         comment?: string;
+        subjectSource?: string;
     };
-    assertions: MappingAssertion[];
+    mappings: SssomMapping[];
 }
 
-export interface MappingAssertion {
+export interface SssomMapping {
     subjectId: string;
     subjectLabel?: string;
     predicateId: SupportedPredicate;

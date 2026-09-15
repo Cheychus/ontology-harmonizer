@@ -18,7 +18,7 @@
     import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
     import SSSOMInput from "./SSSOM_Input.svelte";
-    import type { MappingAssertion } from "$lib/types/mapping";
+    import type { SssomMapping } from "$lib/types/mapping";
 
     $inspect(mappingStore.mappingSet);
 
@@ -56,7 +56,7 @@
     );
 
     let searchInput = $derived(currentOntology?.key ?? "");
-    let mappingAssertion = $state<MappingAssertion>({
+    let sssomMapping = $state<SssomMapping>({
         subjectId: "",
         subjectLabel: "",
         predicateId: "skos:exactMatch",
@@ -68,12 +68,12 @@
         authorIds: [],
     });
 
-    // Sync mapping assertion in child component object with current Focus Card ontology values and search results (iri, label)
+    // Keep the SSSOM mapping in sync with the current Focus Card ontology values and search results.
     $effect(() => {
-        mappingAssertion.subjectId = `EDAL:${currentOntology.key}`;
-        mappingAssertion.subjectLabel = currentOntology.key;
-        mappingAssertion.objectId = shortFormInput;
-        mappingAssertion.objectLabel = currentSearchResult?.label ?? "";
+        sssomMapping.subjectId = `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}`;
+        sssomMapping.subjectLabel = currentOntology.key;
+        sssomMapping.objectId = shortFormInput;
+        sssomMapping.objectLabel = currentSearchResult?.label ?? "";
     });
 
     onMount(() => {
@@ -161,8 +161,8 @@
         searchResultIdx = newIdx;
     }
 
-    function addMapping() {
-        mappingStore.addAssertion(mappingAssertion);
+    function addSssomMapping() {
+        mappingStore.addSssomMapping(sssomMapping);
     }
 
     function map() {
@@ -304,7 +304,7 @@
     </div>
 
     <div class="mt-auto flex flex-col w-full gap-2">
-        <SSSOMInput bind:mapping={mappingAssertion} />
+        <SSSOMInput bind:mapping={sssomMapping} />
         <div class="flex gap-2 items-end w-full py-2">
             <div class="flex flex-col w-full gap-2">
                 <Label for="iri-input">IRI</Label><Input
@@ -322,7 +322,7 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <Button class="w-1/3" onclick={() => addMapping()}>Map</Button>
+            <Button class="w-1/3" onclick={addSssomMapping}>Map</Button>
             <Select.Root
                 type="single"
                 bind:value={selectValue}

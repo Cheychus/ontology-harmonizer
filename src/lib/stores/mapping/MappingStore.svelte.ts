@@ -1,6 +1,7 @@
 import mappingStr from "$lib/assets/mappings/mapping.json?raw";
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
-import type { MappingAssertion, MappingSet, ParsedSssomDocument } from "$lib/types/mapping";
+import type { MappingSet, ParsedSssomDocument, SssomMapping } from "$lib/types/mapping";
+import { warning } from "$lib/services/toasts/toastService";
 
 
 export interface IMapping {
@@ -16,6 +17,7 @@ class MappingStore {
     mappingJson: IMapping[] = $state([])
     hasMappingSet = $state(true);
     mappingSet: MappingSet = $state(this.createDefaultMappingSet());
+    subjectIdentifier = $state(this.createDefaultSubjectIdentifier());
     importedSssom: ParsedSssomDocument | null = $state(null);
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.findMapping(o.key)));
@@ -59,6 +61,7 @@ class MappingStore {
         this.mappingJson = [];
         this.hasMappingSet = false;
         this.mappingSet = this.createDefaultMappingSet();
+        this.subjectIdentifier = this.createDefaultSubjectIdentifier();
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies)
     }
@@ -67,6 +70,7 @@ class MappingStore {
         this.mappingJson = mapping;
         this.hasMappingSet = true;
         this.mappingSet = this.createDefaultMappingSet();
+        this.subjectIdentifier = this.createDefaultSubjectIdentifier();
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
@@ -76,12 +80,17 @@ class MappingStore {
         this.mappingJson = [];
         this.hasMappingSet = true;
         this.mappingSet = this.createDefaultMappingSet();
+        this.subjectIdentifier = this.createDefaultSubjectIdentifier();
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
 
     loadSssom(sssom: ParsedSssomDocument) {
         const defaults = this.createDefaultMappingSet();
+        const curieMap = sssom.curie_map
+            ? Object.entries(sssom.curie_map as Record<string, string>).map(([prefix, iri]) => ({ prefix, iri }))
+            : [];
+        const subjectSource = (sssom.subject_source as string | undefined) ?? "";
 
         this.mappingJson = [];
         this.hasMappingSet = true;
@@ -92,33 +101,68 @@ class MappingStore {
                 ...defaults.metadata,
                 mappingSetId: sssom.mapping_set_id as string,
                 license: sssom.license as string,
-                curieMap: sssom.curie_map
-                ? Object.entries(sssom.curie_map as Record<string, string>).map(([prefix, iri]) => ({ prefix, iri }))
-                : [],
+                curieMap,
                 title: (sssom.mapping_set_title as string | undefined) ?? "",
                 description: (sssom.mapping_set_description as string | undefined) ?? "",
                 version: (sssom.mapping_set_version as string | undefined) ?? "",
                 comment: (sssom.comment as string | undefined) ?? "",
+                subjectSource,
             },
         };
+        this.subjectIdentifier = this.inferSubjectIdentifier(subjectSource, curieMap);
         this.startMapping(this.unmappedOntologies);
         console.log(sssom)
     }
 
-    addCurieMapEntry() {
-        this.mappingSet.metadata.curieMap.push({ prefix: "", iri: "" });
+    addCurieMapEntry(prefix: string, iri: string) {
+        if (!prefix || !iri || this.mappingSet.metadata.curieMap.some((entry) => entry.prefix === prefix)) {
+            return false;
+        }
+
+        this.mappingSet.metadata.curieMap.push({ prefix, iri });
+        return true;
     }
 
     removeCurieMapEntry(index: number) {
         this.mappingSet.metadata.curieMap.splice(index, 1);
     }
 
-    addAssertion(assertion: MappingAssertion) {
-        this.mappingSet.assertions.push({
-            ...assertion,
-            authorIds: assertion.authorIds?.map((authorId) => authorId.trim()).filter(Boolean),
-            comment: assertion.comment?.trim() || undefined,
+    setSubjectIdentifier(prefix: string, uri: string) {
+        const previousPrefix = this.subjectIdentifier.prefix;
+
+        if (previousPrefix && previousPrefix !== prefix) {
+            this.mappingSet.metadata.curieMap = this.mappingSet.metadata.curieMap.filter((entry) => entry.prefix !== previousPrefix);
+        }
+
+        this.subjectIdentifier = { prefix, uri };
+
+        if (!prefix || !uri) return;
+
+        const curieMapEntry = this.mappingSet.metadata.curieMap.find((entry) => entry.prefix === prefix);
+        if (curieMapEntry) {
+            curieMapEntry.iri = uri;
+        } else {
+            this.mappingSet.metadata.curieMap.push({ prefix, iri: uri });
+        }
+    }
+
+    setSubjectSource(subjectSource: string) {
+        this.mappingSet.metadata.subjectSource = subjectSource;
+    }
+
+    addSssomMapping(mapping: SssomMapping): boolean {
+        const alreadyMapped = this.mappingSet.mappings.some((existing) => existing.subjectId === mapping.subjectId);
+        if (alreadyMapped) {
+            warning(`Mapping for [${mapping.subjectId}] already defined`);
+            return false;
+        }
+
+        this.mappingSet.mappings.push({
+            ...mapping,
+            authorIds: mapping.authorIds?.map((authorId) => authorId.trim()).filter(Boolean),
+            comment: mapping.comment?.trim() || undefined,
         });
+        return true;
     }
 
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
@@ -197,8 +241,28 @@ class MappingStore {
                 version: "1.0.0",
                 comment: "",
             },
-            assertions: [],
+            mappings: [],
         };
+    }
+
+    private createDefaultSubjectIdentifier() {
+        return {
+            prefix: "EDAL",
+            uri: "",
+        };
+    }
+
+    private inferSubjectIdentifier(subjectSource: string, curieMap: MappingSet["metadata"]["curieMap"]) {
+        const curieEntry = curieMap.find((entry) => subjectSource.startsWith(`${entry.prefix}:`));
+        if (curieEntry) {
+            return { prefix: curieEntry.prefix, uri: curieEntry.iri };
+        }
+
+        const iriEntry = curieMap
+            .filter((entry) => subjectSource.startsWith(entry.iri))
+            .sort((left, right) => right.iri.length - left.iri.length)[0];
+
+        return iriEntry ? { prefix: iriEntry.prefix, uri: iriEntry.iri } : { prefix: "", uri: "" };
     }
 
 }

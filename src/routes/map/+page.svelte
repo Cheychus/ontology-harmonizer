@@ -3,7 +3,9 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Settings } from "lucide-svelte";
+    import { ChevronDown, Settings } from "lucide-svelte";
+    import * as Collapsible from "$lib/components/ui/collapsible";
+    import SssomMappings from "$lib/components/mapping/SssomMappings.svelte";
 
     let progress = $derived(((mappingStore.mappedOntologies.length + mappingStore.skipped.length) / arcStore.ontologyCandidates.size) * 100),
         done = $derived(mappingStore.mappedOntologies.length),
@@ -11,6 +13,7 @@
 
     let queue = $derived(mappingStore.queue);
     let currentOntology: DerivedOntology | null = $derived(mappingStore.current);
+    let mappedMappingsOpen = $state(false);
 </script>
 
 {#if !arcStore.initialised}
@@ -29,11 +32,23 @@
         <div class="shrink-0 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div class="h-full bg-green-500 transition-all duration-300" style="width: {progress}%"></div>
         </div>
-        <div class="flex gap-8">
-            <p class="text-sm text-gray-500">
-                {done} of {total} mapped ({Math.round(progress)}%) - Skipped {mappingStore.skipped.length}
-            </p>
-        </div>
+        <Collapsible.Root bind:open={mappedMappingsOpen} class="shrink-0">
+            <div class="flex items-center gap-2">
+                <p class="text-sm text-gray-500">
+                    {done} of {total} mapped ({Math.round(progress)}%) - Skipped {mappingStore.skipped.length}
+                </p>
+                <Collapsible.Trigger
+                    class="ml-auto inline-flex size-8 items-center justify-center rounded-md border hover:bg-accent"
+                    aria-label="Show mapped SSSOM mappings"
+                    title="Show mapped SSSOM mappings"
+                >
+                    <ChevronDown class={`size-4 transition-transform ${mappedMappingsOpen ? "rotate-180" : ""}`} />
+                </Collapsible.Trigger>
+            </div>
+            <Collapsible.Content class="max-h-96 overflow-y-auto pt-3">
+                <SssomMappings />
+            </Collapsible.Content>
+        </Collapsible.Root>
 
         {#if currentOntology}
             <div class="flex-1 min-h-0">
