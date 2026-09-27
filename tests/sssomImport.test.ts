@@ -13,8 +13,7 @@ describe("SSSOM mapping-set metadata import", () => {
         expect(mappingStore.mappingSet.metadata.title).toBe("Imported mapping set");
         expect(mappingStore.mappingSet.metadata.mappingSetId).toBe("https://example.org/mapping-set.sssom.tsv");
         expect(mappingStore.mappingSet.metadata.license).toBe("https://creativecommons.org/licenses/by/4.0/");
-        expect(mappingStore.mappingSet.metadata.subjectSource).toBe("https://example.org/database");
-        expect(mappingStore.subjectIdentifier).toEqual({ prefix: "ex", uri: "https://example.org/" });
+        expect(mappingStore.subjectIdentifier).toEqual({ prefix: "", uri: "" });
     });
 
     it("retains unknown parsed header fields for a future merge", async () => {

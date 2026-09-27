@@ -5,34 +5,14 @@
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import { Plus, X } from "lucide-svelte";
 
-    let subjectPrefix = $state(mappingStore.subjectIdentifier.prefix);
-    let subjectIdUri = $state(mappingStore.subjectIdentifier.uri);
-    let subjectSource = $state(mappingStore.mappingSet.metadata.subjectSource ?? "");
     let addingCuriePrefix = $state(false);
     let newCuriePrefix = $state("");
     let newCurieIri = $state("");
     let newCuriePrefixError = $state("");
 
-    function saveSubjectIdentifier() {
-        mappingStore.setSubjectIdentifier(subjectPrefix.trim(), subjectIdUri.trim());
-        mappingStore.setSubjectSource(subjectSource.trim());
-    }
-
-    // Imported SSSOM metadata can update the store while this form remains mounted.
-    $effect(() => {
-        subjectPrefix = mappingStore.subjectIdentifier.prefix;
-        subjectIdUri = mappingStore.subjectIdentifier.uri;
-        subjectSource = mappingStore.mappingSet.metadata.subjectSource ?? "";
-    });
-
     function addAdditionalCuriePrefix() {
         const prefix = newCuriePrefix.trim();
         const iri = newCurieIri.trim();
-
-        if (prefix === mappingStore.subjectIdentifier.prefix) {
-            newCuriePrefixError = `${prefix} is managed in Subject identifiers. Choose another prefix.`;
-            return;
-        }
 
         if (!mappingStore.addCurieMapEntry(prefix, iri)) {
             newCuriePrefixError = "Enter a unique prefix and its URI.";
@@ -89,43 +69,9 @@
         ></textarea>
     </div>
 
-    <div class="flex flex-col gap-4 rounded-md border p-3">
-        <div>
-            <h4>Subject identifiers</h4>
-            <p class="text-sm text-muted-foreground">Defines generated subject IDs and the source metadata for this mapping set.</p>
-        </div>
-        <div class="grid gap-4 md:grid-cols-3">
-            <div class="flex flex-col gap-2">
-                <Label for="subject-prefix">Subject prefix</Label>
-                <Input id="subject-prefix" placeholder="e.g. KF_FOOD" bind:value={subjectPrefix} onblur={saveSubjectIdentifier} />
-            </div>
-            <div class="flex flex-col gap-2">
-                <Label for="subject-id-uri">Subject URI</Label>
-                <Input
-                    id="subject-id-uri"
-                    placeholder="e.g. https://kewl-foodie.inc/food/"
-                    bind:value={subjectIdUri}
-                    onblur={saveSubjectIdentifier}
-                />
-            </div>
-            <div class="flex flex-col gap-2">
-                <Label for="subject-source">Subject source</Label>
-                <Input
-                    id="subject-source"
-                    placeholder="e.g. https://kewl-foodie.inc/food/DB"
-                    bind:value={subjectSource}
-                    onblur={saveSubjectIdentifier}
-                />
-            </div>
-        </div>
-        <p class="text-sm text-muted-foreground">
-            New subject IDs use {subjectPrefix || "<prefix>"}:&lt;term&gt;.
-        </p>
-    </div>
-
     <div class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
-            <Label>Additional CURIE prefixes</Label>
+            <Label>CURIE prefixes</Label>
             <Button variant="outline" size="sm" onclick={() => (addingCuriePrefix = !addingCuriePrefix)}><Plus /> Add prefix</Button>
         </div>
         {#if addingCuriePrefix}
@@ -148,20 +94,18 @@
         {#if mappingStore.mappingSet.metadata.curieMap.length > 0}
             <div class="flex flex-col gap-2">
                 {#each mappingStore.mappingSet.metadata.curieMap as entry, index}
-                    {#if entry.prefix !== mappingStore.subjectIdentifier.prefix}
-                        <div class="flex gap-2">
-                            <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
-                            <Input aria-label="CURIE prefix IRI" class="" bind:value={entry.iri} />
-                            <Button
-                                variant="outline"
-                                size="icon-sm"
-                                aria-label={`Remove ${entry.prefix || "CURIE prefix"}`}
-                                onclick={() => mappingStore.removeCurieMapEntry(index)}
-                            >
-                                <X />
-                            </Button>
-                        </div>
-                    {/if}
+                    <div class="flex items-center gap-2">
+                        <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
+                        <Input aria-label="CURIE prefix IRI" class="" bind:value={entry.iri} />
+                        <Button
+                            variant="outline"
+                            size="icon-sm"
+                            aria-label={`Remove ${entry.prefix || "CURIE prefix"}`}
+                            onclick={() => mappingStore.removeCurieMapEntry(index)}
+                        >
+                            <X />
+                        </Button>
+                    </div>
                 {/each}
             </div>
         {:else}

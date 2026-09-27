@@ -70,7 +70,9 @@
 
     // Keep the SSSOM mapping in sync with the current Focus Card ontology values and search results.
     $effect(() => {
-        sssomMapping.subjectId = `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}`;
+        sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix
+            ? `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}`
+            : "";
         sssomMapping.subjectLabel = currentOntology.key;
         sssomMapping.objectId = shortFormInput;
         sssomMapping.objectLabel = currentSearchResult?.label ?? "";
@@ -162,6 +164,10 @@
     }
 
     function addSssomMapping() {
+        if (!mappingStore.subjectIdentifier.prefix) {
+            warning("Choose a subject prefix before creating mappings");
+            return;
+        }
         if (!selectedMapping && (!iriInput || !shortFormInput)) {
             warning("IRI and Short Form required");
             return;

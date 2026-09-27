@@ -10,8 +10,8 @@ export interface ParsedSssomDocument {
     [headerKey: string]: unknown;
 }
 
-export type SupportedPredicate = "skos:exactMatch" | "skos:relatedMatch" | "skos:closeMatch";
-export type MappingJustification = "semapv:ManualMappingCuration";
+export type SupportedPredicate = "skos:exactMatch" | "skos:relatedMatch" | "skos:closeMatch" | string;
+export type MappingJustification = "semapv:ManualMappingCuration" | string;
 
 export interface MappingSet {
     formatVersion: '1.0';
@@ -23,7 +23,6 @@ export interface MappingSet {
         description?: string;
         version?: string;
         comment?: string;
-        subjectSource?: string;
     };
     mappings: SssomMapping[];
 }
@@ -34,7 +33,7 @@ export interface SssomMapping {
     predicateId: SupportedPredicate;
     objectId: string;
     objectLabel?: string;
-    mappingJustification: MappingJustification;
+    mappingJustification?: MappingJustification;
     confidence?: number;
     comment?: string;
     authorIds?: string[];

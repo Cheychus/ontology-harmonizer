@@ -1,9 +1,13 @@
-import mappingStr from "$lib/assets/mappings/mapping.json?raw";
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
 import type { MappingSet, ParsedSssomDocument, SssomMapping } from "$lib/types/mapping";
 import { warning } from "$lib/services/toasts/toastService";
+import {
+    createDefaultMappingSet,
+    createMappingSetFromSssom,
+} from "$lib/services/sssom/sssom";
 
 
+/** @deprecated Legacy JSON mapping shape. Use SssomMapping for new features. */
 export interface IMapping {
     name: string;
     iri: string;
@@ -14,10 +18,11 @@ export interface IMapping {
 
 class MappingStore {
     fileName: string = $state("");
+    /** @deprecated Legacy JSON mappings. Use mappingSet.mappings instead. */
     mappingJson: IMapping[] = $state([])
     hasMappingSet = $state(true);
-    mappingSet: MappingSet = $state(this.createDefaultMappingSet());
-    subjectIdentifier = $state(this.createDefaultSubjectIdentifier());
+    mappingSet: MappingSet = $state(createDefaultMappingSet());
+    subjectPrefix = $state("");
     importedSssom: ParsedSssomDocument | null = $state(null);
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.hasSssomMapping(o)));
@@ -34,6 +39,11 @@ class MappingStore {
     current: DerivedOntology | null = $state(null);
     queue: DerivedOntology[] = $state([]);
     skipped: DerivedOntology[] = $state([]);
+
+    get subjectIdentifier() {
+        const entry = this.mappingSet.metadata.curieMap.find((candidate) => candidate.prefix === this.subjectPrefix);
+        return { prefix: entry?.prefix ?? "", uri: entry?.iri ?? "" };
+    }
 
     moveNext() {
         this.current = this.queue[0] ?? null;
@@ -66,17 +76,18 @@ class MappingStore {
         this.fileName = "";
         this.mappingJson = [];
         this.hasMappingSet = false;
-        this.mappingSet = this.createDefaultMappingSet();
-        this.subjectIdentifier = this.createDefaultSubjectIdentifier();
+        this.mappingSet = createDefaultMappingSet();
+        this.subjectPrefix = "";
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies)
     }
 
+    /** @deprecated Loads the legacy JSON mapping format. Use loadSssom instead. */
     load(mapping: IMapping[]) {
         this.mappingJson = mapping;
         this.hasMappingSet = true;
-        this.mappingSet = this.createDefaultMappingSet();
-        this.subjectIdentifier = this.createDefaultSubjectIdentifier();
+        this.mappingSet = createDefaultMappingSet();
+        this.subjectPrefix = "";
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
@@ -85,39 +96,22 @@ class MappingStore {
         this.fileName = "";
         this.mappingJson = [];
         this.hasMappingSet = true;
-        this.mappingSet = this.createDefaultMappingSet();
-        this.subjectIdentifier = this.createDefaultSubjectIdentifier();
+        this.mappingSet = createDefaultMappingSet();
+        this.subjectPrefix = "";
         this.importedSssom = null;
         this.startMapping(this.unmappedOntologies);
     }
 
     loadSssom(sssom: ParsedSssomDocument) {
-        const defaults = this.createDefaultMappingSet();
-        const curieMap = sssom.curie_map
-            ? Object.entries(sssom.curie_map as Record<string, string>).map(([prefix, iri]) => ({ prefix, iri }))
-            : [];
-        const subjectSource = (sssom.subject_source as string | undefined) ?? "";
+        const mappingSet = createMappingSetFromSssom(sssom);
 
         this.mappingJson = [];
         this.hasMappingSet = true;
         this.importedSssom = sssom;
-        this.mappingSet = {
-            ...defaults,
-            metadata: {
-                ...defaults.metadata,
-                mappingSetId: sssom.mapping_set_id as string,
-                license: sssom.license as string,
-                curieMap,
-                title: (sssom.mapping_set_title as string | undefined) ?? "",
-                description: (sssom.mapping_set_description as string | undefined) ?? "",
-                version: (sssom.mapping_set_version as string | undefined) ?? "",
-                comment: (sssom.comment as string | undefined) ?? "",
-                subjectSource,
-            },
-        };
-        this.subjectIdentifier = this.inferSubjectIdentifier(subjectSource, curieMap);
+        this.mappingSet = mappingSet;
+        this.subjectPrefix = "";
         this.startMapping(this.unmappedOntologies);
-        console.log(sssom)
+        console.log(sssom, this.mappingSet)
     }
 
     addCurieMapEntry(prefix: string, iri: string) {
@@ -130,30 +124,10 @@ class MappingStore {
     }
 
     removeCurieMapEntry(index: number) {
+        if (this.mappingSet.metadata.curieMap[index]?.prefix === this.subjectPrefix) {
+            this.subjectPrefix = "";
+        }
         this.mappingSet.metadata.curieMap.splice(index, 1);
-    }
-
-    setSubjectIdentifier(prefix: string, uri: string) {
-        const previousPrefix = this.subjectIdentifier.prefix;
-
-        if (previousPrefix && previousPrefix !== prefix) {
-            this.mappingSet.metadata.curieMap = this.mappingSet.metadata.curieMap.filter((entry) => entry.prefix !== previousPrefix);
-        }
-
-        this.subjectIdentifier = { prefix, uri };
-
-        if (!prefix || !uri) return;
-
-        const curieMapEntry = this.mappingSet.metadata.curieMap.find((entry) => entry.prefix === prefix);
-        if (curieMapEntry) {
-            curieMapEntry.iri = uri;
-        } else {
-            this.mappingSet.metadata.curieMap.push({ prefix, iri: uri });
-        }
-    }
-
-    setSubjectSource(subjectSource: string) {
-        this.mappingSet.metadata.subjectSource = subjectSource;
     }
 
     addSssomMapping(mapping: SssomMapping): boolean {
@@ -172,6 +146,7 @@ class MappingStore {
     }
 
     findSssomMapping(ontology: DerivedOntology): SssomMapping | undefined {
+        if (!this.subjectIdentifier.prefix) return undefined;
         const subjectId = `${this.subjectIdentifier.prefix}:${ontology.key}`;
         return this.mappingSet.mappings.find((mapping) => mapping.subjectId === subjectId);
     }
@@ -180,6 +155,7 @@ class MappingStore {
         return this.findSssomMapping(ontology) !== undefined;
     }
 
+    /** @deprecated Adds a legacy JSON mapping. Use addSssomMapping instead. */
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
         let mapping = this.findMapping(name);
 
@@ -198,10 +174,12 @@ class MappingStore {
         return mapping;
     }
 
+    /** @deprecated Searches legacy JSON mappings. */
     findMapping(name: string) {
         return this.mappingJson.find((m) => m.name.toLowerCase() === name.toLowerCase() || m.synonyms.find((s) => s.toLowerCase() === name.toLowerCase())) ?? null;
     }
 
+    /** @deprecated Searches legacy JSON mappings. */
     findMappings(query: string) {
         if (!query) return this.mappingJson;
         const q = query.toLowerCase();
@@ -212,72 +190,27 @@ class MappingStore {
         );
     }
 
+    /** @deprecated Removes a legacy JSON mapping. */
     removeMapping(index: number) {
         return this.mappingJson.splice(index, 1);
     }
 
+    /** @deprecated Removes a synonym from a legacy JSON mapping. */
     removeSynonym(mapping: IMapping, index: number) {
         const deleted = mapping.synonyms.splice(index, 1);
         return deleted;
     }
 
+    /** @deprecated Adds a synonym to a legacy JSON mapping. */
     addSynonym(mapping: IMapping, synonym: string) {
         return mapping.synonyms.push(synonym);
     }
 
+    /** @deprecated Legacy JSON mapping helper. */
     iriIncludesShortForm(iri: string, shortForm: string) {
         const replacedIri = iri.replace("_", ":").toLowerCase();
         const replacedShortForm = shortForm.replace("_", ":").toLowerCase();
         return replacedIri.includes(replacedShortForm);
-    }
-
-    private createDefaultMappingSet(): MappingSet {
-        return {
-            formatVersion: "1.0",
-            metadata: {
-                mappingSetId: "mapping",
-                license: "CC-BY-4.0",
-                curieMap: [
-                    {
-                        prefix: "skos",
-                        iri: "http://www.w3.org/2004/02/skos/core#"
-                    },
-                    {
-                        prefix: "semapv",
-                        iri: "https://w3id.org/semapv/vocab/"
-                    },
-                    {
-                        prefix: "orcid",
-                        iri: "https://orcid.org/"
-                    }
-                ],
-                title: "",
-                description: "",
-                version: "1.0.0",
-                comment: "",
-            },
-            mappings: [],
-        };
-    }
-
-    private createDefaultSubjectIdentifier() {
-        return {
-            prefix: "EDAL",
-            uri: "",
-        };
-    }
-
-    private inferSubjectIdentifier(subjectSource: string, curieMap: MappingSet["metadata"]["curieMap"]) {
-        const curieEntry = curieMap.find((entry) => subjectSource.startsWith(`${entry.prefix}:`));
-        if (curieEntry) {
-            return { prefix: curieEntry.prefix, uri: curieEntry.iri };
-        }
-
-        const iriEntry = curieMap
-            .filter((entry) => subjectSource.startsWith(entry.iri))
-            .sort((left, right) => right.iri.length - left.iri.length)[0];
-
-        return iriEntry ? { prefix: iriEntry.prefix, uri: iriEntry.iri } : { prefix: "", uri: "" };
     }
 
 }
