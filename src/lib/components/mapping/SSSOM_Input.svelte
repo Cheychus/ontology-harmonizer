@@ -6,7 +6,7 @@
     import Label from "../ui/label/label.svelte";
     import * as Select from "$lib/components/ui/select/index.js";
     import { ArrowRight, MessageSquarePlus, UserPlus, X } from "lucide-svelte";
-    import { extractBaseIri, extractPrefixFromCurie } from "$lib/services/sssom/curieMap";
+    import { extractBaseIri, extractPrefixFromObjectId } from "$lib/services/sssom/curieMap";
 
     interface Props {
         mapping: SssomMapping;
@@ -23,7 +23,7 @@
     ];
 
     let baseIri = $derived(extractBaseIri(shortForm, iri) ?? iri);
-    let prefix = $derived(extractPrefixFromCurie(shortForm) ?? "");
+    let prefix = $derived(extractPrefixFromObjectId(shortForm) ?? "");
 
     const triggerContent = $derived(predicates.find((predicate) => predicate.value === mapping.predicateId)?.label ?? "Select a predicate");
     const subjectPrefixTriggerContent = $derived(mappingStore.subjectIdentifier.prefix || "Choose prefix");
