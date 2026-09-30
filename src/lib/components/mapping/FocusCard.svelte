@@ -70,9 +70,7 @@
 
     // Keep the SSSOM mapping in sync with the current Focus Card ontology values and search results.
     $effect(() => {
-        sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix
-            ? `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}`
-            : "";
+        sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix ? `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}` : "";
         sssomMapping.subjectLabel = currentOntology.key;
         sssomMapping.objectId = shortFormInput;
         sssomMapping.objectLabel = currentSearchResult?.label ?? "";
@@ -321,7 +319,7 @@
     </div>
 
     <div class="mt-auto flex flex-col w-full gap-2">
-        <SSSOMInput bind:mapping={sssomMapping} />
+        <SSSOMInput bind:mapping={sssomMapping} shortForm={shortFormInput} iri={iriInput} />
         <div class="flex gap-2 items-end w-full py-2">
             <div class="flex flex-col w-full gap-2">
                 <Label for="iri-input">IRI</Label><Input

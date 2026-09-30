@@ -6,16 +6,25 @@
     import Label from "../ui/label/label.svelte";
     import * as Select from "$lib/components/ui/select/index.js";
     import { ArrowRight, MessageSquarePlus, UserPlus, X } from "lucide-svelte";
+    import { extractBaseIri, extractPrefixFromCurie } from "$lib/services/sssom/curieMap";
 
     interface Props {
         mapping: SssomMapping;
+        iri: string;
+        shortForm: string;
     }
-    let { mapping = $bindable() }: Props = $props();
+
+    let { mapping = $bindable(), iri, shortForm }: Props = $props();
+
     const predicates = [
         { value: "skos:exactMatch", label: "Exact Match" },
         { value: "skos:closeMatch", label: "Close Match" },
         { value: "skos:relatedMatch", label: "Related Match" },
     ];
+
+    let baseIri = $derived(extractBaseIri(shortForm, iri) ?? iri);
+    let prefix = $derived(extractPrefixFromCurie(shortForm) ?? "");
+
     const triggerContent = $derived(predicates.find((predicate) => predicate.value === mapping.predicateId)?.label ?? "Select a predicate");
     const subjectPrefixTriggerContent = $derived(mappingStore.subjectIdentifier.prefix || "Choose prefix");
     let showComment = $state(Boolean(mapping.comment));
@@ -98,6 +107,20 @@
             </Select.Group>
         </Select.Content>
     </Select.Root>
+</div>
+
+<div class="flex flex-col gap-3 py-2">
+    <h4 class="text-lg">CURIE Map Details</h4>
+
+    <div class="flex flex-col gap-2">
+        <Label for="curie-map-prefix">Prefix</Label>
+        <Input id="curie-map-prefix" bind:value={prefix} />
+    </div>
+
+    <div class="flex flex-col gap-2">
+        <Label for="curie-map-base-iri">Base IRI</Label>
+        <Input id="curie-map-base-iri" bind:value={baseIri} />
+    </div>
 </div>
 
 <div class="flex flex-col gap-4 py-2">
