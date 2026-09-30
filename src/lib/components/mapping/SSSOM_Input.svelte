@@ -16,9 +16,10 @@
         mapping: SssomMapping;
         iri: string;
         shortForm: string;
+        curieMapDetailsAccepted: boolean;
     }
 
-    let { mapping = $bindable(), iri, shortForm }: Props = $props();
+    let { mapping = $bindable(), iri, shortForm, curieMapDetailsAccepted = $bindable() }: Props = $props();
 
     const predicates = [
         { value: "skos:exactMatch", label: "Exact Match" },
@@ -28,7 +29,6 @@
 
     let baseIri = $state("");
     let prefix = $state("");
-    let curieMapDetailsAccepted = $state(false);
     let validationError = $state("");
 
     const triggerContent = $derived(predicates.find((predicate) => predicate.value === mapping.predicateId)?.label ?? "Select a predicate");
@@ -42,9 +42,12 @@
     }
 
     $effect(() => {
-        baseIri = extractBaseIri(shortForm, iri) ?? iri;
-        prefix = extractPrefixFromObjectId(shortForm) ?? "";
-        curieMapDetailsAccepted = false;
+        const extractedBaseIri = extractBaseIri(shortForm, iri) ?? iri;
+        const extractedPrefix = extractPrefixFromObjectId(shortForm) ?? "";
+
+        baseIri = extractedBaseIri;
+        prefix = extractedPrefix;
+        curieMapDetailsAccepted = isCurieMapDetailsValid(iri, shortForm, extractedPrefix, extractedBaseIri);
         validationError = "";
     });
 
