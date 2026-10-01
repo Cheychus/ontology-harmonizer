@@ -3,28 +3,13 @@
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import Label from "../ui/label/label.svelte";
-    import { Check, MessageSquarePlus, Pencil, UserPlus, X } from "lucide-svelte";
-    import { extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
+    import { MessageSquarePlus, UserPlus, X } from "lucide-svelte";
 
     interface Props {
         mapping: SssomMapping;
-        iri: string;
-        shortForm: string;
-        prefix: string;
-        baseIri: string;
-        curieMapDetailsAccepted: boolean;
     }
 
-    let {
-        mapping = $bindable(),
-        iri,
-        shortForm,
-        prefix = $bindable(),
-        baseIri = $bindable(),
-        curieMapDetailsAccepted = $bindable(),
-    }: Props = $props();
-
-    let validationError = $state("");
+    let { mapping = $bindable() }: Props = $props();
 
     let showComment = $state(Boolean(mapping.comment));
     function addAuthorId() {
@@ -33,46 +18,10 @@
     function removeAuthorId(index: number) {
         mapping.authorIds = (mapping.authorIds ?? []).filter((_, authorIndex) => authorIndex !== index);
     }
-
-    $effect(() => {
-        const extractedBaseIri = extractBaseIri(shortForm, iri) ?? iri;
-        const extractedPrefix = extractPrefixFromObjectId(shortForm) ?? "";
-        const localId = extractLocalIdFromObjectId(shortForm);
-        const automaticallyAccepted = isCurieMapDetailsValid(iri, shortForm, extractedPrefix, extractedBaseIri);
-
-        baseIri = extractedBaseIri;
-        prefix = extractedPrefix;
-        curieMapDetailsAccepted = automaticallyAccepted;
-        mapping.objectId = automaticallyAccepted && localId ? `${extractedPrefix}:${localId}` : shortForm;
-        validationError = "";
-    });
-
-    function toggleCurieMapDetails() {
-        if (curieMapDetailsAccepted) {
-            curieMapDetailsAccepted = false;
-            mapping.objectId = shortForm;
-            return;
-        }
-
-        const isValid = isCurieMapDetailsValid(iri, shortForm, prefix, baseIri);
-        if (!isValid) {
-            validationError = "Prefix and Base IRI do not resolve to the selected IRI.";
-            return;
-        }
-
-        const localId = extractLocalIdFromObjectId(shortForm);
-        if (!localId) {
-            validationError = "Short Form has no local identifier.";
-            return;
-        }
-        mapping.objectId = `${prefix}:${localId}`;
-        validationError = "";
-        curieMapDetailsAccepted = true;
-    }
 </script>
 
 <div class="flex items-center gap-4 py-1">
-    <h3 class="text-2xl">SSSOM Mapping</h3>
+    <h3 class="text-2xl">Additional Mapping Information</h3>
     <div class="ml-auto flex items-center gap-1">
         <Button
             variant="outline"
@@ -88,47 +37,6 @@
             <UserPlus />
         </Button>
     </div>
-</div>
-<div class="py-1">
-    <div class="flex min-w-0 flex-col gap-2">
-        <Label class="h-6" for="object-id">Object ID (Object Label)</Label>
-        <p class="flex min-h-9 items-center wrap-break-word" title={`${mapping.objectId} (${mapping.objectLabel ?? ""})`}>
-            {mapping.objectId} ({mapping.objectLabel ?? ""})
-        </p>
-    </div>
-
-</div>
-
-<div class="flex flex-col gap-3 py-2">
-    <h4 class="text-lg">CURIE Map Details</h4>
-
-    <div class="grid grid-cols-[auto_auto_1fr] items-end gap-2">
-        <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label={curieMapDetailsAccepted ? "Edit CURIE Map Details" : "Accept CURIE Map Details"}
-            onclick={toggleCurieMapDetails}
-        >
-            {#if curieMapDetailsAccepted}
-                <Pencil />
-            {:else}
-                <Check />
-            {/if}
-        </Button>
-        <div class="flex flex-col gap-2">
-            <Label for="curie-map-prefix">Prefix</Label>
-            <Input id="curie-map-prefix" bind:value={prefix} disabled={curieMapDetailsAccepted} />
-        </div>
-
-        <div class="flex flex-col gap-2">
-            <Label for="curie-map-base-iri">Base IRI</Label>
-            <Input id="curie-map-base-iri" bind:value={baseIri} disabled={curieMapDetailsAccepted} />
-        </div>
-    </div>
-
-    {#if validationError}
-        <p class="text-sm text-destructive">{validationError}</p>
-    {/if}
 </div>
 
 <div class="flex flex-col gap-4 py-2">

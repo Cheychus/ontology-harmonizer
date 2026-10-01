@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Search, LoaderCircle, ArrowLeft, ArrowRight, X } from "lucide-svelte";
+    import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X } from "lucide-svelte";
     import { Input } from "../ui/input";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
@@ -18,6 +18,7 @@
     import { Switch } from "../ui/switch";
     import SSSOMInput from "./SSSOM_Input.svelte";
     import type { SssomMapping } from "$lib/types/mapping";
+    import { extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
 
     $inspect(mappingStore.mappingSet);
 
@@ -43,6 +44,7 @@
     let curieMapPrefix = $state("");
     let curieMapBaseIri = $state("");
     let curieMapDetailsAccepted = $state(false);
+    let curieMapValidationError = $state("");
 
     // Derive select options from the existing obo file mapping terms
     const selectOptions = $derived.by(() => {
@@ -85,7 +87,41 @@
         sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix ? `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}` : "";
         sssomMapping.subjectLabel = currentOntology.key;
         sssomMapping.objectLabel = currentSearchResult?.label ?? "";
+
+        const extractedBaseIri = extractBaseIri(shortFormInput, iriInput) ?? iriInput;
+        const extractedPrefix = extractPrefixFromObjectId(shortFormInput) ?? "";
+        const localId = extractLocalIdFromObjectId(shortFormInput);
+        const automaticallyAccepted = isCurieMapDetailsValid(iriInput, shortFormInput, extractedPrefix, extractedBaseIri);
+
+        curieMapBaseIri = extractedBaseIri;
+        curieMapPrefix = extractedPrefix;
+        curieMapDetailsAccepted = automaticallyAccepted;
+        sssomMapping.objectId = automaticallyAccepted && localId ? `${extractedPrefix}:${localId}` : shortFormInput;
+        curieMapValidationError = "";
     });
+
+    function toggleCurieMapDetails() {
+        if (curieMapDetailsAccepted) {
+            curieMapDetailsAccepted = false;
+            sssomMapping.objectId = shortFormInput;
+            return;
+        }
+
+        if (!isCurieMapDetailsValid(iriInput, shortFormInput, curieMapPrefix, curieMapBaseIri)) {
+            curieMapValidationError = "Prefix and Base IRI do not resolve to the selected IRI.";
+            return;
+        }
+
+        const localId = extractLocalIdFromObjectId(shortFormInput);
+        if (!localId) {
+            curieMapValidationError = "Short Form has no local identifier.";
+            return;
+        }
+
+        sssomMapping.objectId = `${curieMapPrefix}:${localId}`;
+        curieMapValidationError = "";
+        curieMapDetailsAccepted = true;
+    }
 
     onMount(() => {
         if (settingsStore.automaticMatching) {
@@ -190,6 +226,12 @@
             warning("Choose a subject prefix before creating mappings");
             return;
         }
+
+        if (!curieMapDetailsAccepted) {
+            warning("Curie Map Details are not valid");
+            return;
+        }
+
         if (!selectedMapping && (!iriInput || !shortFormInput)) {
             warning("IRI and Short Form required");
             return;
@@ -200,9 +242,7 @@
         const mappingSuccess = mappingStore.addSssomMapping(sssomMapping);
 
         if (mappingSuccess) {
-            if (curieMapDetailsAccepted) {
-                mappingStore.addCurieMapEntry(curieMapPrefix, curieMapBaseIri);
-            }
+            mappingStore.addCurieMapEntry(curieMapPrefix, curieMapBaseIri);
             mappingStore.moveNext();
         }
     }
@@ -361,36 +401,67 @@
                 <p class="text-sm font-medium text-muted-foreground">Search result</p>
                 <h3 class="mb-3 break-words text-lg font-semibold">{currentSearchResult.label}</h3>
 
-                <div class="mb-3 flex gap-3 text-sm">
-                    <div class="flex min-w-0 flex-col gap-2">
-                        <Label for="mapping-relationship">Relationship</Label>
-                        <Select.Root type="single" name="predicateId" bind:value={sssomMapping.predicateId}>
-                            <Select.Trigger id="mapping-relationship" class="w-45">{predicateTriggerContent}</Select.Trigger>
-                            <Select.Content>
-                                <Select.Group>
-                                    <Select.Label>Relationships</Select.Label>
-                                    {#each predicates as predicate (predicate.value)}
-                                        <Select.Item value={predicate.value} label={predicate.label}>{predicate.label}</Select.Item>
-                                    {/each}
-                                </Select.Group>
-                            </Select.Content>
-                        </Select.Root>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <Label for="mapping-confidence">Confidence</Label>
-                        <Input
-                            id="mapping-confidence"
-                            class="text-center"
-                            type="number"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            bind:value={sssomMapping.confidence}
-                        />
-                    </div>
-                </div>
-
                 <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+                    <dt class="font-medium text-muted-foreground">Relationship</dt>
+                    <dd class="flex gap-3">
+                        <div class="flex min-w-0 flex-col gap-2">
+                            <Label for="mapping-relationship">Predicate</Label>
+                            <Select.Root type="single" name="predicateId" bind:value={sssomMapping.predicateId}>
+                                <Select.Trigger id="mapping-relationship" class="w-45">{predicateTriggerContent}</Select.Trigger>
+                                <Select.Content>
+                                    <Select.Group>
+                                        <Select.Label>Relationships</Select.Label>
+                                        {#each predicates as predicate (predicate.value)}
+                                            <Select.Item value={predicate.value} label={predicate.label}>{predicate.label}</Select.Item>
+                                        {/each}
+                                    </Select.Group>
+                                </Select.Content>
+                            </Select.Root>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <Label for="mapping-confidence">Confidence</Label>
+                            <Input
+                                id="mapping-confidence"
+                                class="text-center"
+                                type="number"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                bind:value={sssomMapping.confidence}
+                            />
+                        </div>
+                    </dd>
+
+                    <dt class="font-medium text-muted-foreground">CURIE map</dt>
+                    <dd class="min-w-0">
+                        <div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2">
+                            <div class="flex min-w-0 flex-col gap-2">
+                                <Label for="curie-map-prefix">Prefix</Label>
+                                <Input id="curie-map-prefix" bind:value={curieMapPrefix} disabled={curieMapDetailsAccepted} />
+                            </div>
+                            <div class="flex min-w-0 flex-col gap-2">
+                                <Label for="curie-map-base-iri">Base IRI</Label>
+                                <Input id="curie-map-base-iri" bind:value={curieMapBaseIri} disabled={curieMapDetailsAccepted} />
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="icon-sm"
+                                aria-label={curieMapDetailsAccepted ? "Edit CURIE map details" : "Accept CURIE map details"}
+                                onclick={toggleCurieMapDetails}
+                            >
+                                {#if curieMapDetailsAccepted}
+                                    <Pencil />
+                                {:else}
+                                    <Check />
+                                {/if}
+                            </Button>
+                        </div>
+
+                        {#if curieMapValidationError}
+                            <p class="mt-2 text-sm text-destructive">{curieMapValidationError}</p>
+                        {/if}
+                    </dd>
+
                     <dt class="font-medium text-muted-foreground">CURIE</dt>
                     <dd>{iriToCurie(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
 
@@ -400,9 +471,6 @@
                             {currentSearchResult.iri}
                         </a>
                     </dd>
-
-                    <dt class="font-medium text-muted-foreground">Source</dt>
-                    <dd>{searchSourceLabel}</dd>
 
                     {#if currentSearchResult.source === "pythonService" && currentSearchResult.score !== undefined}
                         <dt class="font-medium text-muted-foreground">Score</dt>
@@ -446,30 +514,7 @@
     </div>
 
     <div class="mt-auto flex flex-col w-full gap-2">
-        <SSSOMInput
-            bind:mapping={sssomMapping}
-            shortForm={shortFormInput}
-            iri={iriInput}
-            bind:prefix={curieMapPrefix}
-            bind:baseIri={curieMapBaseIri}
-            bind:curieMapDetailsAccepted
-        />
-        <!-- <div class="flex gap-2 items-end w-full py-2">
-            <div class="flex flex-col w-full gap-2">
-                <Label for="iri-input">IRI</Label><Input
-                    id="iri-input"
-                    placeholder="e.g. http://purl.obolibrary.org/obo/OBI_1234"
-                    bind:value={iriInput}
-                />
-            </div>
-            <div class="flex flex-col gap-2 w-1/3">
-                <Label for="short-form-input">Short Form</Label><Input
-                    id="short-form-input"
-                    placeholder="e.g. OBI:1234"
-                    bind:value={shortFormInput}
-                />
-            </div>
-        </div> -->
+        <SSSOMInput bind:mapping={sssomMapping} />
         <div class="flex gap-2">
             <Button class="w-1/3" disabled={!curieMapDetailsAccepted} onclick={addSssomMapping}>Map</Button>
             <Select.Root
