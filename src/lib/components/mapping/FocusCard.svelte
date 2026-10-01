@@ -238,7 +238,7 @@
     bind:this={container}
     tabindex="0"
     role="button"
-    class="min-h-200 max-h-200 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
+    class="min-h-200 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
     onkeydown={(e) => {
         // Allows user to handle mapping with the keyboard
         if (e.target instanceof HTMLInputElement) return;
@@ -293,7 +293,7 @@
         />
     </div>
 
-    <div class={{ "rounded-sm min-h-0 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
+    <div class={{ "rounded-sm min-h-42 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
         {#if currentSearchResult}
             <div class="p-2 flex flex-col min-h-0 flex-1">
                 <div class="flex justify-between shrink-0">

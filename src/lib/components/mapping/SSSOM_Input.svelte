@@ -81,7 +81,7 @@
     }
 </script>
 
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-4 py-1">
     <h3 class="text-2xl">SSSOM Mapping</h3>
     <div class="ml-auto flex items-center gap-1">
         <Button
@@ -99,75 +99,70 @@
         </Button>
     </div>
 </div>
-<div class="grid grid-cols-[minmax(8rem,0.9fr)_auto_auto_auto_auto_minmax(16rem,2fr)] items-end gap-3 py-1">
+<div class="grid grid-cols-[1fr_auto_1fr_auto] items-start gap-3 py-1">
     <div class="flex min-w-0 flex-col gap-2">
-        <Label for="subject-id">Subject ID</Label>
-        {#if !mappingStore.subjectIdentifier.prefix}
-            <p class="flex min-h-9 items-center text-sm text-muted-foreground">Choose a prefix first.</p>
-        {:else}
-            <p class="flex min-h-9 items-center wrap-break-word" title={mapping.subjectId}>{mapping.subjectId}</p>
-        {/if}
+        <div class="flex gap-2">
+            <Label for="subject-id">Subject ID</Label>
+            <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
+                <Select.Trigger id="subject-prefix" class="min-w-36 max-h-6">
+                    {subjectPrefixTriggerContent}
+                </Select.Trigger>
+                <Select.Content>
+                    <Select.Group>
+                        <Select.Label>Subject prefix</Select.Label>
+                        {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
+                            <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
+                        {/each}
+                    </Select.Group>
+                </Select.Content>
+            </Select.Root>
+        </div>
+
+        <div class="flex items-center justify-between gap-2">
+            {#if !mappingStore.subjectIdentifier.prefix}
+                <p class="flex min-h-9 items-center text-sm text-muted-foreground">Choose a prefix first.</p>
+            {:else}
+                <p class="flex min-h-9 items-center wrap-break-word" title={mapping.subjectId}>{mapping.subjectId}</p>
+            {/if}
+            <ArrowRight />
+        </div>
     </div>
-    <ArrowRight class="mb-2" />
+
     <div class="flex flex-col gap-2">
-        <Label for="predicate-id">Predicate ID</Label>
-        <Select.Root type="single" name="predicateId" bind:value={mapping.predicateId}>
-            <Select.Trigger class="w-45">{triggerContent}</Select.Trigger>
-            <Select.Content
-                ><Select.Group
-                    ><Select.Label>Predicates</Select.Label>{#each predicates as predicate (predicate.value)}<Select.Item
-                            value={predicate.value}
-                            label={predicate.label}>{predicate.label}</Select.Item
-                        >{/each}</Select.Group
-                ></Select.Content
-            >
-        </Select.Root>
+        <Label class="h-6" for="predicate-id">Predicate ID</Label>
+        <div class="flex items-center gap-2">
+            <Select.Root type="single" name="predicateId" bind:value={mapping.predicateId}>
+                <Select.Trigger class="w-45">{triggerContent}</Select.Trigger>
+                <Select.Content
+                    ><Select.Group
+                        ><Select.Label>Predicates</Select.Label>{#each predicates as predicate (predicate.value)}<Select.Item
+                                value={predicate.value}
+                                label={predicate.label}>{predicate.label}</Select.Item
+                            >{/each}</Select.Group
+                    ></Select.Content
+                >
+            </Select.Root>
+            <ArrowRight />
+        </div>
     </div>
-    <div class="flex flex-col gap-2">
-        <Label for="mapping-confidence">Confidence</Label>
-        <Input id="mapping-confidence" class="w-20 text-center" type="number" min="0" max="1" step="0.01" bind:value={mapping.confidence} />
-    </div>
-    <ArrowRight class="mb-2" />
 
     <div class="flex min-w-0 flex-col gap-2">
-        <Label for="object-id">Object ID (Object Label)</Label>
+        <Label class="h-6" for="object-id">Object ID (Object Label)</Label>
         <p class="flex min-h-9 items-center wrap-break-word" title={`${mapping.objectId} (${mapping.objectLabel ?? ""})`}>
             {mapping.objectId} ({mapping.objectLabel ?? ""})
         </p>
     </div>
-</div>
 
-<div class="flex flex-col gap-1 py-1">
-    <Label for="subject-prefix">Subject prefix</Label>
-    <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
-        <Select.Trigger id="subject-prefix" class="min-w-36" aria-invalid={!mappingStore.subjectIdentifier.prefix}>
-            {subjectPrefixTriggerContent}
-        </Select.Trigger>
-        <Select.Content>
-            <Select.Group>
-                <Select.Label>Subject prefix</Select.Label>
-                {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
-                    <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
-                {/each}
-            </Select.Group>
-        </Select.Content>
-    </Select.Root>
+    <div class="flex flex-col gap-2">
+        <Label class="h-6" for="mapping-confidence">Confidence</Label>
+        <Input id="mapping-confidence" class="w-20 text-center" type="number" min="0" max="1" step="0.01" bind:value={mapping.confidence} />
+    </div>
 </div>
 
 <div class="flex flex-col gap-3 py-2">
     <h4 class="text-lg">CURIE Map Details</h4>
 
-    <div class="grid grid-cols-[minmax(8rem,1fr)_minmax(16rem,2fr)_auto] items-end gap-2">
-        <div class="flex flex-col gap-2">
-            <Label for="curie-map-prefix">Prefix</Label>
-            <Input id="curie-map-prefix" bind:value={prefix} disabled={curieMapDetailsAccepted} />
-        </div>
-
-        <div class="flex flex-col gap-2">
-            <Label for="curie-map-base-iri">Base IRI</Label>
-            <Input id="curie-map-base-iri" bind:value={baseIri} disabled={curieMapDetailsAccepted} />
-        </div>
-
+    <div class="grid grid-cols-[auto_auto_1fr] items-end gap-2">
         <Button
             variant="outline"
             size="icon-sm"
@@ -180,6 +175,15 @@
                 <Check />
             {/if}
         </Button>
+        <div class="flex flex-col gap-2">
+            <Label for="curie-map-prefix">Prefix</Label>
+            <Input id="curie-map-prefix" bind:value={prefix} disabled={curieMapDetailsAccepted} />
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <Label for="curie-map-base-iri">Base IRI</Label>
+            <Input id="curie-map-base-iri" bind:value={baseIri} disabled={curieMapDetailsAccepted} />
+        </div>
     </div>
 
     {#if validationError}
