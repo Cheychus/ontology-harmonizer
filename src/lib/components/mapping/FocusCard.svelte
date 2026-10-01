@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X } from "lucide-svelte";
+    import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X, CircleAlert } from "lucide-svelte";
     import { Input } from "../ui/input";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
@@ -318,17 +318,23 @@
                             </Button>
                         </div>
                     {:else}
-                        <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
-                            <Select.Trigger id="subject-prefix" class="w-36">Choose prefix</Select.Trigger>
-                            <Select.Content>
-                                <Select.Group>
-                                    <Select.Label>Subject prefix</Select.Label>
-                                    {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
-                                        <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
-                                    {/each}
-                                </Select.Group>
-                            </Select.Content>
-                        </Select.Root>
+                        <div class="flex gap-2 items-center">
+                            <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
+                                <Select.Trigger id="subject-prefix" class="w-36">Choose prefix</Select.Trigger>
+                                <Select.Content>
+                                    <Select.Group>
+                                        <Select.Label>Subject prefix</Select.Label>
+                                        {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
+                                            <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
+                                        {/each}
+                                    </Select.Group>
+                                </Select.Content>
+                            </Select.Root>
+                            <span class="shrink-0" title="Select a source prefix to continue">
+                                <CircleAlert class="text-destructive" aria-label="Select a source prefix to continue" />
+                            </span>
+                            <span class="text-sm text-destructive">Select a source prefix to continue.</span>
+                        </div>
                     {/if}
                 </dd>
 
@@ -457,6 +463,10 @@
                             </Button>
                         </div>
 
+                        {#if !curieMapDetailsAccepted}
+                            <p class="mt-2 text-sm text-destructive">Confirm a valid prefix and Base IRI to enable mapping.</p>
+                        {/if}
+
                         {#if curieMapValidationError}
                             <p class="mt-2 text-sm text-destructive">{curieMapValidationError}</p>
                         {/if}
@@ -516,7 +526,7 @@
     <div class="mt-auto flex flex-col w-full gap-2">
         <SSSOMInput bind:mapping={sssomMapping} />
         <div class="flex gap-2">
-            <Button class="w-1/3" disabled={!curieMapDetailsAccepted} onclick={addSssomMapping}>Map</Button>
+            <Button class="w-1/3" disabled={!mappingStore.subjectIdentifier.prefix || !curieMapDetailsAccepted} onclick={addSssomMapping}>Map</Button>
             <Select.Root
                 type="single"
                 bind:value={selectValue}
