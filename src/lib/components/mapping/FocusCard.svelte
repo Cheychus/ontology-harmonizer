@@ -8,7 +8,7 @@
     import * as Select from "$lib/components/ui/select/index.js";
     import type { IMatchingViewModel } from "../ontologies/Matchings.svelte";
     import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
-    import { searchTerms, terminologyProviders } from "$lib/api/terminology";
+    import { searchTerms, terminologyProviders, type TerminologyProviderId } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
     import type { ITerminologySearchResult, matchingType } from "$lib/types/terminologyService";
     import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
@@ -56,6 +56,8 @@
     const terminologyProviderLabel = $derived(
         terminologyProviders.find((provider) => provider.id === settingsStore.terminologyProvider)?.label ?? "Select a terminology service",
     );
+    const searchSource = $derived(settingsStore.matchingMethod === "pythonService" ? "pythonService" : settingsStore.terminologyProvider);
+    const searchSourceLabel = $derived(settingsStore.matchingMethod === "pythonService" ? "Python Matching Service" : terminologyProviderLabel);
 
     let searchInput = $derived(currentOntology?.key ?? "");
     let sssomMapping = $state<SssomMapping>({
@@ -162,6 +164,19 @@
         searchResultIdx = newIdx;
     }
 
+    function selectSearchSource(value: string) {
+        if (value === "pythonService") {
+            settingsStore.matchingMethod = "pythonService";
+        } else {
+            settingsStore.matchingMethod = "terminology";
+            settingsStore.terminologyProvider = value as TerminologyProviderId;
+        }
+
+        if (settingsStore.automaticMatching) {
+            getMatchings(settingsStore.matchingMethod);
+        }
+    }
+
     function addSssomMapping() {
         if (!mappingStore.subjectIdentifier.prefix) {
             warning("Choose a subject prefix before creating mappings");
@@ -208,36 +223,6 @@
     }
 </script>
 
-<div class="flex gap-2 pt-4 items-center">
-    <Select.Root
-        type="single"
-        name="terminologyProvider"
-        bind:value={settingsStore.terminologyProvider}
-        onValueChange={() => getMatchings(settingsStore.matchingMethod)}
-    >
-        <Select.Trigger class="w-64">
-            {terminologyProviderLabel}
-        </Select.Trigger>
-        <Select.Content>
-            <Select.Group>
-                <Select.Label>Terminology service</Select.Label>
-                {#each terminologyProviders as provider (provider.id)}
-                    <Select.Item value={provider.id} label={provider.label}>{provider.label}</Select.Item>
-                {/each}
-            </Select.Group>
-        </Select.Content>
-    </Select.Root>
-    <Label>Automatic Search</Label>
-    <Switch
-        onCheckedChange={() => {
-            if (settingsStore.automaticMatching) {
-                getMatchings(settingsStore.matchingMethod);
-            }
-            refocus();
-        }}
-        bind:checked={settingsStore.automaticMatching}
-    />
-</div>
 <div
     bind:this={container}
     tabindex="0"
@@ -254,7 +239,7 @@
                 switchSearchResult(1);
                 break;
             case "Enter":
-                map();
+                addSssomMapping();
                 break;
             case "Escape":
                 mappingStore.skip();
@@ -286,18 +271,49 @@
 
         <Button variant="secondary" class="shrink-0" onclick={() => mappingStore.skip()}>Skip</Button>
     </div>
-    <div class="flex gap-2 pt-2">
-        <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">{terminologyProviderLabel} <Search size={22} /></Button>
-        {#if settingsStore.enablePythonMatchingService}
-            <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Matching Service <Search size={22} /></Button>
-        {/if}
-        <Input
-            onkeydown={(e) => {
-                if (e.key === "Enter") getMatchings("terminology");
-            }}
-            placeholder="search for a value..."
-            bind:value={searchInput}
-        />
+    <div class="flex flex-col flex-wrap gap-2 pt-2">
+        <div class="flex gap-1">
+            <Switch
+                onCheckedChange={() => {
+                    if (settingsStore.automaticMatching) {
+                        getMatchings(settingsStore.matchingMethod);
+                    }
+                    refocus();
+                }}
+                bind:checked={settingsStore.automaticMatching}
+            />
+            <Label class="whitespace-nowrap">Automatic Search</Label>
+        </div>
+
+        <div class="flex gap-1">
+            <Select.Root type="single" name="searchSource" value={searchSource} onValueChange={selectSearchSource}>
+                <Select.Trigger class="w-64">{searchSourceLabel}</Select.Trigger>
+                <Select.Content>
+                    <Select.Group>
+                        <Select.Label>Terminology services</Select.Label>
+                        {#each terminologyProviders as provider (provider.id)}
+                            <Select.Item value={provider.id} label={provider.label}>{provider.label}</Select.Item>
+                        {/each}
+                    </Select.Group>
+                    {#if settingsStore.enablePythonMatchingService}
+                        <Select.Group>
+                            <Select.Label>Matching services</Select.Label>
+                            <Select.Item value="pythonService" label="Python Matching Service">Python Matching Service</Select.Item>
+                        </Select.Group>
+                    {/if}
+                </Select.Content>
+            </Select.Root>
+
+            <Input
+                class="min-w-64 flex-1"
+                onkeydown={(e) => {
+                    if (e.key === "Enter") getMatchings(settingsStore.matchingMethod);
+                }}
+                placeholder="search for a value..."
+                bind:value={searchInput}
+            />
+            <Button onclick={() => getMatchings(settingsStore.matchingMethod)} variant="secondary">Search <Search size={22} /></Button>
+        </div>
     </div>
 
     <div class={{ "rounded-sm min-h-42 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
@@ -318,7 +334,7 @@
                     </dd>
 
                     <dt class="font-medium text-muted-foreground">Source</dt>
-                    <dd>{terminologyProviderLabel}</dd>
+                    <dd>{searchSourceLabel}</dd>
 
                     {#if currentSearchResult.source === "pythonService" && currentSearchResult.score !== undefined}
                         <dt class="font-medium text-muted-foreground">Score</dt>
@@ -356,7 +372,7 @@
             <div class="flex items-center justify-center h-full flex-1">
                 {#if loading}<LoaderCircle class="animate-spin" />
                 {:else if noResults}<p class="text-muted-foreground">No results for {searchInput}</p>
-                {:else}<p class="text-muted-foreground">Search for ontologies or define the mapping manually</p>{/if}
+                {:else}<p class="text-muted-foreground">Select a terminology service and search for ontology terms</p>{/if}
             </div>
         {/if}
     </div>
