@@ -58,6 +58,14 @@
     );
     const searchSource = $derived(settingsStore.matchingMethod === "pythonService" ? "pythonService" : settingsStore.terminologyProvider);
     const searchSourceLabel = $derived(settingsStore.matchingMethod === "pythonService" ? "Python Matching Service" : terminologyProviderLabel);
+    const predicates = [
+        { value: "skos:exactMatch", label: "Exact Match" },
+        { value: "skos:closeMatch", label: "Close Match" },
+        { value: "skos:relatedMatch", label: "Related Match" },
+    ];
+    const predicateTriggerContent = $derived(
+        predicates.find((predicate) => predicate.value === sssomMapping.predicateId)?.label ?? "Select relationship",
+    );
 
     let searchInput = $derived(currentOntology?.key ?? "");
     let sssomMapping = $state<SssomMapping>({
@@ -352,6 +360,35 @@
             <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
                 <p class="text-sm font-medium text-muted-foreground">Search result</p>
                 <h3 class="mb-3 break-words text-lg font-semibold">{currentSearchResult.label}</h3>
+
+                <div class="mb-3 flex gap-3 text-sm">
+                    <div class="flex min-w-0 flex-col gap-2">
+                        <Label for="mapping-relationship">Relationship</Label>
+                        <Select.Root type="single" name="predicateId" bind:value={sssomMapping.predicateId}>
+                            <Select.Trigger id="mapping-relationship" class="w-45">{predicateTriggerContent}</Select.Trigger>
+                            <Select.Content>
+                                <Select.Group>
+                                    <Select.Label>Relationships</Select.Label>
+                                    {#each predicates as predicate (predicate.value)}
+                                        <Select.Item value={predicate.value} label={predicate.label}>{predicate.label}</Select.Item>
+                                    {/each}
+                                </Select.Group>
+                            </Select.Content>
+                        </Select.Root>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <Label for="mapping-confidence">Confidence</Label>
+                        <Input
+                            id="mapping-confidence"
+                            class="text-center"
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            bind:value={sssomMapping.confidence}
+                        />
+                    </div>
+                </div>
 
                 <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
                     <dt class="font-medium text-muted-foreground">CURIE</dt>

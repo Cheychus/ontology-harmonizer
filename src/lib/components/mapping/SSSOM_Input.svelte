@@ -3,8 +3,7 @@
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import Label from "../ui/label/label.svelte";
-    import * as Select from "$lib/components/ui/select/index.js";
-    import { ArrowRight, Check, MessageSquarePlus, Pencil, UserPlus, X } from "lucide-svelte";
+    import { Check, MessageSquarePlus, Pencil, UserPlus, X } from "lucide-svelte";
     import { extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
 
     interface Props {
@@ -25,15 +24,8 @@
         curieMapDetailsAccepted = $bindable(),
     }: Props = $props();
 
-    const predicates = [
-        { value: "skos:exactMatch", label: "Exact Match" },
-        { value: "skos:closeMatch", label: "Close Match" },
-        { value: "skos:relatedMatch", label: "Related Match" },
-    ];
-
     let validationError = $state("");
 
-    const triggerContent = $derived(predicates.find((predicate) => predicate.value === mapping.predicateId)?.label ?? "Select a predicate");
     let showComment = $state(Boolean(mapping.comment));
     function addAuthorId() {
         mapping.authorIds = [...(mapping.authorIds ?? []), ""];
@@ -97,25 +89,7 @@
         </Button>
     </div>
 </div>
-<div class="grid grid-cols-[auto_1fr_auto] items-start gap-3 py-1">
-    <div class="flex flex-col gap-2">
-        <Label class="h-6" for="predicate-id">Predicate ID</Label>
-        <div class="flex items-center gap-2">
-            <Select.Root type="single" name="predicateId" bind:value={mapping.predicateId}>
-                <Select.Trigger class="w-45">{triggerContent}</Select.Trigger>
-                <Select.Content
-                    ><Select.Group
-                        ><Select.Label>Predicates</Select.Label>{#each predicates as predicate (predicate.value)}<Select.Item
-                                value={predicate.value}
-                                label={predicate.label}>{predicate.label}</Select.Item
-                            >{/each}</Select.Group
-                    ></Select.Content
-                >
-            </Select.Root>
-            <ArrowRight />
-        </div>
-    </div>
-
+<div class="py-1">
     <div class="flex min-w-0 flex-col gap-2">
         <Label class="h-6" for="object-id">Object ID (Object Label)</Label>
         <p class="flex min-h-9 items-center wrap-break-word" title={`${mapping.objectId} (${mapping.objectLabel ?? ""})`}>
@@ -123,10 +97,6 @@
         </p>
     </div>
 
-    <div class="flex flex-col gap-2">
-        <Label class="h-6" for="mapping-confidence">Confidence</Label>
-        <Input id="mapping-confidence" class="w-20 text-center" type="number" min="0" max="1" step="0.01" bind:value={mapping.confidence} />
-    </div>
 </div>
 
 <div class="flex flex-col gap-3 py-2">
