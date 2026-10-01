@@ -6,7 +6,7 @@
     import Label from "../ui/label/label.svelte";
     import * as Select from "$lib/components/ui/select/index.js";
     import { ArrowRight, Check, MessageSquarePlus, Pencil, UserPlus, X } from "lucide-svelte";
-    import { extractBaseIri, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
+    import { extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
 
     interface Props {
         mapping: SssomMapping;
@@ -17,7 +17,14 @@
         curieMapDetailsAccepted: boolean;
     }
 
-    let { mapping = $bindable(), iri, shortForm, prefix = $bindable(), baseIri = $bindable(), curieMapDetailsAccepted = $bindable() }: Props = $props();
+    let {
+        mapping = $bindable(),
+        iri,
+        shortForm,
+        prefix = $bindable(),
+        baseIri = $bindable(),
+        curieMapDetailsAccepted = $bindable(),
+    }: Props = $props();
 
     const predicates = [
         { value: "skos:exactMatch", label: "Exact Match" },
@@ -40,16 +47,20 @@
     $effect(() => {
         const extractedBaseIri = extractBaseIri(shortForm, iri) ?? iri;
         const extractedPrefix = extractPrefixFromObjectId(shortForm) ?? "";
+        const localId = extractLocalIdFromObjectId(shortForm);
+        const automaticallyAccepted = isCurieMapDetailsValid(iri, shortForm, extractedPrefix, extractedBaseIri);
 
         baseIri = extractedBaseIri;
         prefix = extractedPrefix;
-        curieMapDetailsAccepted = isCurieMapDetailsValid(iri, shortForm, extractedPrefix, extractedBaseIri);
+        curieMapDetailsAccepted = automaticallyAccepted;
+        mapping.objectId = automaticallyAccepted && localId ? `${extractedPrefix}:${localId}` : shortForm;
         validationError = "";
     });
 
     function toggleCurieMapDetails() {
         if (curieMapDetailsAccepted) {
             curieMapDetailsAccepted = false;
+            mapping.objectId = shortForm;
             return;
         }
 
@@ -59,6 +70,12 @@
             return;
         }
 
+        const localId = extractLocalIdFromObjectId(shortForm);
+        if (!localId) {
+            validationError = "Short Form has no local identifier.";
+            return;
+        }
+        mapping.objectId = `${prefix}:${localId}`;
         validationError = "";
         curieMapDetailsAccepted = true;
     }

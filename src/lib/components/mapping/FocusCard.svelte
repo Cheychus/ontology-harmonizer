@@ -75,7 +75,6 @@
     $effect(() => {
         sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix ? `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}` : "";
         sssomMapping.subjectLabel = currentOntology.key;
-        sssomMapping.objectId = shortFormInput;
         sssomMapping.objectLabel = currentSearchResult?.label ?? "";
     });
 
@@ -179,6 +178,9 @@
         const mappingSuccess = mappingStore.addSssomMapping(sssomMapping);
 
         if (mappingSuccess) {
+            if (curieMapDetailsAccepted) {
+                mappingStore.addCurieMapEntry(curieMapPrefix, curieMapBaseIri);
+            }
             mappingStore.moveNext();
         }
     }
