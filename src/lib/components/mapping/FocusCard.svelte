@@ -295,24 +295,55 @@
 
     <div class={{ "rounded-sm min-h-42 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
         {#if currentSearchResult}
-            <div class="p-2 flex flex-col min-h-0 flex-1">
-                <div class="flex justify-between shrink-0">
-                    <h4>{currentSearchResult.label} - {iriToCurie(currentSearchResult?.shortForm ?? "") ?? "undefined"}</h4>
-                    <p class="font-bold">{searchResultIdx + 1}/{ontologySearchResults.length}</p>
-                </div>
-                <div class="flex-1 min-h-0 overflow-y-auto">
-                    <ul class="list-disc pl-8 pr-2">
-                        {#if currentSearchResult.description && currentSearchResult.description.length > 0}
-                            {#each currentSearchResult.description as description}<li class="py-1 break-all">
-                                    {description?.value ?? description}
-                                </li>{/each}
-                        {:else}<li class="italic">No descriptions</li>{/if}
-                    </ul>
+            <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
+                <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+                    <dt class="font-medium text-muted-foreground">Label</dt>
+                    <dd>{currentSearchResult.label}</dd>
+
+                    <dt class="font-medium text-muted-foreground">CURIE</dt>
+                    <dd>{iriToCurie(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
+
+                    <dt class="font-medium text-muted-foreground">Full IRI</dt>
+                    <dd class="break-all">
+                        <a href={currentSearchResult.iri} target="_blank">
+                            {currentSearchResult.iri}
+                        </a>
+                    </dd>
+
+                    <dt class="font-medium text-muted-foreground">Source</dt>
+                    <dd>{terminologyProviderLabel}</dd>
+
+                    {#if currentSearchResult.source === "pythonService" && currentSearchResult.score !== undefined}
+                        <dt class="font-medium text-muted-foreground">Score</dt>
+                        <dd>{currentSearchResult.score}</dd>
+                    {/if}
+                </dl>
+
+                <div class="mt-4 border-t pt-3">
+                    <h5 class="mb-2 text-sm font-medium">Descriptions</h5>
+                    {#if currentSearchResult.description && currentSearchResult.description.length > 0}
+                        <ul class="list-disc pl-5 pr-2">
+                            {#each currentSearchResult.description as description}
+                                <li class="py-1 break-all">{description?.value ?? description}</li>
+                            {/each}
+                        </ul>
+                    {:else}
+                        <p class="italic text-sm text-muted-foreground">No descriptions</p>
+                    {/if}
                 </div>
             </div>
-            <div class="mt-auto p-1 flex justify-between items-center">
-                <Button class="w-32" variant="outline" size="icon" onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button>
-                <Button class="w-32" variant="outline" size="icon" onclick={() => switchSearchResult(1)}><ArrowRight /></Button>
+            <div class="mt-auto flex items-center gap-2 border-t p-2">
+                <Button class="w-32" variant="outline" size="icon" disabled={searchResultIdx === 0} onclick={() => switchSearchResult(-1)}
+                    ><ArrowLeft /></Button
+                >
+                <p class="flex-1 text-center text-sm text-muted-foreground">Result {searchResultIdx + 1} of {ontologySearchResults.length}</p>
+                <Button
+                    class="w-32"
+                    variant="outline"
+                    size="icon"
+                    disabled={searchResultIdx === ontologySearchResults.length - 1}
+                    onclick={() => switchSearchResult(1)}><ArrowRight /></Button
+                >
             </div>
         {:else}
             <div class="flex items-center justify-center h-full flex-1">
@@ -332,7 +363,7 @@
             bind:baseIri={curieMapBaseIri}
             bind:curieMapDetailsAccepted
         />
-        <div class="flex gap-2 items-end w-full py-2">
+        <!-- <div class="flex gap-2 items-end w-full py-2">
             <div class="flex flex-col w-full gap-2">
                 <Label for="iri-input">IRI</Label><Input
                     id="iri-input"
@@ -347,7 +378,7 @@
                     bind:value={shortFormInput}
                 />
             </div>
-        </div>
+        </div> -->
         <div class="flex gap-2">
             <Button class="w-1/3" disabled={!curieMapDetailsAccepted} onclick={addSssomMapping}>Map</Button>
             <Select.Root
