@@ -105,14 +105,14 @@
         {#if !mappingStore.subjectIdentifier.prefix}
             <p class="flex min-h-9 items-center text-sm text-muted-foreground">Choose a prefix first.</p>
         {:else}
-            <p class="flex min-h-9 items-center break-words" title={mapping.subjectId}>{mapping.subjectId}</p>
+            <p class="flex min-h-9 items-center wrap-break-word" title={mapping.subjectId}>{mapping.subjectId}</p>
         {/if}
     </div>
     <ArrowRight class="mb-2" />
     <div class="flex flex-col gap-2">
         <Label for="predicate-id">Predicate ID</Label>
         <Select.Root type="single" name="predicateId" bind:value={mapping.predicateId}>
-            <Select.Trigger class="w-[180px]">{triggerContent}</Select.Trigger>
+            <Select.Trigger class="w-45">{triggerContent}</Select.Trigger>
             <Select.Content
                 ><Select.Group
                     ><Select.Label>Predicates</Select.Label>{#each predicates as predicate (predicate.value)}<Select.Item
@@ -131,7 +131,7 @@
 
     <div class="flex min-w-0 flex-col gap-2">
         <Label for="object-id">Object ID (Object Label)</Label>
-        <p class="flex min-h-9 items-center break-words" title={`${mapping.objectId} (${mapping.objectLabel ?? ""})`}>
+        <p class="flex min-h-9 items-center wrap-break-word" title={`${mapping.objectId} (${mapping.objectLabel ?? ""})`}>
             {mapping.objectId} ({mapping.objectLabel ?? ""})
         </p>
     </div>
