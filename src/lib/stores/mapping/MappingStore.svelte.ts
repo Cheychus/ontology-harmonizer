@@ -146,9 +146,7 @@ class MappingStore {
     }
 
     findSssomMapping(ontology: DerivedOntology): SssomMapping | undefined {
-        if (!this.subjectIdentifier.prefix) return undefined;
-        const subjectId = `${this.subjectIdentifier.prefix}:${ontology.key}`;
-        return this.mappingSet.mappings.find((mapping) => mapping.subjectId === subjectId);
+        return this.mappingSet.mappings.find((mapping) => mapping.subjectLabel === ontology.key);
     }
 
     hasSssomMapping(ontology: DerivedOntology): boolean {
