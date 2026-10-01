@@ -6,20 +6,18 @@
     import Label from "../ui/label/label.svelte";
     import * as Select from "$lib/components/ui/select/index.js";
     import { ArrowRight, Check, MessageSquarePlus, Pencil, UserPlus, X } from "lucide-svelte";
-    import {
-        extractBaseIri,
-        extractPrefixFromObjectId,
-        isCurieMapDetailsValid,
-    } from "$lib/services/sssom/curieMap";
+    import { extractBaseIri, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
 
     interface Props {
         mapping: SssomMapping;
         iri: string;
         shortForm: string;
+        prefix: string;
+        baseIri: string;
         curieMapDetailsAccepted: boolean;
     }
 
-    let { mapping = $bindable(), iri, shortForm, curieMapDetailsAccepted = $bindable() }: Props = $props();
+    let { mapping = $bindable(), iri, shortForm, prefix = $bindable(), baseIri = $bindable(), curieMapDetailsAccepted = $bindable() }: Props = $props();
 
     const predicates = [
         { value: "skos:exactMatch", label: "Exact Match" },
@@ -27,8 +25,6 @@
         { value: "skos:relatedMatch", label: "Related Match" },
     ];
 
-    let baseIri = $state("");
-    let prefix = $state("");
     let validationError = $state("");
 
     const triggerContent = $derived(predicates.find((predicate) => predicate.value === mapping.predicateId)?.label ?? "Select a predicate");

@@ -41,6 +41,8 @@
     let selectedMapping: IMapping | null = $state(null);
     let iriInput: string = $derived(currentSearchResult?.iri ?? "");
     let shortFormInput: string = $derived(iriToCurie(currentSearchResult?.shortForm ?? ""));
+    let curieMapPrefix = $state("");
+    let curieMapBaseIri = $state("");
     let curieMapDetailsAccepted = $state(false);
 
     // Derive select options from the existing obo file mapping terms
@@ -324,6 +326,8 @@
             bind:mapping={sssomMapping}
             shortForm={shortFormInput}
             iri={iriInput}
+            bind:prefix={curieMapPrefix}
+            bind:baseIri={curieMapBaseIri}
             bind:curieMapDetailsAccepted
         />
         <div class="flex gap-2 items-end w-full py-2">
