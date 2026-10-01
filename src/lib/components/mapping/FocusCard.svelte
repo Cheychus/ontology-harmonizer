@@ -3,7 +3,6 @@
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
     import { Search, LoaderCircle, ArrowLeft, ArrowRight } from "lucide-svelte";
     import { Input } from "../ui/input";
-    import { Badge } from "../ui/badge";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
     import * as Select from "$lib/components/ui/select/index.js";
@@ -210,7 +209,12 @@
 </script>
 
 <div class="flex gap-2 pt-4 items-center">
-    <Select.Root type="single" name="terminologyProvider" bind:value={settingsStore.terminologyProvider}>
+    <Select.Root
+        type="single"
+        name="terminologyProvider"
+        bind:value={settingsStore.terminologyProvider}
+        onValueChange={() => getMatchings(settingsStore.matchingMethod)}
+    >
         <Select.Trigger class="w-64">
             {terminologyProviderLabel}
         </Select.Trigger>
@@ -258,26 +262,29 @@
         }
     }}
 >
-    <div class="flex min-w-0 gap-2 items-center">
-        <h3 class="basis-1/3 min-w-0 shrink-0 truncate whitespace-nowrap">
-            {currentOntology.key}
-        </h3>
+    <div class="flex items-start justify-between gap-4 rounded-md border border-border bg-muted/30 p-3">
+        <div class="min-w-0">
+            <p class="text-sm font-medium text-muted-foreground">Mapping source</p>
+            <h3 class="mb-3 break-words text-lg font-semibold">{currentOntology.key}</h3>
 
-        <Badge variant="outline" class="h-6 shrink-0">
-            {currentOntology.ontologyAttribute}
-        </Badge>
+            <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+                <dt class="font-medium text-muted-foreground">Attribute</dt>
+                <dd>{currentOntology.ontologyAttribute}</dd>
 
-        {#if currentOntology.value !== ""}
-            <Badge variant="outline" class="h-6 min-w-0 flex-initial">
-                <a target="_blank" class="block truncate" href={currentOntology.value} title={currentOntology.value}>
-                    {currentOntology.value}
-                </a>
-            </Badge>
-        {:else}
-            <Badge variant="outline" class="h-6 min-w-0">ARC Value not defined</Badge>
-        {/if}
+                <dt class="font-medium text-muted-foreground">Value</dt>
+                <dd class="break-all">
+                    {#if currentOntology.value !== ""}
+                        <a class="text-primary underline-offset-4 hover:underline" href={currentOntology.value} target="_blank" rel="noreferrer">
+                            {currentOntology.value}
+                        </a>
+                    {:else}
+                        <span class="italic text-muted-foreground">Not defined</span>
+                    {/if}
+                </dd>
+            </dl>
+        </div>
 
-        <Button variant="secondary" class="shrink-0 ml-auto" onclick={() => mappingStore.skip()}>Skip</Button>
+        <Button variant="secondary" class="shrink-0" onclick={() => mappingStore.skip()}>Skip</Button>
     </div>
     <div class="flex gap-2 pt-2">
         <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">{terminologyProviderLabel} <Search size={22} /></Button>
@@ -296,10 +303,10 @@
     <div class={{ "rounded-sm min-h-42 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
         {#if currentSearchResult}
             <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
-                <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-                    <dt class="font-medium text-muted-foreground">Label</dt>
-                    <dd>{currentSearchResult.label}</dd>
+                <p class="text-sm font-medium text-muted-foreground">Search result</p>
+                <h3 class="mb-3 break-words text-lg font-semibold">{currentSearchResult.label}</h3>
 
+                <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
                     <dt class="font-medium text-muted-foreground">CURIE</dt>
                     <dd>{iriToCurie(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
 
