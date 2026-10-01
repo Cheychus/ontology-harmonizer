@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Search, LoaderCircle, ArrowLeft, ArrowRight } from "lucide-svelte";
+    import { Search, LoaderCircle, ArrowLeft, ArrowRight, X } from "lucide-svelte";
     import { Input } from "../ui/input";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
@@ -253,6 +253,37 @@
             <h3 class="mb-3 break-words text-lg font-semibold">{currentOntology.key}</h3>
 
             <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+                <dt class="font-medium text-muted-foreground flex items-center">Subject ID</dt>
+                <dd class="min-w-0">
+                    {#if mappingStore.subjectIdentifier.prefix}
+                        <div class="flex items-center gap-2">
+                            <span class="min-w-0 break-all" title={sssomMapping.subjectId}>{sssomMapping.subjectId}</span>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                class="shrink-0"
+                                aria-label="Choose another subject prefix"
+                                title="Choose another subject prefix"
+                                onclick={() => (mappingStore.subjectPrefix = "")}
+                            >
+                                <X />
+                            </Button>
+                        </div>
+                    {:else}
+                        <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
+                            <Select.Trigger id="subject-prefix" class="w-36">Choose prefix</Select.Trigger>
+                            <Select.Content>
+                                <Select.Group>
+                                    <Select.Label>Subject prefix</Select.Label>
+                                    {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
+                                        <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
+                                    {/each}
+                                </Select.Group>
+                            </Select.Content>
+                        </Select.Root>
+                    {/if}
+                </dd>
+
                 <dt class="font-medium text-muted-foreground">Attribute</dt>
                 <dd>{currentOntology.ontologyAttribute}</dd>
 

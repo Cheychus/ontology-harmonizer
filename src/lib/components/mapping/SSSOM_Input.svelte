@@ -1,6 +1,5 @@
 <script lang="ts">
     import type { SssomMapping } from "$lib/types/mapping";
-    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import Label from "../ui/label/label.svelte";
@@ -35,7 +34,6 @@
     let validationError = $state("");
 
     const triggerContent = $derived(predicates.find((predicate) => predicate.value === mapping.predicateId)?.label ?? "Select a predicate");
-    const subjectPrefixTriggerContent = $derived(mappingStore.subjectIdentifier.prefix || "Choose prefix");
     let showComment = $state(Boolean(mapping.comment));
     function addAuthorId() {
         mapping.authorIds = [...(mapping.authorIds ?? []), ""];
@@ -99,35 +97,7 @@
         </Button>
     </div>
 </div>
-<div class="grid grid-cols-[1fr_auto_1fr_auto] items-start gap-3 py-1">
-    <div class="flex min-w-0 flex-col gap-2">
-        <div class="flex gap-2">
-            <Label for="subject-id">Subject ID</Label>
-            <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
-                <Select.Trigger id="subject-prefix" class="min-w-36 max-h-6">
-                    {subjectPrefixTriggerContent}
-                </Select.Trigger>
-                <Select.Content>
-                    <Select.Group>
-                        <Select.Label>Subject prefix</Select.Label>
-                        {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
-                            <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
-                        {/each}
-                    </Select.Group>
-                </Select.Content>
-            </Select.Root>
-        </div>
-
-        <div class="flex items-center justify-between gap-2">
-            {#if !mappingStore.subjectIdentifier.prefix}
-                <p class="flex min-h-9 items-center text-sm text-muted-foreground">Choose a prefix first.</p>
-            {:else}
-                <p class="flex min-h-9 items-center wrap-break-word" title={mapping.subjectId}>{mapping.subjectId}</p>
-            {/if}
-            <ArrowRight />
-        </div>
-    </div>
-
+<div class="grid grid-cols-[auto_1fr_auto] items-start gap-3 py-1">
     <div class="flex flex-col gap-2">
         <Label class="h-6" for="predicate-id">Predicate ID</Label>
         <div class="flex items-center gap-2">
