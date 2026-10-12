@@ -14,11 +14,13 @@ export interface IGitLabProject {
 }
 
 export interface IGitLabUser {
-  id: number;
-  username: string;
-  avatar_url: string;
-  web_url: string;
-  commit_email: string;
+  id?: number;
+  username?: string;
+  avatar_url?: string;
+  web_url?: string;
+  commit_email?: string;
+  email?: string;
+  name?: string;
 }
 
 export interface IGitlabResponse {

@@ -1,5 +1,6 @@
+import type { IGitLabUser } from "$lib/types/gitLab";
 
-
+type MappingRole = "author" | "reviewer" | "none";
 
 // Control flow state
 class ApplicationStore {
@@ -30,11 +31,9 @@ class ApplicationStore {
         },
     ];
 
-
     currentStep = $state(0);
 
     isAuthenticated = $state(false);
-
 
     stepState = $state({
         isLoggedIn: false,
@@ -57,6 +56,15 @@ class ApplicationStore {
     getStepIndex(path: string) {
         return this.steps.findIndex((s) => s.href === path)
     }
+
+    gitLabUser = $state<IGitLabUser | null>(null);
+
+    mappingProfile = $state({
+        role: "none" as MappingRole,
+        name: "",
+        orcid: "",
+        email: ""
+    });
 
 
 }
