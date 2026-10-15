@@ -62,32 +62,26 @@ class MappingStore {
     }
 
     reset() {
-        this.fileName = "";
+        this.createMappingSet();
         this.hasMappingSet = false;
-        this.mappingSet = createDefaultMappingSet();
-        this.subjectPrefix = "";
-        this.importedSssom = null;
-        this.startMapping(this.unmappedOntologies)
     }
 
     createMappingSet() {
         this.fileName = "";
+        this.loadMappingSet(createDefaultMappingSet());
+    }
+
+    loadMappingSet(mappingSet: MappingSet) {
+        this.mappingSet = mappingSet;
         this.hasMappingSet = true;
-        this.mappingSet = createDefaultMappingSet();
-        this.subjectPrefix = "";
         this.importedSssom = null;
+        this.subjectPrefix = "";
         this.startMapping(this.unmappedOntologies);
     }
 
     loadSssom(sssom: ParsedSssomDocument) {
-        const mappingSet = createMappingSetFromSssom(sssom);
-
-        this.hasMappingSet = true;
+        this.loadMappingSet(createMappingSetFromSssom(sssom));
         this.importedSssom = sssom;
-        this.mappingSet = mappingSet;
-        this.subjectPrefix = "";
-        this.startMapping(this.unmappedOntologies);
-        console.log(sssom, this.mappingSet)
     }
 
     addCurieMapEntry(prefix: string, iri: string) {
