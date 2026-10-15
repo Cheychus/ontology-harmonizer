@@ -1,5 +1,6 @@
-import type { MappingSet, ParsedSssomDocument, SssomMapping } from "$lib/types/mapping";
+import type { CurieMap, MappingSet, ParsedSssomDocument, SssomMapping } from "$lib/types/mapping";
 import type { ParsedSssomMapping } from "sssom-js";
+import { iriToCurie } from "./curieMap";
 
 export async function parseSssomInServer(file: File) {
   let content = await file.text();
@@ -40,7 +41,7 @@ export function createMappingSetFromSssom(
       version: (sssom.mapping_set_version as string | undefined) ?? "",
       comment: (sssom.comment as string | undefined) ?? "",
     },
-    mappings: convertImportedMappings(sssom.mappings as ParsedSssomMapping[]),
+    mappings: convertImportedMappings(sssom.mappings as ParsedSssomMapping[], curieMap),
   };
 }
 
@@ -77,24 +78,25 @@ export function createDefaultMappingSet(): MappingSet {
   };
 }
 
-function convertImportedMappings(mappings: ParsedSssomMapping[]): SssomMapping[] {
+function convertImportedMappings(mappings: ParsedSssomMapping[], curieMap: CurieMap): SssomMapping[] {
   return mappings.flatMap((raw) => {
     if (!raw.subject_id || !raw.predicate_id || !raw.object_id) {
       return [];
     }
-
+    // sssom-js expands CURIEs to IRIs during parsing.
+    // Convert them back using the imported prefix map because our internal mapping model uses CURIEs for mapping creation and SSSOM TSV export.
     return {
-      subjectId: raw.subject_id,
+      subjectId: iriToCurie(raw.subject_id, curieMap),
       subjectLabel: raw.subject_label,
-      predicateId: raw.predicate_id,
-      objectId: raw.object_id,
+      predicateId: iriToCurie(raw.predicate_id, curieMap),
+      objectId: iriToCurie(raw.object_id, curieMap),
       objectLabel: raw.object_label,
-      mappingJustification: raw.mapping_justification ?? "",
+      mappingJustification: iriToCurie(raw.mapping_justification ?? "", curieMap) ?? "",
       confidence: raw.confidence,
       comment: raw.comment,
-      authorIds: raw.author_id ?? [],
+      authorIds: (raw.author_id ?? []).map(id => iriToCurie(id, curieMap)),
       mappingDate: raw.mapping_date,
-      reviewerIds: raw.reviewer_id ?? [],
+      reviewerIds: (raw.reviewer_id ?? []).map(id => iriToCurie(id, curieMap)),
     };
   });
 }

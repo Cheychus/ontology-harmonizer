@@ -1,3 +1,5 @@
+import type { CurieMap } from "$lib/types/mapping";
+
 export function normalizeShortForm(shortForm: string): string {
     return shortForm.replace("_", ":");
 }
@@ -41,4 +43,14 @@ export function isCurieMapDetailsValid(fullIri: string, objectId: string, prefix
     }
 
     return fullIri === baseIri + localId;
+}
+
+export function iriToCurie(identifier: string, curieMap: CurieMap): string {
+    const entry = curieMap
+        .filter(({ iri }) => iri.length > 0 && identifier.startsWith(iri))
+        .sort((a, b) => b.iri.length - a.iri.length)[0];
+
+    if (!entry) return identifier;
+
+    return `${entry.prefix}:${identifier.slice(entry.iri.length)}`;
 }
