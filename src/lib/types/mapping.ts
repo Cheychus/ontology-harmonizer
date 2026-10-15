@@ -37,6 +37,16 @@ export interface SssomMapping {
     confidence?: number;
     comment?: string;
     authorIds?: string[];
+    authorLabels?: string[];
     reviewerIds?: string[];
+    reviewerLabels?: string[];
     mappingDate?: string;
+}
+
+export type ContributorRole = "author" | "reviewer";
+
+export interface MappingContributor {
+    role: ContributorRole;
+    id?: string;
+    label?: string;
 }
