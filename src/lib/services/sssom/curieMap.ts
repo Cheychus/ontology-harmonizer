@@ -54,3 +54,14 @@ export function iriToCurie(identifier: string, curieMap: CurieMap): string {
 
     return `${entry.prefix}:${identifier.slice(entry.iri.length)}`;
 }
+
+export function curieToIri(identifier: string, curieMap: CurieMap): string {
+    const separator = identifier.indexOf(":");
+    if (separator === -1) return identifier;
+
+    const prefix = identifier.slice(0, separator);
+    const entry = curieMap.find((entry) => entry.prefix === prefix);
+    if (!entry) return identifier;
+
+    return entry.iri + identifier.slice(separator + 1);
+}

@@ -2,6 +2,7 @@
     import { ChevronDown, ChevronUp } from "lucide-svelte";
     import Button from "$lib/components/ui/button/button.svelte";
     import type { SssomMapping } from "$lib/types/mapping";
+    import { curieToIri } from "$lib/services/sssom/curieMap";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
 
     interface Props {
@@ -56,7 +57,7 @@
                             >
                                 {#if mapping.subjectLabel}<p class="font-medium">{mapping.subjectLabel}</p>{/if}
                                 <a
-                                    href={mapping.subjectId}
+                                    href={curieToIri(mapping.subjectId, mappingStore.mappingSet.metadata.curieMap)}
                                     target="_blank"
                                     rel="noreferrer"
                                     class="text-muted-foreground underline underline-offset-2 hover:text-foreground">{mapping.subjectId}</a
@@ -66,7 +67,7 @@
                             <td class="space-y-1 px-3 py-4 [overflow-wrap:anywhere]">
                                 {#if mapping.objectLabel}<p class="font-medium">{mapping.objectLabel}</p>{/if}
                                 <a
-                                    href={mapping.objectId}
+                                    href={curieToIri(mapping.objectId, mappingStore.mappingSet.metadata.curieMap)}
                                     target="_blank"
                                     rel="noreferrer"
                                     class="text-muted-foreground underline underline-offset-2 hover:text-foreground">{mapping.objectId}</a
