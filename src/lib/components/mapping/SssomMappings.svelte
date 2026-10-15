@@ -117,6 +117,17 @@
                                             <dd>{mapping.mappingDate}</dd>
                                         {/if}
                                     </dl>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        class="mt-4"
+                                        onclick={() => {
+                                            mappingStore.removeSssomMapping(mapping);
+                                            expandedMappings = expandedMappings.filter((item) => item !== mapping);
+                                        }}
+                                    >
+                                        Remove mapping
+                                    </Button>
                                 </td>
                             </tr>
                         {/if}

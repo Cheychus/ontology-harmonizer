@@ -154,6 +154,12 @@ class MappingStore {
         return this.findSssomMapping(ontology) !== undefined;
     }
 
+    removeSssomMapping(mapping: SssomMapping) {
+        const mappingIndex = this.mappingSet.mappings.indexOf(mapping);
+        if (mappingIndex === -1) { return; }
+        this.mappingSet.mappings.splice(mappingIndex, 1);
+    }
+
     /** @deprecated Adds a legacy JSON mapping. Use addSssomMapping instead. */
     addMapping(name: string, iri: string, synonym: string, shortForm: string) {
         let mapping = this.findMapping(name);
