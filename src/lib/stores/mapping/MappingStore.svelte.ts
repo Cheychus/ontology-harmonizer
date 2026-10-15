@@ -4,7 +4,7 @@ import { warning } from "$lib/services/toasts/toastService";
 import {
     createDefaultMappingSet,
     createMappingSetFromSssom,
-} from "$lib/services/sssom/sssom";
+} from "$lib/services/sssom/parseSssomTsvData";
 
 
 /** @deprecated Legacy JSON mapping shape. Use SssomMapping for new features. */
