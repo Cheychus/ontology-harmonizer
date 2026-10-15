@@ -88,7 +88,9 @@
 
     // Keep the SSSOM mapping in sync with the current Focus Card ontology values and search results.
     $effect(() => {
-        sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix ? `${mappingStore.subjectIdentifier.prefix}:${currentOntology.key}` : "";
+        sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix
+            ? `${mappingStore.subjectIdentifier.prefix}:${encodeURIComponent(currentOntology.key)}`
+            : "";
         sssomMapping.subjectLabel = currentOntology.key;
         sssomMapping.objectLabel = currentSearchResult?.label ?? "";
 

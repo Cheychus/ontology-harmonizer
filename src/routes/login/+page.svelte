@@ -19,7 +19,8 @@
         if (!profileAuthor) return;
 
         if (!profileAuthor.id?.trim()) {
-            profileAuthor.id = user.email || user.commit_email || "";
+            const email = (user.email || user.commit_email || "").trim();
+            profileAuthor.id = email ? `mailto:${email}` : "";
         }
     }
 

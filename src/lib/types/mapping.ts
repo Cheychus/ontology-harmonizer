@@ -33,7 +33,7 @@ export interface SssomMapping extends Partial<SssomContributorFields> {
     predicateId: SupportedPredicate;
     objectId: string;
     objectLabel?: string;
-    mappingJustification?: MappingJustification;
+    mappingJustification: MappingJustification;
     confidence?: number;
     comment?: string;
     mappingDate?: string;

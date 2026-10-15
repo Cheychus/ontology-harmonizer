@@ -9,6 +9,6 @@ declare module "sssom-js" {
         mapping_justification?: string;
         confidence?: number;
         comment?: string;
-        author_id?: string;
+        author_id?: string[];
     }
 }

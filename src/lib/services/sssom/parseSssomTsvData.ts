@@ -48,8 +48,8 @@ export function createDefaultMappingSet(): MappingSet {
   return {
     formatVersion: "1.0",
     metadata: {
-      mappingSetId: "mapping",
-      license: "CC-BY-4.0",
+      mappingSetId: "https://example.org/mapping.sssom.tsv",
+      license: "https://creativecommons.org/licenses/by/4.0/",
       curieMap: [
         {
           prefix: "skos",
@@ -62,6 +62,10 @@ export function createDefaultMappingSet(): MappingSet {
         {
           prefix: "orcid",
           iri: "https://orcid.org/",
+        },
+        {
+          prefix: "mailto",
+          iri: "mailto:",
         },
       ],
       title: "",
@@ -85,10 +89,10 @@ function convertImportedMappings(mappings: ParsedSssomMapping[]): SssomMapping[]
       predicateId: raw.predicate_id,
       objectId: raw.object_id,
       objectLabel: raw.object_label,
-      mappingJustification: raw.mapping_justification,
+      mappingJustification: raw.mapping_justification ?? "",
       confidence: raw.confidence,
       comment: raw.comment,
-      authorIds: raw.author_id ? [raw.author_id] : [],
+      authorIds: raw.author_id ?? [],
     };
   });
 }

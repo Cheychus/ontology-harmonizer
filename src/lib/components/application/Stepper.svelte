@@ -4,6 +4,7 @@
     import { Play, Settings } from "lucide-svelte";
     import { Button } from "../ui/button";
     import { startDemo } from "$lib/services/demo/demo";
+    import { exportMapping } from "$lib/services/sssom/serializeSssomTsv";
 
     let currentStep = $derived(applicationStore.getStepIndex(page.url.pathname));
 </script>
@@ -22,6 +23,10 @@
                     {i + 1}. {step.label}
                 </Button>
             {/each}
+        </div>
+
+        <div class="absolute right-4">
+            <Button onclick={exportMapping}>Download Mapping</Button>
         </div>
     </div>
 </nav>
