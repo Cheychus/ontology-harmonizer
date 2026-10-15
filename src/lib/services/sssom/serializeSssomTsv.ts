@@ -48,7 +48,7 @@ export function serializeSssomTsv(mappingSet: MappingSet): string {
             mapping.confidence,
             mapping.comment,
             mapping.mappingDate,
-        ].map(serializeCell).join("\t");
+        ].join("\t");
     });
 
     return [
@@ -57,13 +57,6 @@ export function serializeSssomTsv(mappingSet: MappingSet): string {
         ...rows,
     ].join("\n");
 }
-
-function serializeCell(value: string | number | undefined): string {
-    const text = String(value ?? "");
-    // Quote cells containing TSV delimiters or quotes, doubling embedded quotes.
-    return /[\t\r\n"]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
-
 
 export function exportMapping() {
     const content = serializeSssomTsv(mappingStore.mappingSet);
