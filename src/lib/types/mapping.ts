@@ -41,9 +41,7 @@ export interface SssomMapping extends Partial<SssomContributorFields> {
 
 export interface SssomContributorFields {
     authorIds: string[];
-    authorLabels: string[];
     reviewerIds: string[];
-    reviewerLabels: string[];
 }
 
 export type ContributorRole = "author" | "reviewer";

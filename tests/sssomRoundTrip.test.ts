@@ -29,9 +29,7 @@ function exampleMappingSet(): MappingSet {
         confidence: 0.75,
         comment: 'Mapping with a tab\tand "quotes"\nSecond line',
         authorIds: ["orcid:0000-0002-7356-1779", "orcid:0000-0002-6601-2165"],
-        authorLabels: ["Author without identifier"],
         reviewerIds: ["orcid:0000-0002-7356-1779"],
-        reviewerLabels: ["Reviewer without identifier"],
         mappingDate: "2026-10-15",
     }];
     return mappingSet;

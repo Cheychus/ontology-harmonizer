@@ -5,9 +5,7 @@ export function contributorsToSssomFields(contributors: MappingContributor[]): S
 
     const fields: SssomContributorFields = {
         authorIds: [],
-        authorLabels: [],
         reviewerIds: [],
-        reviewerLabels: [],
     }
 
     contributors = filterEmptyContributors(contributors);
