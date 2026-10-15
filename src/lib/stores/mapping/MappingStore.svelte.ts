@@ -139,6 +139,7 @@ class MappingStore {
 
         this.mappingSet.mappings.push({
             ...mapping,
+            mappingDate: new Date().toISOString().slice(0, 10),
             authorIds: mapping.authorIds?.map((authorId) => authorId.trim()).filter(Boolean),
             comment: mapping.comment?.trim() || undefined,
         });
