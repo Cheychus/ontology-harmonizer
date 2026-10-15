@@ -59,7 +59,7 @@ class ApplicationStore {
     gitLabUser = $state<IGitLabUser | null>(null);
 
     defaultMappingContributors = $state<MappingContributor[]>([
-        { role: "author", id: "", label: "" },
+        { role: "author", id: "" },
     ]);
 
 

@@ -4,6 +4,7 @@
     import ContributorEditor from "./ContributorEditor.svelte";
     import Label from "../ui/label/label.svelte";
     import { MessageSquarePlus } from "lucide-svelte";
+    import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
 
     interface Props {
         mapping: SssomMapping;

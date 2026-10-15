@@ -11,7 +11,7 @@
     import MappingSetMetadata from "$lib/components/mapping/MappingSetMetadata.svelte";
     import SssomMappings from "$lib/components/mapping/SssomMappings.svelte";
     import { onMount } from "svelte";
-    import { parseSssomInServer } from "$lib/services/sssom/sssom";
+    import { parseSssomInServer } from "$lib/services/sssom/parseSssomTsvData";
 
     let fileInput: HTMLInputElement;
     let sssomFileInput: HTMLInputElement;

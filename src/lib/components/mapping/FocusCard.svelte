@@ -17,8 +17,10 @@
     import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
     import SSSOMInput from "./SSSOM_Input.svelte";
-    import type { SssomMapping } from "$lib/types/mapping";
+    import { type MappingContributor, type SssomMapping } from "$lib/types/mapping";
+    import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
+    import { contributorsToSssomFields } from "$lib/services/sssom/contributors";
 
     $inspect(mappingStore.mappingSet);
 
@@ -81,6 +83,8 @@
         comment: "",
         authorIds: [],
     });
+
+    let contributors: MappingContributor[] = $state(applicationStore.defaultMappingContributors.map((c) => ({ ...c })));
 
     // Keep the SSSOM mapping in sync with the current Focus Card ontology values and search results.
     $effect(() => {
@@ -236,12 +240,14 @@
             warning("IRI and Short Form required");
             return;
         }
-        if (selectedMapping) {
-        }
 
-        const mappingSuccess = mappingStore.addSssomMapping(sssomMapping);
+        const sssomContributorFields = contributorsToSssomFields(contributors);
+        const success = mappingStore.addSssomMapping({
+            ...sssomMapping,
+            ...sssomContributorFields,
+        });
 
-        if (mappingSuccess) {
+        if (success && curieMapDetailsAccepted) {
             mappingStore.addCurieMapEntry(curieMapPrefix, curieMapBaseIri);
             mappingStore.moveNext();
         }
@@ -524,7 +530,7 @@
     </div>
 
     <div class="mt-auto flex flex-col w-full gap-2">
-        <SSSOMInput bind:mapping={sssomMapping} />
+        <SSSOMInput bind:mapping={sssomMapping} bind:contributors />
         <div class="flex gap-2">
             <Button class="w-1/3" disabled={!mappingStore.subjectIdentifier.prefix || !curieMapDetailsAccepted} onclick={addSssomMapping}>Map</Button>
             <Select.Root

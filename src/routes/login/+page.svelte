@@ -18,8 +18,7 @@
         const profileAuthor = applicationStore.defaultMappingContributors.find((contributor) => contributor.role === "author");
         if (!profileAuthor) return;
 
-        if (!profileAuthor.label?.trim() && !profileAuthor.id?.trim()) {
-            profileAuthor.label = (user.name ?? "") || (user.username ?? "");
+        if (!profileAuthor.id?.trim()) {
             profileAuthor.id = user.email || user.commit_email || "";
         }
     }

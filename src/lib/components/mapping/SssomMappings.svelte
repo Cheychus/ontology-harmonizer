@@ -9,9 +9,7 @@
 
     let { onlyMapped = false }: Props = $props();
 
-    const displayedMappings = $derived(
-        onlyMapped ? mappingStore.mappedSssomMappings : mappingStore.mappingSet.mappings,
-    );
+    const displayedMappings = $derived(onlyMapped ? mappingStore.mappedSssomMappings : mappingStore.mappingSet.mappings);
 </script>
 
 <section class="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
@@ -48,6 +46,9 @@
                         {/if}
                         {#if mapping.authorIds?.length}
                             <span>Authors: {mapping.authorIds.join(", ")}</span>
+                        {/if}
+                        {#if mapping.reviewerIds?.length}
+                            <span>Reviewers: {mapping.reviewerIds.join(", ")}</span>
                         {/if}
                     </div>
 

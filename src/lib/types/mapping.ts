@@ -27,7 +27,7 @@ export interface MappingSet {
     mappings: SssomMapping[];
 }
 
-export interface SssomMapping {
+export interface SssomMapping extends Partial<SssomContributorFields> {
     subjectId: string;
     subjectLabel?: string;
     predicateId: SupportedPredicate;
@@ -36,17 +36,19 @@ export interface SssomMapping {
     mappingJustification?: MappingJustification;
     confidence?: number;
     comment?: string;
-    authorIds?: string[];
-    authorLabels?: string[];
-    reviewerIds?: string[];
-    reviewerLabels?: string[];
     mappingDate?: string;
+}
+
+export interface SssomContributorFields {
+    authorIds: string[];
+    authorLabels: string[];
+    reviewerIds: string[];
+    reviewerLabels: string[];
 }
 
 export type ContributorRole = "author" | "reviewer";
 
 export interface MappingContributor {
     role: ContributorRole;
-    id?: string;
-    label?: string;
+    id: string;
 }
