@@ -93,6 +93,8 @@ function convertImportedMappings(mappings: ParsedSssomMapping[]): SssomMapping[]
       confidence: raw.confidence,
       comment: raw.comment,
       authorIds: raw.author_id ?? [],
+      mappingDate: raw.mapping_date,
+      reviewerIds: raw.reviewer_id ?? [],
     };
   });
 }

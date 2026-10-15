@@ -10,5 +10,7 @@ declare module "sssom-js" {
         confidence?: number;
         comment?: string;
         author_id?: string[];
+        reviewer_id?: string[];
+        mapping_date?: string;
     }
 }
