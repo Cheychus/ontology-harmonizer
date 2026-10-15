@@ -43,16 +43,8 @@ describe("SSSOM TSV export/import round trip", () => {
         const imported = createMappingSetFromSssom(parsed);
 
         expect.soft(imported.metadata).toEqual(original.metadata);
-        // sssom-js expands CURIE identifiers to full IRIs during parsing.
-        expect(imported.mappings).toEqual([{
-            ...original.mappings[0],
-            subjectId: "https://example.org/terms/1",
-            predicateId: "http://www.w3.org/2004/02/skos/core#exactMatch",
-            objectId: "https://example.org/terms/2",
-            mappingJustification: "https://w3id.org/semapv/vocab/ManualMappingCuration",
-            authorIds: ["https://orcid.org/0000-0002-7356-1779", "https://orcid.org/0000-0002-6601-2165"],
-            reviewerIds: ["https://orcid.org/0000-0002-7356-1779"],
-        }]);
+        // The import converts expanded IRIs back to the original CURIEs.
+        expect(imported.mappings).toEqual(original.mappings);
     });
 
     it("can import an export containing a mailto identifier with a declared prefix", async () => {
