@@ -1,23 +1,18 @@
 <script lang="ts">
-    import type { SssomMapping } from "$lib/types/mapping";
+    import type { MappingContributor, SssomMapping } from "$lib/types/mapping";
     import { Button } from "$lib/components/ui/button";
-    import { Input } from "$lib/components/ui/input";
+    import ContributorEditor from "./ContributorEditor.svelte";
     import Label from "../ui/label/label.svelte";
-    import { MessageSquarePlus, UserPlus, X } from "lucide-svelte";
+    import { MessageSquarePlus } from "lucide-svelte";
 
     interface Props {
         mapping: SssomMapping;
+        contributors: MappingContributor[];
     }
 
-    let { mapping = $bindable() }: Props = $props();
+    let { mapping = $bindable(), contributors = $bindable() }: Props = $props();
 
     let showComment = $state(Boolean(mapping.comment));
-    function addAuthorId() {
-        mapping.authorIds = [...(mapping.authorIds ?? []), ""];
-    }
-    function removeAuthorId(index: number) {
-        mapping.authorIds = (mapping.authorIds ?? []).filter((_, authorIndex) => authorIndex !== index);
-    }
 </script>
 
 <div class="flex items-center gap-4 py-1">
@@ -32,9 +27,6 @@
             onclick={() => (showComment = true)}
         >
             <MessageSquarePlus />
-        </Button>
-        <Button variant="outline" size="icon-sm" aria-label="Add author" title="Add author" onclick={addAuthorId}>
-            <UserPlus />
         </Button>
     </div>
 </div>
@@ -62,21 +54,8 @@
         </div>
     {/if}
 
-    {#if mapping.authorIds?.length}
-        <div class="flex max-w-xl flex-col gap-2">
-            <Label>Author IDs</Label>
-            {#each mapping.authorIds as authorId, index}
-                <div class="flex gap-2">
-                    <Input
-                        aria-label={`Author ID ${index + 1}`}
-                        placeholder="e.g. name@example.org or orcid:0000-0000-0000-0000"
-                        bind:value={mapping.authorIds[index]}
-                    />
-                    <Button variant="outline" size="icon-sm" aria-label={`Remove author ${index + 1}`} onclick={() => removeAuthorId(index)}
-                        ><X /></Button
-                    >
-                </div>
-            {/each}
-        </div>
-    {/if}
+    <div class="flex max-w-3xl flex-col gap-2">
+        <p class="text-sm font-medium">Mapping contributors</p>
+        <ContributorEditor bind:contributors />
+    </div>
 </div>

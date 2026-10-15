@@ -2,32 +2,13 @@
     import type { IGitLabUser } from "$lib/types/gitLab";
     import { apiGet } from "$lib/api/api";
     import { Button } from "$lib/components/ui/button";
-    import { Input } from "$lib/components/ui/input";
-    import * as Select from "$lib/components/ui/select/index.js";
+    import ContributorEditor from "$lib/components/mapping/ContributorEditor.svelte";
     import { startDemo } from "$lib/services/demo/demo";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-    import { Leaf, Play, UserPlus, X } from "lucide-svelte";
+    import { Leaf, Play } from "lucide-svelte";
     import { onMount } from "svelte";
-    import type { ContributorRole } from "$lib/types/mapping";
 
     let user: IGitLabUser | null = $state(null);
-
-    const roles = [
-        { value: "author", label: "Author" },
-        { value: "reviewer", label: "Reviewer" },
-    ];
-
-    function addContributor() {
-        applicationStore.defaultMappingContributors.push({ role: "author", id: "", label: "" });
-    }
-
-    function removeContributor(index: number) {
-        applicationStore.defaultMappingContributors.splice(index, 1);
-    }
-
-    function roleLabel(role: ContributorRole) {
-        return roles.find((item) => item.value === role)?.label ?? "Author";
-    }
 
     /**
      * Fill the first default Author with user data from GitLab if not already filled with data.
@@ -83,40 +64,6 @@
             <p class="text-sm text-muted-foreground">Default contributors for newly created mappings</p>
         </div>
 
-        <div class="flex w-full max-w-3xl flex-col gap-2">
-            <div class="flex justify-end">
-                <Button variant="outline" size="sm" onclick={addContributor}>Add contributor <UserPlus /></Button>
-            </div>
-            {#if applicationStore.defaultMappingContributors.length > 0}
-                <div class="grid grid-cols-[9rem_minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 text-xs text-muted-foreground">
-                    <span>Role</span>
-                    <span>Identifier</span>
-                    <span>Name</span>
-                    <span class="sr-only">Actions</span>
-                </div>
-                {#each applicationStore.defaultMappingContributors as contributor, index}
-                    <div class="grid grid-cols-[9rem_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2">
-                        <Select.Root type="single" bind:value={contributor.role}>
-                            <Select.Trigger class="w-full">{roleLabel(contributor.role)}</Select.Trigger>
-                            <Select.Content>
-                                <Select.Group>
-                                    {#each roles as role (role.value)}
-                                        <Select.Item value={role.value} label={role.label}>{role.label}</Select.Item>
-                                    {/each}
-                                </Select.Group>
-                            </Select.Content>
-                        </Select.Root>
-                        <Input aria-label={`Contributor ${index + 1} identifier`} placeholder="ORCID or email" bind:value={contributor.id} />
-                        <Input aria-label={`Contributor ${index + 1} name`} placeholder="Name" bind:value={contributor.label} />
-                        <Button
-                            variant="outline"
-                            size="icon-sm"
-                            aria-label={`Remove contributor ${index + 1}`}
-                            onclick={() => removeContributor(index)}><X /></Button
-                        >
-                    </div>
-                {/each}
-            {/if}
-        </div>
+        <ContributorEditor bind:contributors={applicationStore.defaultMappingContributors} />
     </div>
 </section>
