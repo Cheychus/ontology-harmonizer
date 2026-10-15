@@ -5,6 +5,8 @@
     import { Button } from "../ui/button";
     import { startDemo } from "$lib/services/demo/demo";
     import { exportMapping } from "$lib/services/sssom/serializeSssomTsv";
+    import { downloadJson } from "$lib/services/arcs/arcFile.service";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
 
     let currentStep = $derived(applicationStore.getStepIndex(page.url.pathname));
 </script>
@@ -25,8 +27,9 @@
             {/each}
         </div>
 
-        <div class="absolute right-4">
-            <Button onclick={exportMapping}>Download Mapping</Button>
+        <div class="absolute right-4 flex gap-2">
+            <Button variant="outline" onclick={() => downloadJson(mappingStore.mappingSet, "mapping.json")}>Download JSON</Button>
+            <Button onclick={exportMapping}>Download TSV</Button>
         </div>
     </div>
 </nav>
