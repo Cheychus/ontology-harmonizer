@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseSSSOMString } from "sssom-js";
 import fixture from "./fixtures/metadata-import.sssom.tsv?raw";
-import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
+import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
 import type { ParsedSssomDocument } from "$lib/types/mapping";
 
 describe("SSSOM mapping-set metadata import", () => {
@@ -24,12 +24,5 @@ describe("SSSOM mapping-set metadata import", () => {
         expect(mappingStore.importedSssom?.future_product_field).toBe("retain-this-value");
     });
 
-    it("keeps legacy JSON loading separate from a parsed SSSOM import", () => {
-        const legacyMapping: IMapping[] = [{ name: "Organism", iri: "https://example.org/organism", synonyms: [], shortForm: "EX:1" }];
 
-        mappingStore.load(legacyMapping);
-
-        expect(mappingStore.mappingJson).toEqual(legacyMapping);
-        expect(mappingStore.importedSssom).toBeNull();
-    });
 });

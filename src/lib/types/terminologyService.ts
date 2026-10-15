@@ -21,3 +21,13 @@ export interface ITerminologySearchResult {
 }
 
 export type matchingType = "terminology" | "pythonService";
+
+export interface IMatchingViewModel {
+  iri: string;
+  label: string;
+  shortForm: string;
+  description?: string[] | any[];
+  score?: number;
+  rank?: number;
+  source: matchingType;
+}

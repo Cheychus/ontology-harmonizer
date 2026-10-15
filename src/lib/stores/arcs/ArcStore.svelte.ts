@@ -131,13 +131,13 @@ class ArcStore {
   applyMapping() {
     let count = 0;
     this.allOntologyValues?.forEach((onto) => {
-      const mapping = mappingStore.findMapping(onto.key);
-      if (mapping && mapping.iri !== onto.value) {
+      const mapping = mappingStore.findSssomMapping(onto);
+      if (mapping && mapping.objectId !== onto.value) {
         const old = { ...onto };
-        onto.source[onto.ontologyAttribute] = mapping.iri; // change in ARC JSON
+        onto.source[onto.ontologyAttribute] = mapping.objectId; // change in ARC JSON
         this.changedOntologies.push({
           old,
-          new: mapping.iri,
+          new: mapping.objectId,
         })
         count++;
       }

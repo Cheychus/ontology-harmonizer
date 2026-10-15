@@ -7,19 +7,8 @@ import {
 } from "$lib/services/sssom/parseSssomTsvData";
 
 
-/** @deprecated Legacy JSON mapping shape. Use SssomMapping for new features. */
-export interface IMapping {
-    name: string;
-    iri: string;
-    synonyms: string[];
-    shortForm: string;
-}
-
-
 class MappingStore {
     fileName: string = $state("");
-    /** @deprecated Legacy JSON mappings. Use mappingSet.mappings instead. */
-    mappingJson: IMapping[] = $state([])
     hasMappingSet = $state(true);
     mappingSet: MappingSet = $state(createDefaultMappingSet());
     subjectPrefix = $state("");
@@ -74,7 +63,6 @@ class MappingStore {
 
     reset() {
         this.fileName = "";
-        this.mappingJson = [];
         this.hasMappingSet = false;
         this.mappingSet = createDefaultMappingSet();
         this.subjectPrefix = "";
@@ -82,19 +70,8 @@ class MappingStore {
         this.startMapping(this.unmappedOntologies)
     }
 
-    /** @deprecated Loads the legacy JSON mapping format. Use loadSssom instead. */
-    load(mapping: IMapping[]) {
-        this.mappingJson = mapping;
-        this.hasMappingSet = true;
-        this.mappingSet = createDefaultMappingSet();
-        this.subjectPrefix = "";
-        this.importedSssom = null;
-        this.startMapping(this.unmappedOntologies);
-    }
-
     createMappingSet() {
         this.fileName = "";
-        this.mappingJson = [];
         this.hasMappingSet = true;
         this.mappingSet = createDefaultMappingSet();
         this.subjectPrefix = "";
@@ -105,7 +82,6 @@ class MappingStore {
     loadSssom(sssom: ParsedSssomDocument) {
         const mappingSet = createMappingSetFromSssom(sssom);
 
-        this.mappingJson = [];
         this.hasMappingSet = true;
         this.importedSssom = sssom;
         this.mappingSet = mappingSet;
@@ -160,63 +136,6 @@ class MappingStore {
         this.mappingSet.mappings.splice(mappingIndex, 1);
     }
 
-    /** @deprecated Adds a legacy JSON mapping. Use addSssomMapping instead. */
-    addMapping(name: string, iri: string, synonym: string, shortForm: string) {
-        let mapping = this.findMapping(name);
-
-        if (mapping) {
-            mapping.synonyms.push(synonym)
-            return mapping;
-        }
-
-        mapping = {
-            iri,
-            name,
-            synonyms: name === synonym ? [] : [synonym],
-            shortForm
-        }
-        this.mappingJson.push(mapping)
-        return mapping;
-    }
-
-    /** @deprecated Searches legacy JSON mappings. */
-    findMapping(name: string) {
-        return this.mappingJson.find((m) => m.name.toLowerCase() === name.toLowerCase() || m.synonyms.find((s) => s.toLowerCase() === name.toLowerCase())) ?? null;
-    }
-
-    /** @deprecated Searches legacy JSON mappings. */
-    findMappings(query: string) {
-        if (!query) return this.mappingJson;
-        const q = query.toLowerCase();
-        return this.mappingJson.filter(
-            (m) =>
-                m.name.toLowerCase().includes(q) ||
-                m.synonyms.some((s) => s.toLowerCase().includes(q))
-        );
-    }
-
-    /** @deprecated Removes a legacy JSON mapping. */
-    removeMapping(index: number) {
-        return this.mappingJson.splice(index, 1);
-    }
-
-    /** @deprecated Removes a synonym from a legacy JSON mapping. */
-    removeSynonym(mapping: IMapping, index: number) {
-        const deleted = mapping.synonyms.splice(index, 1);
-        return deleted;
-    }
-
-    /** @deprecated Adds a synonym to a legacy JSON mapping. */
-    addSynonym(mapping: IMapping, synonym: string) {
-        return mapping.synonyms.push(synonym);
-    }
-
-    /** @deprecated Legacy JSON mapping helper. */
-    iriIncludesShortForm(iri: string, shortForm: string) {
-        const replacedIri = iri.replace("_", ":").toLowerCase();
-        const replacedShortForm = shortForm.replace("_", ":").toLowerCase();
-        return replacedIri.includes(replacedShortForm);
-    }
 
 }
 

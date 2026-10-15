@@ -1,12 +1,10 @@
 <script lang="ts">
     import { Button } from "$lib/components/ui/button";
-    import { downloadJson } from "$lib/services/arcs/arcFile.service";
     import { pushToGitlab } from "$lib/services/arcs/arctrl";
     import { failure, success } from "$lib/services/toasts/toastService";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Download, Minus, Plus } from "lucide-svelte";
+    import { Minus, Plus } from "lucide-svelte";
     import { onMount } from "svelte";
 
     let commitUrl = $state("");
@@ -57,11 +55,6 @@
                 variant="default"
                 >Push to Gitlab
             </Button>
-            <Button
-                onclick={() => downloadJson(mappingStore.mappingJson, mappingStore.fileName === "" ? "mapping.json" : mappingStore.fileName)}
-                class="ml-auto"
-                variant="secondary"><Download /> Save Mapping</Button
-            >
         </div>
 
         <div class="flex flex-col">

@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-    import { onMount } from "svelte";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import Badge from "../ui/badge/badge.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { ArrowRight, CircleCheck, OctagonAlert } from "lucide-svelte";
@@ -14,13 +13,8 @@
 
     let arcIri = $derived(ontology.source[ontology.ontologyAttribute] ?? "");
     let arcIris = $derived(arcStore.arcIriMap.get(ontology.key));
-    let mapIri = $state("");
-    let mapping: IMapping | null = $state(null);
-
-    onMount(() => {
-        mapping = mappingStore.findMapping(ontology.key);
-        mapIri = mapping?.iri ?? "";
-    });
+    let mapping = $derived(mappingStore.findSssomMapping(ontology));
+    let mapIri = $derived(mapping?.objectId ?? "");
 </script>
 
 <div class="shadow p-2">
@@ -38,11 +32,6 @@
             {:else if arcIri === mapIri}
                 <div class="flex gap-2">
                     <Badge variant="outline">Mapping value and ARC value are identical</Badge>
-                    <CircleCheck class="text-green-400" />
-                </div>
-            {:else if mapping && typeof arcIri == "string" && mappingStore.iriIncludesShortForm(arcIri, mapping.shortForm)}
-                <div class="flex gap-2">
-                    <Badge variant="outline">Mapping value and ARC value share the same short form.</Badge>
                     <CircleCheck class="text-green-400" />
                 </div>
             {:else if arcIri !== mapIri}

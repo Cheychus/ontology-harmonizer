@@ -1,12 +1,12 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
-    import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X, CircleAlert } from "lucide-svelte";
     import { Input } from "../ui/input";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
     import * as Select from "$lib/components/ui/select/index.js";
-    import type { IMatchingViewModel } from "../ontologies/Matchings.svelte";
+    import type { IMatchingViewModel } from "$lib/types/terminologyService";
     import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
     import { searchTerms, terminologyProviders, type TerminologyProviderId } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
@@ -39,8 +39,6 @@
     let activeSearch: AbortController | null = null;
     let searchId = 0;
 
-    let selectValue = $derived("");
-    let selectedMapping: IMapping | null = $state(null);
     let iriInput: string = $derived(currentSearchResult?.iri ?? "");
     let shortFormInput: string = $derived(iriToCurie(currentSearchResult?.shortForm ?? ""));
     let curieMapPrefix = $state("");
@@ -48,15 +46,6 @@
     let curieMapDetailsAccepted = $state(false);
     let curieMapValidationError = $state("");
 
-    // Derive select options from the existing obo file mapping terms
-    const selectOptions = $derived.by(() => {
-        return (
-            mappingStore.mappingJson.map((m) => {
-                return { value: m.name, label: m.name };
-            }) ?? []
-        );
-    });
-    const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping");
     const terminologyProviderLabel = $derived(
         terminologyProviders.find((provider) => provider.id === settingsStore.terminologyProvider)?.label ?? "Select a terminology service",
     );
@@ -238,7 +227,7 @@
             return;
         }
 
-        if (!selectedMapping && (!iriInput || !shortFormInput)) {
+        if (!iriInput || !shortFormInput) {
             warning("IRI and Short Form required");
             return;
         }
@@ -253,24 +242,6 @@
             mappingStore.addCurieMapEntry(curieMapPrefix, curieMapBaseIri);
             mappingStore.moveNext();
         }
-    }
-
-    function map() {
-        if (!selectedMapping && (!iriInput || !shortFormInput)) {
-            warning("IRI and Short Form required");
-            return;
-        }
-
-        if (selectedMapping) {
-            mappingStore.addSynonym(selectedMapping, currentOntology.key);
-            selectedMapping.shortForm = shortFormInput;
-        } else {
-            const iri = iriInput;
-            const label = currentSearchResult.label ?? currentOntology.key;
-            const xref = shortFormInput;
-            mappingStore.addMapping(label, iri, currentOntology.key, xref);
-        }
-        mappingStore.moveNext();
     }
 
     let container: HTMLElement;
@@ -535,24 +506,6 @@
         <SSSOMInput bind:mapping={sssomMapping} bind:contributors />
         <div class="flex gap-2">
             <Button class="w-1/3" disabled={!mappingStore.subjectIdentifier.prefix || !curieMapDetailsAccepted} onclick={addSssomMapping}>Map</Button>
-            <Select.Root
-                type="single"
-                bind:value={selectValue}
-                onValueChange={() => {
-                    selectedMapping = mappingStore.findMapping(selectValue)!;
-                    shortFormInput = selectedMapping.shortForm;
-                    iriInput = selectedMapping.iri;
-                }}
-            >
-                <Select.Trigger class="w-full col-span-2">{triggerContent}</Select.Trigger>
-                <Select.Content>
-                    <Select.Item value={"new-mapping"} label={"Create a new mapping"}></Select.Item>
-                    <Select.Group
-                        ><Select.Label>Terms</Select.Label>
-                        {#each selectOptions as option}<Select.Item value={option.value} label={option.label}>{option.label}</Select.Item>{/each}
-                    </Select.Group>
-                </Select.Content>
-            </Select.Root>
         </div>
     </div>
 </div>
