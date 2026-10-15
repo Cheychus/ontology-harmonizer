@@ -1,6 +1,5 @@
 import type { IGitLabUser } from "$lib/types/gitLab";
-
-type MappingRole = "author" | "reviewer" | "none";
+import type { MappingContributor } from "$lib/types/mapping";
 
 // Control flow state
 class ApplicationStore {
@@ -59,12 +58,11 @@ class ApplicationStore {
 
     gitLabUser = $state<IGitLabUser | null>(null);
 
-    mappingProfile = $state({
-        role: "none" as MappingRole,
-        name: "",
-        orcid: "",
-        email: ""
-    });
+    defaultMappingContributors = $state<MappingContributor[]>([
+        { role: "author", id: "", label: "" },
+    ]);
+
+
 
 
 }
