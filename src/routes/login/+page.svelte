@@ -2,24 +2,49 @@
     import type { IGitLabUser } from "$lib/types/gitLab";
     import { apiGet } from "$lib/api/api";
     import { Button } from "$lib/components/ui/button";
-    import Input from "$lib/components/ui/input/input.svelte";
-    import Label from "$lib/components/ui/label/label.svelte";
+    import { Input } from "$lib/components/ui/input";
     import * as Select from "$lib/components/ui/select/index.js";
     import { startDemo } from "$lib/services/demo/demo";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-    import { Leaf, Play } from "lucide-svelte";
+    import { Leaf, Play, UserPlus, X } from "lucide-svelte";
     import { onMount } from "svelte";
+    import type { ContributorRole } from "$lib/types/mapping";
 
     let user: IGitLabUser | null = $state(null);
 
     const roles = [
-        { value: "none", label: "No role" },
         { value: "author", label: "Author" },
         { value: "reviewer", label: "Reviewer" },
     ];
-    const selectedRole = $derived(roles.find((item) => item.value === applicationStore.mappingProfile.role)?.label ?? "No role");
+
+    function addContributor() {
+        applicationStore.defaultMappingContributors.push({ role: "author", id: "", label: "" });
+    }
+
+    function removeContributor(index: number) {
+        applicationStore.defaultMappingContributors.splice(index, 1);
+    }
+
+    function roleLabel(role: ContributorRole) {
+        return roles.find((item) => item.value === role)?.label ?? "Author";
+    }
+
+    /**
+     * Fill the first default Author with user data from GitLab if not already filled with data.
+     * @param user
+     */
+    function loadContributorWithUserData(user: IGitLabUser) {
+        const profileAuthor = applicationStore.defaultMappingContributors.find((contributor) => contributor.role === "author");
+        if (!profileAuthor) return;
+
+        if (!profileAuthor.label?.trim() && !profileAuthor.id?.trim()) {
+            profileAuthor.label = (user.name ?? "") || (user.username ?? "");
+            profileAuthor.id = user.email || user.commit_email || "";
+        }
+    }
 
     onMount(async () => {
+        applicationStore.isAuthenticated = false;
         try {
             user = await apiGet<IGitLabUser>(fetch, "/api/gitlab/user");
         } catch {
@@ -31,13 +56,8 @@
         } else {
             return;
         }
-        if (!applicationStore.mappingProfile.name.trim()) {
-            applicationStore.mappingProfile.name = (user.name ?? "") || (user.username ?? "");
-        }
 
-        if (!applicationStore.mappingProfile.email.trim()) {
-            applicationStore.mappingProfile.email = user.email || user.commit_email || "";
-        }
+        loadContributorWithUserData(user);
     });
 </script>
 
@@ -59,37 +79,44 @@
 
     <div class="flex w-full max-w-2xl flex-col gap-6 rounded-md border bg-card p-6 shadow-sm">
         <div class="flex flex-col gap-1">
-            <h3>Profile Information</h3>
-            <p class="text-sm text-muted-foreground">Optional information for the mapping process</p>
+            <h3>Mapping contributors</h3>
+            <p class="text-sm text-muted-foreground">Default contributors for newly created mappings</p>
         </div>
 
-        <div class="flex max-w-md flex-col gap-2">
-            <Label for="mapping-role">Role</Label>
-            <Select.Root type="single" name="mapping-role" bind:value={applicationStore.mappingProfile.role}>
-                <Select.Trigger id="mapping-role" class="w-full">{selectedRole}</Select.Trigger>
-                <Select.Content>
-                    <Select.Group>
-                        {#each roles as item (item.value)}
-                            <Select.Item value={item.value} label={item.label}>{item.label}</Select.Item>
-                        {/each}
-                    </Select.Group>
-                </Select.Content>
-            </Select.Root>
-        </div>
-
-        <div class="grid max-w-2xl gap-4 sm:grid-cols-2">
-            <div class="flex flex-col gap-2">
-                <Label for="profile-name">Name</Label>
-                <Input id="profile-name" autocomplete="name" placeholder="Your name" bind:value={applicationStore.mappingProfile.name} />
+        <div class="flex w-full max-w-3xl flex-col gap-2">
+            <div class="flex justify-end">
+                <Button variant="outline" size="sm" onclick={addContributor}>Add contributor <UserPlus /></Button>
             </div>
-            <div class="flex flex-col gap-2">
-                <Label for="profile-orcid">ORCID</Label>
-                <Input id="profile-orcid" placeholder="0000-0000-0000-0000" bind:value={applicationStore.mappingProfile.orcid} />
-            </div>
-            <div class="flex flex-col gap-2 sm:col-span-2">
-                <Label for="profile-email">Email</Label>
-                <Input id="profile-email" type="email" autocomplete="email" bind:value={applicationStore.mappingProfile.email} />
-            </div>
+            {#if applicationStore.defaultMappingContributors.length > 0}
+                <div class="grid grid-cols-[9rem_minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 text-xs text-muted-foreground">
+                    <span>Role</span>
+                    <span>Identifier</span>
+                    <span>Name</span>
+                    <span class="sr-only">Actions</span>
+                </div>
+                {#each applicationStore.defaultMappingContributors as contributor, index}
+                    <div class="grid grid-cols-[9rem_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-2">
+                        <Select.Root type="single" bind:value={contributor.role}>
+                            <Select.Trigger class="w-full">{roleLabel(contributor.role)}</Select.Trigger>
+                            <Select.Content>
+                                <Select.Group>
+                                    {#each roles as role (role.value)}
+                                        <Select.Item value={role.value} label={role.label}>{role.label}</Select.Item>
+                                    {/each}
+                                </Select.Group>
+                            </Select.Content>
+                        </Select.Root>
+                        <Input aria-label={`Contributor ${index + 1} identifier`} placeholder="ORCID or email" bind:value={contributor.id} />
+                        <Input aria-label={`Contributor ${index + 1} name`} placeholder="Name" bind:value={contributor.label} />
+                        <Button
+                            variant="outline"
+                            size="icon-sm"
+                            aria-label={`Remove contributor ${index + 1}`}
+                            onclick={() => removeContributor(index)}><X /></Button
+                        >
+                    </div>
+                {/each}
+            {/if}
         </div>
     </div>
 </section>
