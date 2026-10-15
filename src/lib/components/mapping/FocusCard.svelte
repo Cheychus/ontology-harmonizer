@@ -11,7 +11,6 @@
     import { searchTerms, terminologyProviders, type TerminologyProviderId } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
     import type { ITerminologySearchResult, matchingType } from "$lib/types/terminologyService";
-    import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
     import { onMount } from "svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
     import { failure, warning } from "$lib/services/toasts/toastService";
@@ -19,7 +18,7 @@
     import SSSOMInput from "./SSSOM_Input.svelte";
     import { type MappingContributor, type SssomMapping } from "$lib/types/mapping";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-    import { extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
+    import { normalizeShortForm, extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
     import { contributorsToSssomFields } from "$lib/services/sssom/contributors";
 
     $inspect(mappingStore.mappingSet);
@@ -40,7 +39,7 @@
     let searchId = 0;
 
     let iriInput: string = $derived(currentSearchResult?.iri ?? "");
-    let shortFormInput: string = $derived(iriToCurie(currentSearchResult?.shortForm ?? ""));
+    let shortFormInput: string = $derived(normalizeShortForm(currentSearchResult?.shortForm ?? ""));
     let curieMapPrefix = $state("");
     let curieMapBaseIri = $state("");
     let curieMapDetailsAccepted = $state(false);
@@ -452,7 +451,7 @@
                     </dd>
 
                     <dt class="font-medium text-muted-foreground">CURIE</dt>
-                    <dd>{iriToCurie(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
+                    <dd>{normalizeShortForm(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
 
                     <dt class="font-medium text-muted-foreground">Full IRI</dt>
                     <dd class="break-all">

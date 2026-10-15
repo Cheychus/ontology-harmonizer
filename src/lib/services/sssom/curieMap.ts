@@ -1,3 +1,7 @@
+export function normalizeShortForm(shortForm: string): string {
+    return shortForm.replace("_", ":");
+}
+
 export function extractPrefixFromObjectId(objectId: string) {
     const separator = objectId.indexOf(":");
     const prefix = separator === -1 ? null : objectId.slice(0, separator);

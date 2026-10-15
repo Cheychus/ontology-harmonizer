@@ -1,7 +1,5 @@
 import { extractOntologies } from "$lib/services/arcs/arcOntology.service";
 import { SvelteMap } from "svelte/reactivity";
-import { oboFileStore } from "../oboFiles/OboFileStore.svelte";
-import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
 import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 import { applicationStore } from "../application/ApplicationStore.svelte";
@@ -113,20 +111,6 @@ class ArcStore {
     this.searchOntologies(); // To detect if a undefined Ontology is now defined
     this.json = this.json; // To trigger svelte reactivity and update the json
   }
-
-  mapOBOtoARC(): number {
-    let count = 0;
-    this.ontologyCandidates.forEach((onto) => {
-      const term = oboFileStore.findTermByName(onto.key);
-      if (term) {
-        onto.source[onto.ontologyAttribute] = term.xrefs.map((xref) => curieToUrl(xref)).join(", ");
-        count++;
-      }
-    });
-    this.updateArcJson();
-    return count;
-  }
-
 
   applyMapping() {
     let count = 0;
