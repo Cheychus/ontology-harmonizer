@@ -128,6 +128,17 @@ class MappingStore {
         const mappingIndex = this.mappingSet.mappings.indexOf(mapping);
         if (mappingIndex === -1) { return; }
         this.mappingSet.mappings.splice(mappingIndex, 1);
+
+        const ontology = this.unmappedOntologies.find((ontology) => ontology.key === mapping.subjectLabel);
+        if (!ontology || this.current?.key === ontology.key ||
+            this.queue.some((item) => item.key === ontology.key) ||
+            this.skipped.some((item) => item.key === ontology.key)) return;
+
+        if (!this.current) {
+            this.current = ontology;
+        } else {
+            this.queue = [...this.queue, ontology];
+        }
     }
 
 
