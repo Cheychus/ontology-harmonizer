@@ -1,4 +1,5 @@
 <script lang="ts">
+    import HelpHint from "$lib/components/HelpHint.svelte";
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import { Label } from "$lib/components/ui/label";
@@ -34,25 +35,25 @@
 
     <div class="grid gap-4 md:grid-cols-2">
         <div class="flex flex-col gap-2">
-            <Label for="mapping-set-id">Mapping set ID</Label>
+            <div class="flex items-center gap-2"><Label for="mapping-set-id">Mapping set ID</Label> <HelpHint helpKey="mappingSetId" /></div>
             <Input id="mapping-set-id" bind:value={mappingStore.mappingSet.metadata.mappingSetId} />
         </div>
         <div class="flex flex-col gap-2">
-            <Label for="mapping-set-license">License</Label>
+            <div class="flex items-center gap-2"><Label for="mapping-set-license">License</Label> <HelpHint helpKey="license" /></div>
             <Input id="mapping-set-license" bind:value={mappingStore.mappingSet.metadata.license} placeholder="e.g. CC-BY-4.0" />
         </div>
         <div class="flex flex-col gap-2">
-            <Label for="mapping-set-title">Title</Label>
+            <div class="flex items-center gap-2"><Label for="mapping-set-title">Title</Label> <HelpHint helpKey="title" /></div>
             <Input id="mapping-set-title" bind:value={mappingStore.mappingSet.metadata.title} />
         </div>
         <div class="flex flex-col gap-2">
-            <Label for="mapping-set-version">Version</Label>
+            <div class="flex items-center gap-2"><Label for="mapping-set-version">Version</Label> <HelpHint helpKey="version" /></div>
             <Input id="mapping-set-version" bind:value={mappingStore.mappingSet.metadata.version} />
         </div>
     </div>
 
     <div class="flex flex-col gap-2">
-        <Label for="mapping-set-description">Description</Label>
+        <div class="flex items-center gap-2"><Label for="mapping-set-description">Description</Label> <HelpHint helpKey="description" /></div>
         <textarea
             id="mapping-set-description"
             class="border-input bg-background ring-offset-background focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
@@ -61,7 +62,7 @@
     </div>
 
     <div class="flex flex-col gap-2">
-        <Label for="mapping-set-comment">Comment</Label>
+        <div class="flex items-center gap-2"><Label for="mapping-set-comment">Comment</Label> <HelpHint helpKey="mappingSetComment" /></div>
         <textarea
             id="mapping-set-comment"
             class="border-input bg-background ring-offset-background focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
@@ -72,6 +73,7 @@
     <div class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
             <Label>CURIE prefixes</Label>
+            <HelpHint helpKey="curieMap" />
             <Button variant="outline" size="sm" onclick={() => (addingCuriePrefix = !addingCuriePrefix)}><Plus /> Add prefix</Button>
         </div>
         {#if addingCuriePrefix}

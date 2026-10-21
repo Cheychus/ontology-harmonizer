@@ -1,4 +1,5 @@
 <script lang="ts">
+    import HelpHint from "$lib/components/HelpHint.svelte";
     import type { IGitLabUser } from "$lib/types/gitLab";
     import { apiGet } from "$lib/api/api";
     import { Button } from "$lib/components/ui/button";
@@ -60,7 +61,10 @@
 
     <div class="flex w-full max-w-2xl flex-col gap-6 rounded-md border bg-card p-6 shadow-sm">
         <div class="flex flex-col gap-1">
-            <h3>Mapping contributors</h3>
+            <div class="flex items-center gap-2">
+                <h3>Mapping contributors</h3>
+                <HelpHint helpKey="mappingContributors" />
+            </div>
             <p class="text-sm text-muted-foreground">Default contributors for newly created mappings</p>
         </div>
 

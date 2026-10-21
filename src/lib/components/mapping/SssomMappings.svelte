@@ -1,4 +1,5 @@
 <script lang="ts">
+    import HelpHint from "$lib/components/HelpHint.svelte";
     import { ChevronDown, ChevronUp } from "lucide-svelte";
     import Button from "$lib/components/ui/button/button.svelte";
     import type { SssomMapping } from "$lib/types/mapping";
@@ -42,9 +43,9 @@
             <table class="w-full table-auto text-left text-sm">
                 <thead class="border-b text-muted-foreground">
                     <tr>
-                        <th scope="col" class="w-1/2 px-3 py-3 font-medium">Subject</th>
-                        <th scope="col" class="w-px whitespace-nowrap px-3 py-3 font-medium">Relation</th>
-                        <th scope="col" class="w-1/2 px-3 py-3 font-medium">Object</th>
+                        <th scope="col" class="w-1/2 px-3 py-3 font-medium"><span class="inline-flex items-center gap-2">Subject <HelpHint helpKey="subjectId" /></span></th>
+                        <th scope="col" class="w-px whitespace-nowrap px-3 py-3 font-medium"><span class="inline-flex items-center gap-2">Relation <HelpHint helpKey="predicateId" /></span></th>
+                        <th scope="col" class="w-1/2 px-3 py-3 font-medium"><span class="inline-flex items-center gap-2">Object <HelpHint helpKey="objectId" /></span></th>
                         <th scope="col" class="w-px px-1 py-3"><span class="sr-only">Details</span></th>
                     </tr>
                 </thead>
@@ -95,26 +96,26 @@
                                     <dl
                                         class="grid gap-x-6 gap-y-2 sm:grid-cols-[auto_minmax(0,1fr)] [&>dd]:[overflow-wrap:anywhere] [&>dt]:text-muted-foreground"
                                     >
-                                        <dt>Method</dt>
+                                        <dt class="flex items-center gap-2">Method <HelpHint helpKey="mappingJustification" /></dt>
                                         <dd>{displayLabels[mapping.mappingJustification] ?? mapping.mappingJustification}</dd>
                                         {#if mapping.confidence !== undefined}
-                                            <dt>Confidence</dt>
+                                            <dt class="flex items-center gap-2">Confidence <HelpHint helpKey="confidence" /></dt>
                                             <dd>{mapping.confidence}</dd>
                                         {/if}
                                         {#if mapping.comment}
-                                            <dt>Comment</dt>
+                                            <dt class="flex items-center gap-2">Comment <HelpHint helpKey="comment" /></dt>
                                             <dd>{mapping.comment}</dd>
                                         {/if}
                                         {#if mapping.authorIds?.length}
-                                            <dt>Authors</dt>
+                                            <dt class="flex items-center gap-2">Authors <HelpHint helpKey="authorIds" /></dt>
                                             <dd>{mapping.authorIds.join(", ")}</dd>
                                         {/if}
                                         {#if mapping.reviewerIds?.length}
-                                            <dt>Reviewers</dt>
+                                            <dt class="flex items-center gap-2">Reviewers <HelpHint helpKey="reviewerIds" /></dt>
                                             <dd>{mapping.reviewerIds.join(", ")}</dd>
                                         {/if}
                                         {#if mapping.mappingDate}
-                                            <dt>Mapping date</dt>
+                                            <dt class="flex items-center gap-2">Mapping date <HelpHint helpKey="mappingDate" /></dt>
                                             <dd>{mapping.mappingDate}</dd>
                                         {/if}
                                     </dl>

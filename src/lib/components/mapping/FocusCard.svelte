@@ -18,8 +18,15 @@
     import SSSOMInput from "./SSSOM_Input.svelte";
     import { type MappingContributor, type SssomMapping } from "$lib/types/mapping";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
-    import { normalizeShortForm, extractBaseIri, extractLocalIdFromObjectId, extractPrefixFromObjectId, isCurieMapDetailsValid } from "$lib/services/sssom/curieMap";
+    import {
+        normalizeShortForm,
+        extractBaseIri,
+        extractLocalIdFromObjectId,
+        extractPrefixFromObjectId,
+        isCurieMapDetailsValid,
+    } from "$lib/services/sssom/curieMap";
     import { contributorsToSssomFields } from "$lib/services/sssom/contributors";
+    import HelpHint from "../HelpHint.svelte";
 
     $inspect(mappingStore.mappingSet);
 
@@ -276,10 +283,10 @@
     <div class="flex items-start justify-between gap-4 rounded-md border border-border bg-muted/30 p-3">
         <div class="min-w-0">
             <p class="text-sm font-medium text-muted-foreground">Mapping source</p>
-            <h3 class="mb-3 break-words text-lg font-semibold">{currentOntology.key}</h3>
+            <div class="mb-3 flex items-center gap-2"><h3 class="break-words text-lg font-semibold">{currentOntology.key}</h3><HelpHint helpKey="subjectLabel" /></div>
 
             <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
-                <dt class="font-medium text-muted-foreground flex items-center">Subject ID</dt>
+                <dt class="font-medium text-muted-foreground flex items-center gap-2">Subject ID <HelpHint helpKey="subjectId" /></dt>
                 <dd class="min-w-0">
                     {#if mappingStore.subjectIdentifier.prefix}
                         <div class="flex items-center gap-2">
@@ -383,13 +390,13 @@
         {#if currentSearchResult}
             <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-3">
                 <p class="text-sm font-medium text-muted-foreground">Search result</p>
-                <h3 class="mb-3 break-words text-lg font-semibold">{currentSearchResult.label}</h3>
+                <div class="mb-3 flex items-center gap-2"><h3 class="break-words text-lg font-semibold">{currentSearchResult.label}</h3><HelpHint helpKey="objectLabel" /></div>
 
                 <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
                     <dt class="font-medium text-muted-foreground">Relationship</dt>
                     <dd class="flex gap-3">
                         <div class="flex min-w-0 flex-col gap-2">
-                            <Label for="mapping-relationship">Predicate</Label>
+                            <div class="flex items-center gap-2"><Label for="mapping-relationship">Predicate</Label><HelpHint helpKey="predicateId" /></div>
                             <Select.Root type="single" name="predicateId" bind:value={sssomMapping.predicateId}>
                                 <Select.Trigger id="mapping-relationship" class="w-45">{predicateTriggerContent}</Select.Trigger>
                                 <Select.Content>
@@ -403,7 +410,11 @@
                             </Select.Root>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <Label for="mapping-confidence">Confidence</Label>
+                            <div class="flex gap-2">
+                                <Label for="mapping-confidence">Confidence</Label>
+                                <HelpHint helpKey="confidence" />
+                            </div>
+
                             <Input
                                 id="mapping-confidence"
                                 class="text-center"
@@ -416,7 +427,7 @@
                         </div>
                     </dd>
 
-                    <dt class="font-medium text-muted-foreground">CURIE map</dt>
+                    <dt class="flex items-center gap-2 font-medium text-muted-foreground">CURIE map <HelpHint helpKey="curieMap" /></dt>
                     <dd class="min-w-0">
                         <div class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-end gap-2">
                             <div class="flex min-w-0 flex-col gap-2">
@@ -450,7 +461,7 @@
                         {/if}
                     </dd>
 
-                    <dt class="font-medium text-muted-foreground">CURIE</dt>
+                    <dt class="flex items-center gap-2 font-medium text-muted-foreground">CURIE <HelpHint helpKey="objectId" /></dt>
                     <dd>{normalizeShortForm(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
 
                     <dt class="font-medium text-muted-foreground">Full IRI</dt>

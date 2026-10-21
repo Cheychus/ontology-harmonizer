@@ -1,4 +1,5 @@
 <script lang="ts">
+    import HelpHint from "$lib/components/HelpHint.svelte";
     import type { MappingContributor, SssomMapping } from "$lib/types/mapping";
     import { Button } from "$lib/components/ui/button";
     import ContributorEditor from "./ContributorEditor.svelte";
@@ -37,6 +38,7 @@
         <div class="flex max-w-2xl flex-col gap-2">
             <div class="flex items-center gap-2">
                 <Label for="mapping-comment">Comment</Label>
+                <HelpHint helpKey="comment" />
                 <Button
                     variant="ghost"
                     size="sm"
@@ -56,7 +58,10 @@
     {/if}
 
     <div class="flex max-w-3xl flex-col gap-2">
-        <p class="text-sm font-medium">Mapping contributors</p>
+        <div class="flex items-center gap-2">
+            <p class="text-sm font-medium">Mapping contributors</p>
+            <HelpHint helpKey="mappingContributors" />
+        </div>
         <ContributorEditor bind:contributors />
     </div>
 </div>
