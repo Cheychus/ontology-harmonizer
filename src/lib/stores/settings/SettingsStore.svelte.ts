@@ -7,6 +7,7 @@ const STORAGE_KEY = "ontologyHarmonizer";
 export class SettingsStore {
     // matching service
     loaded = $state(false);
+    showHelpHints = $state(true);
     enablePythonMatchingService = $state(false);
     pythonMatchingServiceUrl = $state("http://localhost:8000");
     automaticMatching = $state(true);
@@ -46,6 +47,7 @@ export class SettingsStore {
 
             const data = {
                 settings: {
+                    showHelpHints: this.showHelpHints,
                     enablePythonMatchingService: this.enablePythonMatchingService,
                     pythonMatchingServiceUrl: this.pythonMatchingServiceUrl,
                     automaticMatching: this.automaticMatching,

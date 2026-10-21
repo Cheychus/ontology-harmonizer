@@ -2,10 +2,12 @@
     import { CircleQuestionMark } from "lucide-svelte";
     import { helpTexts } from "$lib/config/helpTexts";
     import * as Popover from "$lib/components/ui/popover";
+    import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
 
     let { helpKey }: { helpKey: keyof typeof helpTexts } = $props();
 </script>
 
+{#if settingsStore.showHelpHints}
 <Popover.Root>
     <Popover.Trigger
         type="button"
@@ -18,3 +20,4 @@
         {helpTexts[helpKey]}
     </Popover.Content>
 </Popover.Root>
+{/if}
