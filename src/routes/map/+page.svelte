@@ -3,7 +3,10 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { ChevronDown } from "lucide-svelte";
+    import { ChevronDown, CircleCheck, Download, Play } from "lucide-svelte";
+    import { fade } from "svelte/transition";
+    import { startDemo } from "$lib/services/demo/demo";
+    import { exportMapping } from "$lib/services/sssom/serializeSssomTsv";
     import * as Collapsible from "$lib/components/ui/collapsible";
     import SssomMappings from "$lib/components/mapping/SssomMappings.svelte";
 
@@ -26,7 +29,11 @@
 
 {#snippet mappingFooter(onMap: () => void, canMap: boolean)}
     <div bind:clientHeight={footerHeight} class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-t bg-background px-4 py-3 shadow-sm md:px-8">
-        <Button class="w-24 md:w-48" disabled={!canMap} onclick={onMap}>Map</Button>
+        <div class="w-24 md:w-48">
+            {#if currentOntology}
+                <Button class="w-full" disabled={!canMap} onclick={onMap}>Map</Button>
+            {/if}
+        </div>
         <div class="mx-auto flex w-full max-w-xl min-w-0 flex-col gap-1">
             <p class="text-center text-xs text-muted-foreground">{done} of {total} mapped · Skipped {mappingStore.skipped.length}</p>
             <div class="h-2 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-label="Mapping progress" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
@@ -38,15 +45,33 @@
 {/snippet}
 
 {#if !arcStore.initialised}
-    <div class="w-full h-full flex-1 flex flex-col gap-4 items-center justify-center">
-        <Button class="px-16" href="/select-arc">Select ARC</Button>
-        <p>Currently no ARC is initialised. You need to select an ARC first.</p>
-    </div>
+    <section class="flex w-full max-w-5xl flex-col gap-6 self-start">
+        <h2>Map ontology values</h2>
+        <div class="flex flex-col items-start gap-4 rounded-lg border bg-card p-4 shadow-sm">
+            <div>
+                <h3>Select an ARC to start mapping</h3>
+                <p class="text-sm text-muted-foreground">Load an ARC to see its metadata fields and assign ontology terms.</p>
+            </div>
+            {#if mappingStore.hasMappingSet}
+                <p class="text-sm text-muted-foreground">Your mapping is ready. Select an ARC to use it.</p>
+            {/if}
+            <div class="flex flex-wrap gap-2">
+                <Button href="/select-arc">Select ARC</Button>
+                <Button variant="outline" onclick={startDemo}><Play />Try demo ARC</Button>
+            </div>
+        </div>
+    </section>
 {:else if !mappingStore.hasMappingSet}
-    <div class="flex w-full flex-1 flex-col items-center justify-center gap-4">
-        <p>Create or import a mapping before assigning ontology terms.</p>
-        <Button href="/mapping">Configure mapping</Button>
-    </div>
+    <section class="flex w-full max-w-5xl flex-col gap-6 self-start">
+        <h2>Map ontology values</h2>
+        <div class="flex flex-col items-start gap-4 rounded-lg border bg-card p-4 shadow-sm">
+            <div>
+                <h3>Configure a mapping to continue</h3>
+                <p class="text-sm text-muted-foreground">Your ARC is loaded. Create or import a mapping before assigning ontology terms.</p>
+            </div>
+            <Button href="/mapping">Configure mapping</Button>
+        </div>
+    </section>
 {:else}
     <div
         class="min-h-0 w-full flex-1 flex flex-col gap-2"
@@ -62,8 +87,33 @@
                 {/key}
             </div>
         {:else}
-            <div class="w-full h-full py-16 flex flex-col gap-4 justify-center items-center">
-                <p class="text-muted-foreground">You have finished the mapping process.</p>
+            <div class="focus-container min-h-0 flex-1">
+                <section class="flex h-full min-h-80 flex-col items-start gap-5 rounded-lg border bg-card p-6 shadow-sm lg:min-h-0" in:fade={{ duration: 150 }}>
+                    {#if arcStore.ontologyCandidates.size === 0}
+                        <div>
+                            <h2>No ontology fields found</h2>
+                            <p class="mt-2 text-sm text-muted-foreground">This ARC has no supported ontology fields to map. Select another ARC to continue.</p>
+                        </div>
+                        <Button href="/select-arc">Select another ARC</Button>
+                    {:else}
+                        <div role="status">
+                            <div class="flex items-center gap-3">
+                                <h2>{mappingStore.skipped.length > 0 ? "All terms reviewed" : "Mapping complete"}</h2>
+                                <CircleCheck class="size-6 shrink-0 text-green-600" aria-hidden="true" />
+                            </div>
+                            <p class="mt-2 text-sm text-muted-foreground">
+                                {mappingStore.skipped.length > 0
+                                    ? "Some terms were skipped. Revisit them or review your completed mappings."
+                                    : "Your mapping is ready to download or apply to the ARC."}
+                            </p>
+                        </div>
+                        <p class="text-sm"><span class="font-medium">{done} mapped</span><span class="ml-4 text-muted-foreground">{mappingStore.skipped.length} skipped</span></p>
+                        <div class="flex w-full flex-wrap gap-2">
+                            {#if done > 0}<Button href="/apply">Review changes</Button>{/if}
+                            <Button variant="outline" onclick={exportMapping}><Download />Download SSSOM TSV</Button>
+                        </div>
+                    {/if}
+                </section>
             </div>
             {@render mappingFooter(() => {}, false)}
         {/if}
