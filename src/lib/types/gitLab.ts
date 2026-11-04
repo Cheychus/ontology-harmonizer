@@ -11,6 +11,11 @@ export interface IGitLabProject {
   description: string | null;
   default_branch: string;
   visibility: "public" | "private";
+  web_url?: string;
+  avatar_url?: string | null;
+  last_activity_at?: string;
+  archived?: boolean;
+  topics?: string[];
 }
 
 export interface IGitLabUser {

@@ -3,6 +3,7 @@
   import { enhance } from "$app/forms";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
   import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
   import { loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { success } from "$lib/services/toasts/toastService";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
@@ -12,6 +13,10 @@
 
   let { data }: PageProps = $props();
   let user = $derived(data.user);
+  let projectSearch = $state("");
+  let filteredProjects = $derived(arcStore.projects.filter((project) => project.name.toLowerCase().includes(projectSearch.trim().toLowerCase())));
+  let publicProjects = $derived(filteredProjects.filter((project) => project.visibility === "public"));
+  let privateProjects = $derived(filteredProjects.filter((project) => project.visibility === "private"));
 
   onMount(() => {
     applicationStore.gitLabUser = user;
@@ -32,6 +37,8 @@
     const file = input.files[0];
 
     const json = await loadArcFile(file);
+    arcStore.project = null;
+    arcStore.arcProjectId = null;
     arcStore.filename = file.name;
     arcStore.init(json);
     success("Selected " + file.name);
@@ -110,18 +117,25 @@
 
   {#if user}
     {#if arcStore.projects.length > 0}
-      {#if arcStore.publicProjects.length > 0}
+      <div class="flex flex-wrap items-center gap-3">
+        <Input class="w-full sm:max-w-md" aria-label="Search projects by name" placeholder="Search projects by name..." bind:value={projectSearch} />
+        <p class="text-sm text-muted-foreground" role="status">{filteredProjects.length} of {arcStore.projects.length} projects</p>
+      </div>
+      {#if filteredProjects.length === 0}
+        <p class="text-sm text-muted-foreground">No projects match your search.</p>
+      {/if}
+      {#if publicProjects.length > 0}
         <div class="flex flex-col gap-3">
-          <h3>Public projects</h3>
-          {#each arcStore.publicProjects as project}
+          <h3>Public projects ({publicProjects.length})</h3>
+          {#each publicProjects as project (project.id)}
             <ArcSelect {project} />
           {/each}
         </div>
       {/if}
-      {#if arcStore.privateProjects.length > 0}
+      {#if privateProjects.length > 0}
         <div class="flex flex-col gap-3">
-          <h3>Private projects</h3>
-          {#each arcStore.privateProjects as project}
+          <h3>Private projects ({privateProjects.length})</h3>
+          {#each privateProjects as project (project.id)}
             <ArcSelect {project} />
           {/each}
         </div>
