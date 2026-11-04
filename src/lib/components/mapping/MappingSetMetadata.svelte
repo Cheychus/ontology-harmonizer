@@ -4,6 +4,7 @@
     import { Input } from "$lib/components/ui/input";
     import { Label } from "$lib/components/ui/label";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
+    import { createDefaultMappingSet } from "$lib/services/sssom/parseSssomTsvData";
     import { Plus, X } from "lucide-svelte";
 
     let addingCuriePrefix = $state(false);
@@ -12,6 +13,7 @@
     let newCuriePrefixError = $state("");
 
     const iriHint = "Enter a complete URL starting with https:// or http://, e.g. https://orcid.org/.";
+    const standardPrefixes = createDefaultMappingSet().metadata.curieMap.map((entry) => entry.prefix);
 
     function isValidCurieIri(iri: string) {
         return iri.startsWith("https://") || iri.startsWith("http://") || iri === "mailto:";
@@ -63,8 +65,7 @@
         <textarea
             id="mapping-set-description"
             class="border-input bg-background ring-offset-background focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-            bind:value={mappingStore.mappingSet.metadata.description}
-        ></textarea>
+            bind:value={mappingStore.mappingSet.metadata.description}></textarea>
     </div>
 
     <div class="flex flex-col gap-2">
@@ -72,8 +73,7 @@
         <textarea
             id="mapping-set-comment"
             class="border-input bg-background ring-offset-background focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-            bind:value={mappingStore.mappingSet.metadata.comment}
-        ></textarea>
+            bind:value={mappingStore.mappingSet.metadata.comment}></textarea>
     </div>
 
     <div class="flex flex-col gap-2">
@@ -109,21 +109,40 @@
         {/if}
         {#if mappingStore.mappingSet.metadata.curieMap.length > 0}
             <div class="flex flex-col gap-2">
-                {#each mappingStore.mappingSet.metadata.curieMap as entry, index}
-                    <div class="flex items-center gap-2">
-                        <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
-                        <Input aria-label="CURIE prefix IRI" aria-invalid={!isValidCurieIri(entry.iri)} bind:value={entry.iri} />
-                        <Button
-                            variant="outline"
-                            size="icon-sm"
-                            aria-label={`Remove ${entry.prefix || "CURIE prefix"}`}
-                            onclick={() => mappingStore.removeCurieMapEntry(index)}
-                        >
-                            <X />
-                        </Button>
+                {#if mappingStore.mappingSet.metadata.curieMap.some((entry) => standardPrefixes.includes(entry.prefix))}
+                    <div class="flex flex-col gap-1 rounded-md border py-3">
+                        <p class="px-3 text-sm font-medium">Mapping defaults</p>
+                        <p class="mb-1 px-3 text-xs text-muted-foreground">Fixed prefixes used by this application.</p>
+                        {#each mappingStore.mappingSet.metadata.curieMap as entry}
+                            {#if standardPrefixes.includes(entry.prefix)}
+                                <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2rem] items-center gap-2 text-sm">
+                                    <span class="min-w-0 break-all px-3 py-1 font-medium">{entry.prefix}</span>
+                                    <span class="min-w-0 break-all px-3 py-1 text-muted-foreground">{entry.iri}</span>
+                                </div>
+                                {#if !isValidCurieIri(entry.iri)}
+                                    <p class="px-3 text-sm text-destructive">{iriHint}</p>
+                                {/if}
+                            {/if}
+                        {/each}
                     </div>
-                    {#if !isValidCurieIri(entry.iri)}
-                        <p class="text-sm text-destructive">{iriHint}</p>
+                {/if}
+                {#each mappingStore.mappingSet.metadata.curieMap as entry, index}
+                    {#if !standardPrefixes.includes(entry.prefix)}
+                        <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2rem] items-center gap-2">
+                            <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
+                            <Input aria-label="CURIE prefix IRI" aria-invalid={!isValidCurieIri(entry.iri)} bind:value={entry.iri} />
+                            <Button
+                                variant="outline"
+                                size="icon-sm"
+                                aria-label={`Remove ${entry.prefix || "CURIE prefix"}`}
+                                onclick={() => mappingStore.removeCurieMapEntry(index)}
+                            >
+                                <X />
+                            </Button>
+                        </div>
+                        {#if !isValidCurieIri(entry.iri)}
+                            <p class="text-sm text-destructive">{iriHint}</p>
+                        {/if}
                     {/if}
                 {/each}
             </div>
