@@ -42,6 +42,11 @@
         success("SSSOM mapping was uploaded");
     }
 
+    function exportJsonMapping() {
+        const fileName = mappingStore.fileName.endsWith(".json") ? mappingStore.fileName : "mapping.json";
+        downloadJson(mappingStore.mappingSet, fileName);
+    }
+
     function next() {
         mappingStore.createMappingSet();
         applicationStore.stepState.mappingConfigured = true;
@@ -55,7 +60,7 @@
 {#if mappingStore.hasMappingSet}
     <div class="w-full flex-1">
         <div class="flex gap-2 items-center pb-8">
-            <h2>Mapping: {mappingStore.fileName.replace(/\.(json|tsv)$/, "")}</h2>
+            <h2>Mapping: {mappingStore.fileName || "New mapping"}</h2>
             <Button
                 onclick={() => {
                     mappingStore.reset();
@@ -72,7 +77,7 @@
             <Button variant="outline" onclick={() => sssomFileInput.click()}><Upload />SSSOM TSV</Button>
             <Button onclick={exportMapping}><Download />SSSOM TSV</Button>
             <Button variant="ghost" title="Import JSON as a fallback" onclick={() => jsonFileInput.click()}><Upload />JSON</Button>
-            <Button variant="ghost" title="Download JSON as a fallback" onclick={() => downloadJson(mappingStore.mappingSet, "mapping.json")}><Download />JSON</Button>
+            <Button variant="ghost" title="Download JSON as a fallback" onclick={exportJsonMapping}><Download />JSON</Button>
         </div>
 
         <MappingSetMetadata />

@@ -64,7 +64,7 @@ export function exportMapping() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "mapping.sssom.tsv";
+    link.download = mappingStore.fileName.endsWith(".tsv") ? mappingStore.fileName : "mapping.sssom.tsv";
     link.click();
 
     setTimeout(() => URL.revokeObjectURL(url), 1000);
