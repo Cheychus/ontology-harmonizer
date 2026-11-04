@@ -11,6 +11,12 @@
     let newCurieIri = $state("");
     let newCuriePrefixError = $state("");
 
+    const iriHint = "Enter a complete URL starting with https:// or http://, e.g. https://orcid.org/.";
+
+    function isValidCurieIri(iri: string) {
+        return iri.startsWith("https://") || iri.startsWith("http://") || iri === "mailto:";
+    }
+
     function addAdditionalCuriePrefix() {
         const prefix = newCuriePrefix.trim();
         const iri = newCurieIri.trim();
@@ -85,9 +91,17 @@
                         bind:value={newCuriePrefix}
                         oninput={() => (newCuriePrefixError = "")}
                     />
-                    <Input aria-label="New CURIE prefix IRI" placeholder="URI, e.g. https://orcid.org/" bind:value={newCurieIri} />
-                    <Button variant="outline" size="sm" onclick={addAdditionalCuriePrefix}>Add</Button>
+                    <Input
+                        aria-label="New CURIE prefix IRI"
+                        aria-invalid={Boolean(newCurieIri) && !isValidCurieIri(newCurieIri)}
+                        placeholder="URI, e.g. https://orcid.org/"
+                        bind:value={newCurieIri}
+                    />
+                    <Button variant="outline" size="sm" disabled={!isValidCurieIri(newCurieIri)} onclick={addAdditionalCuriePrefix}>Add</Button>
                 </div>
+                {#if newCurieIri && !isValidCurieIri(newCurieIri)}
+                    <p class="text-sm text-destructive">{iriHint}</p>
+                {/if}
                 {#if newCuriePrefixError}
                     <p class="text-sm text-destructive">{newCuriePrefixError}</p>
                 {/if}
@@ -98,7 +112,7 @@
                 {#each mappingStore.mappingSet.metadata.curieMap as entry, index}
                     <div class="flex items-center gap-2">
                         <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
-                        <Input aria-label="CURIE prefix IRI" class="" bind:value={entry.iri} />
+                        <Input aria-label="CURIE prefix IRI" aria-invalid={!isValidCurieIri(entry.iri)} bind:value={entry.iri} />
                         <Button
                             variant="outline"
                             size="icon-sm"
@@ -108,6 +122,9 @@
                             <X />
                         </Button>
                     </div>
+                    {#if !isValidCurieIri(entry.iri)}
+                        <p class="text-sm text-destructive">{iriHint}</p>
+                    {/if}
                 {/each}
             </div>
         {:else}
