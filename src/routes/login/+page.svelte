@@ -1,15 +1,18 @@
 <script lang="ts">
     import HelpHint from "$lib/components/HelpHint.svelte";
     import type { IGitLabUser } from "$lib/types/gitLab";
-    import { apiGet } from "$lib/api/api";
+    import type { PageProps } from "./$types";
+    import { enhance } from "$app/forms";
     import { Button } from "$lib/components/ui/button";
     import ContributorEditor from "$lib/components/mapping/ContributorEditor.svelte";
     import { startDemo } from "$lib/services/demo/demo";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
+    import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
     import { Leaf, Play } from "lucide-svelte";
     import { onMount } from "svelte";
 
-    let user: IGitLabUser | null = $state(null);
+    let { data }: PageProps = $props();
+    let user = $derived(data.user);
 
     /**
      * Fill the first default Author with user data from GitLab if not already filled with data.
@@ -25,21 +28,12 @@
         }
     }
 
-    onMount(async () => {
-        applicationStore.isAuthenticated = false;
-        try {
-            user = await apiGet<IGitLabUser>(fetch, "/api/gitlab/user");
-        } catch {
-            user = null;
-        }
+    onMount(() => {
+        applicationStore.gitLabUser = user;
+        applicationStore.isAuthenticated = Boolean(user);
         if (user) {
-            applicationStore.gitLabUser = user;
-            applicationStore.isAuthenticated = true;
-        } else {
-            return;
+            loadContributorWithUserData(user);
         }
-
-        loadContributorWithUserData(user);
     });
 </script>
 
@@ -52,6 +46,21 @@
                     <img class="h-6 w-6 rounded-full" src={user.avatar_url} alt="" />
                     <span>{user.username}</span>
                 </div>
+                <form
+                    method="POST"
+                    action="?/logout"
+                    use:enhance={() => async ({ result, update }) => {
+                        if (result.type === "success") {
+                            applicationStore.isAuthenticated = false;
+                            applicationStore.gitLabUser = null;
+                            applicationStore.stepState.isLoggedIn = false;
+                            arcStore.projects = [];
+                        }
+                        await update();
+                    }}
+                >
+                    <Button type="submit" variant="outline">Log out</Button>
+                </form>
             {:else}
                 <Button variant="outline" href="/auth/gitlab">DataHUB Login<Leaf size={18} class="text-green-500" /></Button>
             {/if}
