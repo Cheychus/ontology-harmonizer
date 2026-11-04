@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { apiGet } from "$lib/api/api";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -47,7 +46,6 @@
     const json = await loadArcFile(file);
     arcStore.filename = file.name;
     arcStore.init(json);
-    goto("/mapping");
     success("Selected " + file.name);
   }
 
@@ -56,7 +54,6 @@
     selecting = true;
     try {
       const project = await arcStore.selectArc(arcStore.arcProjectId);
-      goto("/mapping");
       success("Selected " + project.name);
     } finally {
       selecting = false;
@@ -73,6 +70,16 @@
       <Button variant="secondary" onclick={() => fileInput.click()}>ARC-RO-Crate JSON<Upload size={22} /></Button>
     </div>
   </div>
+
+  {#if arcStore.initialised}
+    <div class="mb-4 flex w-full flex-wrap items-center justify-between gap-3 rounded-md border p-4">
+      <div>
+        <p class="font-medium">Selected ARC: {arcStore.filename || "Demo ARC"}</p>
+        <p class="text-sm text-muted-foreground">{arcStore.ontologyCandidates.size} ontology fields found.</p>
+      </div>
+      <Button href="/mapping">Configure mapping</Button>
+    </div>
+  {/if}
 
   {#if arcStore.projects.length > 0}
     <div class="w-full flex flex-col gap-4">

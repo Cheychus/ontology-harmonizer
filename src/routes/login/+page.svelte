@@ -53,9 +53,9 @@
                     <span>{user.username}</span>
                 </div>
             {:else}
-                <Button variant="default" href="/auth/gitlab">DataHUB Login<Leaf size={18} class="text-green-500" /></Button>
+                <Button variant="outline" href="/auth/gitlab">DataHUB Login<Leaf size={18} class="text-green-500" /></Button>
             {/if}
-            <Button href="/map" variant="outline" onclick={() => startDemo()}>Demo ARC <Play size={18} /></Button>
+            <Button href="/select-arc">{user ? "Select ARC" : "Continue without login"}</Button>
         </div>
     </div>
 

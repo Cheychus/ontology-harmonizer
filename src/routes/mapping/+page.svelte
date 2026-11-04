@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
     import { Button } from "$lib/components/ui/button";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
+    import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
     import { Download, Upload, X } from "lucide-svelte";
     import { failure, success } from "$lib/services/toasts/toastService";
     import MappingSetMetadata from "$lib/components/mapping/MappingSetMetadata.svelte";
@@ -47,10 +47,9 @@
         downloadJson(mappingStore.mappingSet, fileName);
     }
 
-    function next() {
+    function createMapping() {
         mappingStore.createMappingSet();
         applicationStore.stepState.mappingConfigured = true;
-        goto("/map");
     }
 </script>
 
@@ -71,7 +70,7 @@
                 class="flex items-center"><X /></Button
             >
 
-            <Button class="ml-auto px-16" href="/map" size="lg">Continue</Button>
+            <Button class="ml-auto px-16" href={arcStore.initialised ? "/map" : "/select-arc"} size="lg">{arcStore.initialised ? "Start mapping" : "Select ARC"}</Button>
         </div>
         <div class="flex gap-2 pb-2">
             <Button variant="outline" onclick={() => sssomFileInput.click()}><Upload />SSSOM TSV</Button>
@@ -89,8 +88,8 @@
         <div class="flex items-center gap-4">
             <Button variant="secondary" onclick={() => sssomFileInput.click()}><Upload />SSSOM TSV</Button>
             <Button variant="ghost" title="Import JSON as a fallback" onclick={() => jsonFileInput.click()}><Upload />JSON</Button>
-            <Button variant="default" onclick={() => next()}>Create new Mapping</Button>
+            <Button variant="default" onclick={createMapping}>Create new mapping</Button>
         </div>
-        <p>You can upload an existing mapping here or skip this step and create a new mapping</p>
+        <p>Import an existing mapping or create a new one to configure its metadata.</p>
     </div>
 {/if}

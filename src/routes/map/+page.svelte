@@ -33,7 +33,7 @@
                 <div class="h-full bg-green-500 transition-all duration-300" style="width: {progress}%"></div>
             </div>
         </div>
-        <Button class="w-24 md:w-48" href="/apply">Continue</Button>
+        <Button class="h-auto min-h-9 w-24 whitespace-normal text-center md:w-48" href="/apply">Review changes</Button>
     </div>
 {/snippet}
 

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Button } from "../ui/button";
   import * as Item from "$lib/components/ui/item/index.js";
-  import { goto } from "$app/navigation";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import type { IGitLabProject } from "$lib/types/gitLab";
   import { success } from "$lib/services/toasts/toastService";
@@ -18,7 +17,6 @@
     selecting = true;
     try {
       const p = await arcStore.selectArc(Number(project.id));
-      goto("/mapping");
       success("Selected " + p.name);
     } finally {
       selecting = false;
