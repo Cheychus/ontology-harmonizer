@@ -9,7 +9,7 @@ class ApplicationStore {
             href: "/select-arc",
         },
         {
-            label: "Select Mapping",
+            label: "Configure mapping",
             href: "/mapping",
         },
         {

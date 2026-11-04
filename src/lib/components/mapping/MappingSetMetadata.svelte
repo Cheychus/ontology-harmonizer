@@ -49,9 +49,9 @@
     }
 </script>
 
-<section class="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+<section class="flex flex-col gap-4 border-b p-4">
     <div>
-        <h3>Mapping set metadata</h3>
+        <h3>Mapping metadata</h3>
         <p class="text-sm text-muted-foreground">Details that describe this mapping set as a whole.</p>
     </div>
 

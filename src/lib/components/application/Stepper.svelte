@@ -5,6 +5,7 @@
     import { Button } from "../ui/button";
     import { startDemo } from "$lib/services/demo/demo";
     import { exportMapping } from "$lib/services/sssom/serializeSssomTsv";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
 
     let currentStep = $derived(applicationStore.getStepIndex(page.url.pathname));
 </script>
@@ -29,7 +30,7 @@
         </div>
 
         <div class="absolute right-4 flex gap-2">
-            <Button onclick={exportMapping}><Download />SSSOM TSV</Button>
+            <Button disabled={!mappingStore.hasMappingSet} onclick={exportMapping}><Download />SSSOM TSV</Button>
         </div>
     </div>
 </nav>

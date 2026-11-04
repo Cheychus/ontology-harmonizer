@@ -42,6 +42,11 @@
         <Button class="px-16" href="/select-arc">Select ARC</Button>
         <p>Currently no ARC is initialised. You need to select an ARC first.</p>
     </div>
+{:else if !mappingStore.hasMappingSet}
+    <div class="flex w-full flex-1 flex-col items-center justify-center gap-4">
+        <p>Create or import a mapping before assigning ontology terms.</p>
+        <Button href="/mapping">Configure mapping</Button>
+    </div>
 {:else}
     <div
         class="min-h-0 w-full flex-1 flex flex-col gap-2"

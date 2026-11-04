@@ -1,11 +1,12 @@
 <script lang="ts">
+    import type { Snippet } from "svelte";
     import type { ContributorRole, MappingContributor } from "$lib/types/mapping";
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import * as Select from "$lib/components/ui/select/index.js";
     import { UserPlus, X } from "lucide-svelte";
 
-    let { contributors = $bindable() }: { contributors: MappingContributor[] } = $props();
+    let { contributors = $bindable(), header }: { contributors: MappingContributor[]; header?: Snippet } = $props();
 
     const roles = [
         { value: "author", label: "Author" },
@@ -27,11 +28,12 @@
 </script>
 
 <div class="flex w-full flex-col gap-2">
-    <div class="flex justify-end">
-        <Button variant="outline" size="sm" onclick={addContributor}>Add contributor <UserPlus /></Button>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+        {#if header}{@render header()}{/if}
+        <Button class="ml-auto" variant="outline" size="sm" onclick={addContributor}>Add contributor <UserPlus /></Button>
     </div>
     {#if contributors.length > 0}
-        <div class="grid grid-cols-[max-content_minmax(0,1fr)_auto] items-center gap-2">
+        <div class="grid w-full max-w-2xl grid-cols-[max-content_minmax(0,1fr)_auto] items-center gap-2">
             <div class="col-span-3 grid grid-cols-subgrid text-xs text-muted-foreground" aria-hidden="true">
                 <span>Role</span>
                 <span>Identifier</span>

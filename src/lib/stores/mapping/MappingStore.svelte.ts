@@ -9,7 +9,7 @@ import {
 
 class MappingStore {
     fileName: string = $state("");
-    hasMappingSet = $state(true);
+    hasMappingSet = $state(false);
     mappingSet: MappingSet = $state(createDefaultMappingSet());
     subjectPrefix = $state("");
     importedSssom: ParsedSssomDocument | null = $state(null);

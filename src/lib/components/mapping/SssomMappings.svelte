@@ -8,9 +8,10 @@
 
     interface Props {
         onlyMapped?: boolean;
+        embedded?: boolean;
     }
 
-    let { onlyMapped = false }: Props = $props();
+    let { onlyMapped = false, embedded = false }: Props = $props();
     let expandedMappings: SssomMapping[] = $state([]);
 
     const displayedMappings = $derived(onlyMapped ? mappingStore.mappedSssomMappings : mappingStore.mappingSet.mappings);
@@ -24,11 +25,13 @@
     };
 </script>
 
-<section class="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+<section class={`flex min-w-0 flex-col gap-4 p-4 ${embedded ? "" : "mb-6 rounded-lg border bg-card shadow-sm"}`}>
     <div class="flex items-center gap-2">
         <div>
-            <h3>SSSOM mappings</h3>
-            <p class="text-sm text-muted-foreground">Mappings created with SSSOM metadata.</p>
+            <h3>{embedded ? "Mapping entries" : "SSSOM mappings"}</h3>
+            {#if !embedded}
+                <p class="text-sm text-muted-foreground">Mappings created with SSSOM metadata.</p>
+            {/if}
         </div>
         <span class="ml-auto text-sm text-muted-foreground">{displayedMappings.length}</span>
         {#if displayedMappings.length > 0}
