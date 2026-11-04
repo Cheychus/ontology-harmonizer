@@ -3,6 +3,7 @@
     import { Button } from "$lib/components/ui/button";
     import { Input } from "$lib/components/ui/input";
     import { Label } from "$lib/components/ui/label";
+    import * as Select from "$lib/components/ui/select";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import { createDefaultMappingSet } from "$lib/services/sssom/parseSssomTsvData";
     import { Plus, X } from "lucide-svelte";
@@ -14,6 +15,19 @@
 
     const iriHint = "Enter a complete URL starting with https:// or http://, e.g. https://orcid.org/.";
     const standardPrefixes = createDefaultMappingSet().metadata.curieMap.map((entry) => entry.prefix);
+    const licenses = [
+        { label: "CC0 1.0 – Public Domain", value: "https://creativecommons.org/publicdomain/zero/1.0/" },
+        { label: "CC BY 4.0 – Attribution", value: "https://creativecommons.org/licenses/by/4.0/" },
+        { label: "CC BY-SA 4.0 – Attribution-ShareAlike", value: "https://creativecommons.org/licenses/by-sa/4.0/" },
+        { label: "CC BY-NC 4.0 – Attribution-NonCommercial", value: "https://creativecommons.org/licenses/by-nc/4.0/" },
+        { label: "CC BY-NC-SA 4.0 – Attribution-NonCommercial-ShareAlike", value: "https://creativecommons.org/licenses/by-nc-sa/4.0/" },
+        { label: "CC BY-ND 4.0 – Attribution-NoDerivatives", value: "https://creativecommons.org/licenses/by-nd/4.0/" },
+        { label: "CC BY-NC-ND 4.0 – Attribution-NonCommercial-NoDerivatives", value: "https://creativecommons.org/licenses/by-nc-nd/4.0/" },
+    ];
+    const licenseLabel = $derived(
+        licenses.find((license) => license.value === mappingStore.mappingSet.metadata.license)?.label
+            ?? (mappingStore.mappingSet.metadata.license || "Select a license"),
+    );
 
     function isValidCurieIri(iri: string) {
         return iri.startsWith("https://") || iri.startsWith("http://") || iri === "mailto:";
@@ -48,7 +62,18 @@
         </div>
         <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2"><Label for="mapping-set-license">License</Label> <HelpHint helpKey="license" /></div>
-            <Input id="mapping-set-license" bind:value={mappingStore.mappingSet.metadata.license} placeholder="e.g. CC-BY-4.0" />
+            <Select.Root type="single" bind:value={mappingStore.mappingSet.metadata.license}>
+                <Select.Trigger id="mapping-set-license" class="w-full min-w-0">
+                    <span class="truncate">{licenseLabel}</span>
+                </Select.Trigger>
+                <Select.Content>
+                    <Select.Group>
+                        {#each licenses as license (license.value)}
+                            <Select.Item value={license.value} label={license.label}>{license.label}</Select.Item>
+                        {/each}
+                    </Select.Group>
+                </Select.Content>
+            </Select.Root>
         </div>
         <div class="flex flex-col gap-2">
             <div class="flex items-center gap-2"><Label for="mapping-set-title">Title</Label> <HelpHint helpKey="title" /></div>
