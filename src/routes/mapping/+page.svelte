@@ -9,6 +9,8 @@
     import SssomMappings from "$lib/components/mapping/SssomMappings.svelte";
     import { parseSssomInServer } from "$lib/services/sssom/parseSssomTsvData";
     import { parseMappingSetJson } from "$lib/services/sssom/parseMappingSetJson";
+    import { exportMapping } from "$lib/services/sssom/serializeSssomTsv";
+    import { downloadJson } from "$lib/services/arcs/arcFile.service";
 
     let jsonFileInput: HTMLInputElement;
     let sssomFileInput: HTMLInputElement;
@@ -45,7 +47,6 @@
         applicationStore.stepState.mappingConfigured = true;
         goto("/map");
     }
-
 </script>
 
 <input class="hidden" type="file" accept=".tsv,text/tab-separated-values" bind:this={sssomFileInput} onchange={handleSssomChange} />
@@ -68,21 +69,21 @@
             <Button class="ml-auto px-16" href="/map" size="lg">Continue</Button>
         </div>
         <div class="flex gap-2 pb-2">
-            <Button variant="outline" onclick={() => jsonFileInput.click()}><Upload />Upload JSON</Button>
-            <Button variant="outline" onclick={() => sssomFileInput.click()}><Upload />Upload SSSOM TSV</Button>
-            <Button variant="outline" disabled title="SSSOM export will be added in a future update"><Download />Export SSSOM (coming soon)</Button>
+            <Button variant="outline" onclick={() => sssomFileInput.click()}><Upload />SSSOM TSV</Button>
+            <Button onclick={exportMapping}><Download />SSSOM TSV</Button>
+            <Button variant="ghost" title="Import JSON as a fallback" onclick={() => jsonFileInput.click()}><Upload />JSON</Button>
+            <Button variant="ghost" title="Download JSON as a fallback" onclick={() => downloadJson(mappingStore.mappingSet, "mapping.json")}><Download />JSON</Button>
         </div>
 
         <MappingSetMetadata />
 
         <SssomMappings />
-
     </div>
 {:else}
     <div class="w-full h-full min-h-full flex-1 flex flex-col gap-4 justify-center items-center">
         <div class="flex items-center gap-4">
-            <Button variant="secondary" onclick={() => jsonFileInput.click()}><Upload />Upload JSON</Button>
-            <Button variant="secondary" onclick={() => sssomFileInput.click()}><Upload />Upload SSSOM TSV</Button>
+            <Button variant="secondary" onclick={() => sssomFileInput.click()}><Upload />SSSOM TSV</Button>
+            <Button variant="ghost" title="Import JSON as a fallback" onclick={() => jsonFileInput.click()}><Upload />JSON</Button>
             <Button variant="default" onclick={() => next()}>Create new Mapping</Button>
         </div>
         <p>You can upload an existing mapping here or skip this step and create a new mapping</p>

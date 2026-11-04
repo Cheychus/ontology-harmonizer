@@ -5,12 +5,11 @@
   import { Button } from "$lib/components/ui/button";
   import Input from "$lib/components/ui/input/input.svelte";
   import { loadArcFile } from "$lib/services/arcs/arcFile.service";
-  import { startDemo } from "$lib/services/demo/demo";
   import { success } from "$lib/services/toasts/toastService";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import type { IGitLabUser } from "$lib/types/gitLab";
-  import { Play, RefreshCwIcon, Upload } from "lucide-svelte";
+  import { RefreshCwIcon, Upload } from "lucide-svelte";
   import { onMount } from "svelte";
 
   // let projects: IGitLabProject[] = $state([]);
@@ -71,7 +70,6 @@
     <h2>ARC Selection</h2>
     <Button variant="outline" onclick={() => arcStore.loadArcs()}><RefreshCwIcon class={arcStore.loading ? "animate-spin" : ""} /> Load ARCs</Button>
     <div class="ml-auto flex gap-1">
-      <Button href="/map" variant="outline" size="default" onclick={() => startDemo()}>Try DEMO-ARC <Play size={20} /></Button>
       <Button variant="secondary" onclick={() => fileInput.click()}>ARC-RO-Crate JSON<Upload size={22} /></Button>
     </div>
   </div>
