@@ -30,6 +30,6 @@
 	<Stepper></Stepper>
 {/if}
 
-<main class="pt-25 flex flex-col justify-start items-center w-full min-h-screen md:max-w-5xl mx-auto pb-32">
+<main class={`pt-25 flex flex-col justify-start items-center w-full min-h-screen mx-auto ${page.url.pathname === "/map" ? "px-4 md:px-8" : "md:max-w-5xl pb-32"}`}>
 	{@render children()}
 </main>
