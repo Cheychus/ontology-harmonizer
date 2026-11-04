@@ -23,6 +23,10 @@ export function contributorsToSssomFields(contributors: MappingContributor[]): S
 
 function filterEmptyContributors(contributors: MappingContributor[]) {
     return contributors
-        .map((c) => ({ ...c, id: c.id.trim() }))
+        .map((c) => {
+            const id = c.id.trim();
+            const isEmail = id.includes("@") && !id.includes(":");
+            return { ...c, id: isEmail ? `mailto:${id}` : id };
+        })
         .filter((c) => c.id !== "");
 }
