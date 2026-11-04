@@ -5,6 +5,8 @@ import { mappingStore } from "../mapping/MappingStore.svelte";
 import { applicationStore } from "../application/ApplicationStore.svelte";
 import { getArcJson, getProject, getProjects } from "$lib/services/gitlab/gitlab";
 import { failure } from "$lib/services/toasts/toastService";
+import { resolveArcMapping } from "$lib/services/arcs/mappingReview";
+import { curieToIri } from "$lib/services/sssom/curieMap";
 
 export type DerivedOntology = {
   source: GraphNode;
@@ -28,6 +30,7 @@ class ArcStore {
   allOntologyValues: DerivedOntology[] = $state([]);
   arcIriMap: SvelteMap<string, string[]> = $state(new SvelteMap());
   changedOntologies: IChangedOntology[] = $state([]);
+  publishedResult: { commitUrl: string; mergeUrl: string } | null = $state(null);
 
 
   initialised: boolean = $state(false);
@@ -41,6 +44,7 @@ class ArcStore {
     this.searchOntologies();
     mappingStore.startMapping(mappingStore.unmappedOntologies);
     this.changedOntologies = [];
+    this.publishedResult = null;
     this.initialised = true;
   }
 
@@ -115,17 +119,23 @@ class ArcStore {
   applyMapping() {
     let count = 0;
     this.allOntologyValues?.forEach((onto) => {
-      const mapping = mappingStore.findSssomMapping(onto);
-      if (mapping && mapping.objectId !== onto.value) {
-        const old = { ...onto };
-        onto.source[onto.ontologyAttribute] = mapping.objectId; // change in ARC JSON
-        this.changedOntologies.push({
-          old,
-          new: mapping.objectId,
-        })
+      const mapping = resolveArcMapping(onto, mappingStore.mappingSet);
+      if (mapping?.needsUpdate) {
+        const existingIndex = this.changedOntologies.findIndex((change) =>
+          change.old.source === onto.source && change.old.ontologyAttribute === onto.ontologyAttribute);
+        const old = existingIndex >= 0 ? this.changedOntologies[existingIndex].old : { ...onto };
+        onto.source[onto.ontologyAttribute] = mapping.targetValue;
+        if (curieToIri(old.value, mappingStore.mappingSet.metadata.curieMap) === mapping.targetValue) {
+          if (existingIndex >= 0) this.changedOntologies.splice(existingIndex, 1);
+        } else if (existingIndex >= 0) {
+          this.changedOntologies[existingIndex].new = mapping.targetValue;
+        } else {
+          this.changedOntologies.push({ old, new: mapping.targetValue });
+        }
         count++;
       }
     });
+    if (count > 0) this.publishedResult = null;
     this.updateArcJson();
     return count;
   }

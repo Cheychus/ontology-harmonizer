@@ -17,12 +17,8 @@ class ApplicationStore {
             href: "/map",
         },
         {
-            label: "Apply Mapping",
+            label: "Review & save",
             href: "/apply",
-        },
-        {
-            label: "Commit",
-            href: "/commit",
         },
     ];
 
@@ -42,9 +38,7 @@ class ApplicationStore {
         if (!this.stepState.arcSelected) return "/select-arc";
         if (!this.stepState.mappingConfigured) return "/mapping";
         if (!this.stepState.mappingApplied) return "/apply";
-        if (!this.stepState.committed) return "/commit";
-
-        return "/select-arc";
+        return "/apply";
     }
 
     getStepIndex(path: string) {
