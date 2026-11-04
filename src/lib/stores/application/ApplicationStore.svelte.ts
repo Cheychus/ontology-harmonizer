@@ -5,10 +5,6 @@ import type { MappingContributor } from "$lib/types/mapping";
 class ApplicationStore {
     steps = [
         {
-            label: "Login",
-            href: "/login",
-        },
-        {
             label: "Select ARC",
             href: "/select-arc",
         },
@@ -43,7 +39,6 @@ class ApplicationStore {
     });
 
     getCurrentStep() {
-        if (!this.stepState.isLoggedIn) return "/login";
         if (!this.stepState.arcSelected) return "/select-arc";
         if (!this.stepState.mappingConfigured) return "/mapping";
         if (!this.stepState.mappingApplied) return "/apply";

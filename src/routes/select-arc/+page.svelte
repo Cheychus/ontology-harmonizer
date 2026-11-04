@@ -1,34 +1,22 @@
 <script lang="ts">
-  import { apiGet } from "$lib/api/api";
+  import type { PageProps } from "./$types";
+  import { enhance } from "$app/forms";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
   import { Button } from "$lib/components/ui/button";
-  import Input from "$lib/components/ui/input/input.svelte";
   import { loadArcFile } from "$lib/services/arcs/arcFile.service";
   import { success } from "$lib/services/toasts/toastService";
   import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
-  import type { IGitLabUser } from "$lib/types/gitLab";
-  import { RefreshCwIcon, Upload } from "lucide-svelte";
+  import { Leaf, RefreshCwIcon, Upload } from "lucide-svelte";
   import { onMount } from "svelte";
 
-  // let projects: IGitLabProject[] = $state([]);
-  // let privateProjects = $derived(projects.filter((p) => p.visibility === "private"));
-  // let publicProjects = $derived(projects.filter((p) => p.visibility === "public"));
+  let { data }: PageProps = $props();
+  let user = $derived(data.user);
 
-  // let load = $state(false);
-  // let arcProjectId: number | null = $state(null);
-  let user: IGitLabUser | null = $state(null);
-  let selecting = $state(false);
-  onMount(async () => {
-    try {
-      user = await apiGet<IGitLabUser>(fetch, `/api/gitlab/user`);
-    } catch (e) {
-      user = null;
-    }
-    if (user) {
-      applicationStore.isAuthenticated = true;
-    }
-    if (applicationStore.isAuthenticated && arcStore.projects.length <= 0) {
+  onMount(() => {
+    applicationStore.gitLabUser = user;
+    applicationStore.isAuthenticated = Boolean(user);
+    if (user && arcStore.projects.length === 0) {
       arcStore.loadArcs();
     }
   });
@@ -49,30 +37,69 @@
     success("Selected " + file.name);
   }
 
-  async function selectARC() {
-    if (!arcStore.arcProjectId || selecting) return;
-    selecting = true;
-    try {
-      const project = await arcStore.selectArc(arcStore.arcProjectId);
-      success("Selected " + project.name);
-    } finally {
-      selecting = false;
-    }
-  }
 </script>
 
 <input class="hidden" type="file" accept="application/json,.json" bind:this={fileInput} onchange={handleChange} />
-<section class="flex-1 w-full flex flex-col justify-start items-start gap-2">
-  <div class="w-full flex gap-4 pb-4">
-    <h2>ARC Selection</h2>
-    <Button variant="outline" onclick={() => arcStore.loadArcs()}><RefreshCwIcon class={arcStore.loading ? "animate-spin" : ""} /> Load ARCs</Button>
-    <div class="ml-auto flex gap-1">
-      <Button variant="secondary" onclick={() => fileInput.click()}>ARC-RO-Crate JSON<Upload size={22} /></Button>
+<section class="flex w-full flex-1 flex-col gap-6">
+  <h2>Select ARC</h2>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+      <div>
+        <h3>Local ARC</h3>
+        <p class="text-sm text-muted-foreground">Upload an ARC-RO-Crate JSON file. No login required.</p>
+      </div>
+      <Button class="mt-auto self-start" variant="outline" onclick={() => fileInput.click()}><Upload />Upload ARC</Button>
+    </div>
+
+    <div class="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+      <div>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <h3>DataHUB</h3>
+          {#if user}
+            <div class="flex min-w-0 items-center gap-2">
+              <img class="size-8 rounded-full" src={user.avatar_url} alt="" />
+              <div class="min-w-0 text-sm">
+                <p class="break-all font-medium text-primary">{user.username}</p>
+                <p class="text-xs text-green-600">Connected</p>
+              </div>
+            </div>
+          {/if}
+        </div>
+        <p class="text-sm text-muted-foreground">
+          {user ? "Browse your projects below." : "Connect to DataHUB to browse your projects."}
+        </p>
+      </div>
+      {#if user}
+        <div class="mt-auto flex flex-wrap items-center gap-2">
+          <Button variant="outline" disabled={arcStore.loading} onclick={() => arcStore.loadArcs()}>
+            <RefreshCwIcon class={arcStore.loading ? "animate-spin" : ""} />
+            {arcStore.loading ? "Loading projects..." : "Refresh projects"}
+          </Button>
+          <form
+            method="POST"
+            action="/login?/logout"
+            use:enhance={() => async ({ result, update }) => {
+              if (result.type === "success") {
+                applicationStore.isAuthenticated = false;
+                applicationStore.gitLabUser = null;
+                applicationStore.stepState.isLoggedIn = false;
+                arcStore.projects = [];
+              }
+              await update();
+            }}
+          >
+            <Button type="submit" variant="outline">Log out</Button>
+          </form>
+        </div>
+      {:else}
+        <Button class="mt-auto self-start" variant="outline" href="/auth/gitlab"><Leaf size={18} class="text-green-500" />Connect to DataHUB</Button>
+      {/if}
     </div>
   </div>
 
   {#if arcStore.initialised}
-    <div class="mb-4 flex w-full flex-wrap items-center justify-between gap-3 rounded-md border p-4">
+    <div class="flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4 shadow-sm">
       <div>
         <p class="font-medium">Selected ARC: {arcStore.filename || "Demo ARC"}</p>
         <p class="text-sm text-muted-foreground">{arcStore.ontologyCandidates.size} ontology fields found.</p>
@@ -81,24 +108,28 @@
     </div>
   {/if}
 
-  {#if arcStore.projects.length > 0}
-    <div class="w-full flex flex-col gap-4">
-      <h3>Public Projects</h3>
-      {#each arcStore.publicProjects as project}
-        <ArcSelect {project} />
-      {/each}
-
-      <h3>Private Projects</h3>
-      {#each arcStore.privateProjects as project}
-        <ArcSelect {project} />
-      {/each}
-    </div>
-  {/if}
-
-  {#if !applicationStore.isAuthenticated}
-    <div class="w-full h-full flex-1 flex flex-col gap-4 items-center justify-center">
-      <Button class="px-16" href="/login">Login</Button>
-      <p>To select personal ARCs from GitLab you need to authenticate first.</p>
-    </div>
+  {#if user}
+    {#if arcStore.projects.length > 0}
+      {#if arcStore.publicProjects.length > 0}
+        <div class="flex flex-col gap-3">
+          <h3>Public projects</h3>
+          {#each arcStore.publicProjects as project}
+            <ArcSelect {project} />
+          {/each}
+        </div>
+      {/if}
+      {#if arcStore.privateProjects.length > 0}
+        <div class="flex flex-col gap-3">
+          <h3>Private projects</h3>
+          {#each arcStore.privateProjects as project}
+            <ArcSelect {project} />
+          {/each}
+        </div>
+      {/if}
+    {:else}
+      <p class="text-sm text-muted-foreground" role="status">
+        {arcStore.loading ? "Loading DataHUB projects..." : "No projects available. Try refreshing the project list."}
+      </p>
+    {/if}
   {/if}
 </section>

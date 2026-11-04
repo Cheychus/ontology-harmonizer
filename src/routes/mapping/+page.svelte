@@ -1,4 +1,9 @@
 <script lang="ts">
+    import type { PageProps } from "./$types";
+    import type { IGitLabUser } from "$lib/types/gitLab";
+    import { onMount } from "svelte";
+    import HelpHint from "$lib/components/HelpHint.svelte";
+    import ContributorEditor from "$lib/components/mapping/ContributorEditor.svelte";
     import { Button } from "$lib/components/ui/button";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
@@ -11,6 +16,26 @@
     import { parseMappingSetJson } from "$lib/services/sssom/parseMappingSetJson";
     import { exportMapping } from "$lib/services/sssom/serializeSssomTsv";
     import { downloadJson } from "$lib/services/arcs/arcFile.service";
+
+    let { data }: PageProps = $props();
+
+    /**
+     * Fill the first default Author with user data from GitLab if not already filled with data.
+     * @param user
+     */
+    function loadContributorWithUserData(user: IGitLabUser) {
+        const profileAuthor = applicationStore.defaultMappingContributors.find((contributor) => contributor.role === "author");
+        if (!profileAuthor) return;
+
+        if (!profileAuthor.id?.trim()) {
+            const email = (user.email || user.commit_email || "").trim();
+            profileAuthor.id = email ? `mailto:${email}` : "";
+        }
+    }
+
+    onMount(() => {
+        if (data.user) loadContributorWithUserData(data.user);
+    });
 
     let jsonFileInput: HTMLInputElement;
     let sssomFileInput: HTMLInputElement;
@@ -80,6 +105,17 @@
         </div>
 
         <MappingSetMetadata />
+
+        <section class="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+            <div>
+                <div class="flex items-center gap-2">
+                    <h3>Mapping contributors</h3>
+                    <HelpHint helpKey="mappingContributors" />
+                </div>
+                <p class="text-sm text-muted-foreground">Default contributors for newly created mappings.</p>
+            </div>
+            <ContributorEditor bind:contributors={applicationStore.defaultMappingContributors} />
+        </section>
 
         <SssomMappings />
     </div>

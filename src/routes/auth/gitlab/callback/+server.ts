@@ -53,5 +53,5 @@ export const GET = async ({ url, fetch, cookies }) => {
     sameSite: "lax"
   });
 
-  throw redirect(302, "/login");
+  throw redirect(302, "/select-arc");
 };

@@ -3,8 +3,8 @@
   import { onMount } from "svelte";
 
   onMount(() => {
-    goto("/login");
+    goto("/select-arc", { replaceState: true });
   });
 </script>
 
-<p>Main Page</p>
+<p>Opening ARC selection...</p>
