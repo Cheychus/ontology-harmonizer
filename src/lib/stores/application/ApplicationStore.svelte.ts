@@ -17,7 +17,7 @@ class ApplicationStore {
             href: "/map",
         },
         {
-            label: "Review & save",
+            label: "Apply changes",
             href: "/apply",
         },
     ];

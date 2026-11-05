@@ -17,15 +17,22 @@
     let pending = $derived(rows.reduce((sum, row) => sum + row.pending, 0));
     let applied = $derived(arcStore.changedOntologies.length);
     let withoutMapping = $derived(rows.filter((row) => row.targetValue === null).length);
-    let canPublish = $derived(Boolean(data.user && arcStore.project && arcStore.arcProjectId === Number(arcStore.project.id) && !arcStore.project.archived));
+    let canPublish = $derived(
+        Boolean(data.user && arcStore.project && arcStore.arcProjectId === Number(arcStore.project.id) && !arcStore.project.archived),
+    );
     let readyToSave = $derived(pending === 0 && (applied > 0 || rows.some((row) => row.targetValue !== null)));
     let publishHint = $derived(
-        pending > 0 ? "Apply the pending updates before creating a merge request."
-        : !data.user ? "Connect to DataHUB to create a merge request. Local and demo ARCs can be downloaded."
-        : !arcStore.project || arcStore.arcProjectId !== Number(arcStore.project.id) ? "Merge requests are available for ARCs loaded from a DataHUB project."
-        : arcStore.project.archived ? "This project is archived. Download the ARC to save your result."
-        : applied === 0 ? "There are no applied changes to save to DataHUB."
-        : "",
+        pending > 0
+            ? "Apply the pending updates before creating a merge request."
+            : !data.user
+              ? "Connect to DataHUB to create a merge request. Local and demo ARCs can be downloaded."
+              : !arcStore.project || arcStore.arcProjectId !== Number(arcStore.project.id)
+                ? "Merge requests are available for ARCs loaded from a DataHUB project."
+                : arcStore.project.archived
+                  ? "This project is archived. Download the ARC to save your result."
+                  : applied === 0
+                    ? "There are no applied changes to save to DataHUB."
+                    : "",
     );
 
     function applyMapping() {
@@ -65,7 +72,7 @@
 <section class="flex w-full flex-1 flex-col gap-6">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <h2>Review &amp; save</h2>
+            <h2>Apply changes</h2>
             <p class="text-sm text-muted-foreground">Review your changes, apply them to the loaded ARC, then download or save the result.</p>
         </div>
         {#if arcStore.initialised && mappingStore.hasMappingSet}
@@ -97,14 +104,16 @@
                     {pending > 0
                         ? "Apply the pending updates to enable saving."
                         : applied > 0
-                            ? `${applied} values updated in the loaded ARC. Download the result or save it to DataHUB.`
-                            : readyToSave
-                                ? "The mapped values already match this ARC. You can download it as it is."
-                                : "No mapped values are available to save yet."}
+                          ? `${applied} values updated in the loaded ARC. Download the result or save it to DataHUB.`
+                          : readyToSave
+                            ? "The mapped values already match this ARC. You can download it as it is."
+                            : "No mapped values are available to save yet."}
                 </p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <Button variant="outline" disabled={!readyToSave} onclick={downloadArc}><Download />{applied > 0 ? "Download updated ARC" : "Download ARC"}</Button>
+                <Button variant="outline" disabled={!readyToSave} onclick={downloadArc}
+                    ><Download />{applied > 0 ? "Download updated ARC" : "Download ARC"}</Button
+                >
                 <Button disabled={!canPublish || pending > 0 || applied === 0 || publishing || Boolean(arcStore.publishedResult)} onclick={publish}>
                     {#if publishing}<LoaderCircle class="animate-spin" />{/if}
                     {publishing ? "Creating merge request..." : arcStore.publishedResult ? "Merge request created" : "Create merge request"}
@@ -115,8 +124,12 @@
             {/if}
             {#if arcStore.publishedResult}
                 <div class="flex flex-wrap gap-4 text-sm" role="status">
-                    <a class="inline-flex items-center gap-1 underline" href={arcStore.publishedResult.commitUrl} target="_blank" rel="noreferrer">View commit <ExternalLink class="size-3" /></a>
-                    <a class="inline-flex items-center gap-1 underline" href={arcStore.publishedResult.mergeUrl} target="_blank" rel="noreferrer">View merge request <ExternalLink class="size-3" /></a>
+                    <a class="inline-flex items-center gap-1 underline" href={arcStore.publishedResult.commitUrl} target="_blank" rel="noreferrer"
+                        >View commit <ExternalLink class="size-3" /></a
+                    >
+                    <a class="inline-flex items-center gap-1 underline" href={arcStore.publishedResult.mergeUrl} target="_blank" rel="noreferrer"
+                        >View merge request <ExternalLink class="size-3" /></a
+                    >
                 </div>
             {/if}
         </div>
@@ -124,8 +137,16 @@
         <div class="min-w-0 rounded-lg border bg-card shadow-sm">
             <div class="flex flex-col gap-3 border-b p-4">
                 <dl class="grid gap-3 text-sm sm:grid-cols-2">
-                    <div><dt class="text-muted-foreground">ARC</dt><dd class="break-all font-medium">{arcStore.filename || "Loaded ARC"}</dd></div>
-                    <div><dt class="text-muted-foreground">Mapping</dt><dd class="break-all font-medium">{mappingStore.hasMappingSet ? mappingStore.fileName || "New mapping" : "Removed mapping"}</dd></div>
+                    <div>
+                        <dt class="text-muted-foreground">ARC</dt>
+                        <dd class="break-all font-medium">{arcStore.filename || "Loaded ARC"}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-muted-foreground">Mapping</dt>
+                        <dd class="break-all font-medium">
+                            {mappingStore.hasMappingSet ? mappingStore.fileName || "New mapping" : "Removed mapping"}
+                        </dd>
+                    </div>
                 </dl>
                 <div class="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
                     <span>{pending} pending updates</span>
@@ -133,7 +154,6 @@
                     <span>{withoutMapping} fields without mapping</span>
                 </div>
             </div>
-
 
             {#if rows.length > 0}
                 <div class="overflow-x-auto">
@@ -172,13 +192,22 @@
                                                 class="h-auto px-0 py-1 text-xs"
                                                 aria-expanded={expanded}
                                                 aria-controls={valuesId}
-                                                onclick={() => (expandedValues = expanded ? expandedValues.filter((field) => field !== row.field) : [...expandedValues, row.field])}
-                                            >{expanded ? "Show less" : "Show more"}</Button>
+                                                onclick={() =>
+                                                    (expandedValues = expanded
+                                                        ? expandedValues.filter((field) => field !== row.field)
+                                                        : [...expandedValues, row.field])}>{expanded ? "Show less" : "Show more"}</Button
+                                            >
                                         {/if}
                                     </td>
                                     <td class="break-all p-3">
                                         {#if row.targetValue}
-                                            <a class="underline-offset-4 hover:underline" href={row.targetValue} target="_blank" rel="noreferrer" title={row.targetValue}>{iriToCurie(row.targetValue, mappingStore.mappingSet.metadata.curieMap)}</a>
+                                            <a
+                                                class="underline-offset-4 hover:underline"
+                                                href={row.targetValue}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                title={row.targetValue}>{iriToCurie(row.targetValue, mappingStore.mappingSet.metadata.curieMap)}</a
+                                            >
                                         {:else}
                                             <span class="text-muted-foreground">No mapping</span>
                                         {/if}
@@ -205,8 +234,8 @@
             {/if}
         </div>
 
-        <p class="text-sm text-muted-foreground">Applying updates the loaded ARC. DataHUB is only updated when you explicitly create a merge request.</p>
-
-
+        <p class="text-sm text-muted-foreground">
+            Applying updates the loaded ARC. DataHUB is only updated when you explicitly create a merge request.
+        </p>
     {/if}
 </section>
