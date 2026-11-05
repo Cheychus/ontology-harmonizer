@@ -13,6 +13,7 @@ class MappingStore {
     hasMappingSet = $state(false);
     mappingSet: MappingSet = $state(createDefaultMappingSet());
     subjectPrefix = $state("");
+    arcSourcePrefix = $state("");
     importedSssom: ParsedSssomDocument | null = $state(null);
     private arcOntologies = $derived(arcStore.ontologyCandidates.values().toArray());
     mappedOntologies = $derived(this.arcOntologies.filter((o) => this.hasSssomMapping(o)));
@@ -77,6 +78,7 @@ class MappingStore {
         this.hasMappingSet = true;
         this.importedSssom = null;
         this.subjectPrefix = "";
+        this.arcSourcePrefix = "";
         this.startMapping(this.unmappedOntologies);
     }
 
@@ -94,7 +96,37 @@ class MappingStore {
         return true;
     }
 
+    setArcTermSource(prefix: string, iri: string): string | null {
+        prefix = prefix.trim();
+        iri = iri.trim();
+        if (!prefix) {
+            return "Enter a prefix.";
+        }
+        try {
+            const url = new URL(iri);
+            if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error();
+        } catch {
+            return "Enter a complete base IRI starting with https:// or http://.";
+        }
+        const existing = this.mappingSet.metadata.curieMap.find((entry) => entry.prefix === prefix);
+        if (existing && existing.iri !== iri) {
+            return "This prefix already has a different base IRI. Choose another prefix.";
+        }
+        if (!existing) this.addCurieMapEntry(prefix, iri);
+        this.arcSourcePrefix = prefix;
+        this.subjectPrefix = prefix;
+        return null;
+    }
+
+    clearArcTermSource() {
+        if (this.subjectPrefix === this.arcSourcePrefix) this.subjectPrefix = "";
+        this.arcSourcePrefix = "";
+    }
+
     removeCurieMapEntry(index: number) {
+        if (this.mappingSet.metadata.curieMap[index]?.prefix === this.arcSourcePrefix) {
+            this.clearArcTermSource();
+        }
         if (this.mappingSet.metadata.curieMap[index]?.prefix === this.subjectPrefix) {
             this.subjectPrefix = "";
         }
@@ -139,6 +171,7 @@ class MappingStore {
         const keptPrefixes = new Set([
             ...createDefaultMappingSet().metadata.curieMap.map((entry) => entry.prefix),
             this.subjectPrefix,
+            this.arcSourcePrefix,
             ...this.mappingSet.mappings.flatMap(prefixes),
         ]);
 

@@ -12,6 +12,18 @@
     let newCuriePrefix = $state("");
     let newCurieIri = $state("");
     let newCuriePrefixError = $state("");
+    let sourcePrefix = $state("");
+    let sourceIri = $state("");
+    let sourceError = $state<string | null>(null);
+    let arcSource = $derived(mappingStore.mappingSet.metadata.curieMap.find((entry) => entry.prefix === mappingStore.arcSourcePrefix));
+
+    function saveArcSource() {
+        sourceError = mappingStore.setArcTermSource(sourcePrefix, sourceIri);
+        if (!sourceError) {
+            sourcePrefix = "";
+            sourceIri = "";
+        }
+    }
 
     const iriHint = "Enter a complete URL starting with https:// or http://, e.g. https://orcid.org/.";
     const standardPrefixes = createDefaultMappingSet().metadata.curieMap.map((entry) => entry.prefix);
@@ -132,6 +144,32 @@
                 {/if}
             </div>
         {/if}
+        <div class="flex flex-col gap-3 rounded-md border border-primary/30 bg-primary/5 p-3">
+            <div>
+                <h4 class="text-sm font-medium">ARC term source <span class="font-normal text-muted-foreground">(optional)</span></h4>
+                <p class="text-sm text-muted-foreground">If your ARC terms come from a database or research vocabulary, set a default prefix and base IRI here. Prefer a persistent, resolvable IRI.</p>
+            </div>
+            {#if arcSource}
+                <div class="flex flex-wrap items-center gap-2 text-sm">
+                    <span class="break-all font-medium">{arcSource.prefix}</span>
+                    <span class="min-w-0 break-all text-muted-foreground">{arcSource.iri}</span>
+                    <Button class="ml-auto" variant="outline" size="sm" onclick={() => mappingStore.clearArcTermSource()}>Clear source</Button>
+                </div>
+            {:else}
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="flex flex-col gap-2">
+                        <Label for="arc-source-prefix">Prefix</Label>
+                        <Input id="arc-source-prefix" placeholder="e.g. EDAL" bind:value={sourcePrefix} oninput={() => (sourceError = null)} />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <Label for="arc-source-iri">Base IRI</Label>
+                        <Input id="arc-source-iri" placeholder="https://…/terms/" bind:value={sourceIri} oninput={() => (sourceError = null)} />
+                    </div>
+                </div>
+                {#if sourceError}<p class="text-sm text-destructive" role="alert">{sourceError}</p>{/if}
+                <Button class="self-start" variant="outline" size="sm" onclick={saveArcSource}>Use as ARC term source</Button>
+            {/if}
+        </div>
         {#if mappingStore.mappingSet.metadata.curieMap.length > 0}
             <div class="flex flex-col gap-2">
                 {#if mappingStore.mappingSet.metadata.curieMap.some((entry) => standardPrefixes.includes(entry.prefix))}
@@ -152,7 +190,7 @@
                     </div>
                 {/if}
                 {#each mappingStore.mappingSet.metadata.curieMap as entry, index}
-                    {#if !standardPrefixes.includes(entry.prefix)}
+                    {#if !standardPrefixes.includes(entry.prefix) && entry.prefix !== mappingStore.arcSourcePrefix}
                         <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2rem] items-center gap-2">
                             <Input aria-label="CURIE prefix" bind:value={entry.prefix} />
                             <Input aria-label="CURIE prefix IRI" aria-invalid={!isValidCurieIri(entry.iri)} bind:value={entry.iri} />
