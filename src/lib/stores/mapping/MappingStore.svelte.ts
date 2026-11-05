@@ -1,6 +1,7 @@
 import { arcStore, type DerivedOntology } from "../arcs/ArcStore.svelte";
 import type { MappingSet, ParsedSssomDocument, SssomMapping } from "$lib/types/mapping";
 import { warning } from "$lib/services/toasts/toastService";
+import { extractPrefixFromObjectId } from "$lib/services/sssom/curieMap";
 import {
     createDefaultMappingSet,
     createMappingSetFromSssom,
@@ -124,10 +125,33 @@ class MappingStore {
         return this.findSssomMapping(ontology) !== undefined;
     }
 
+    updatePrefixes(removedMapping: SssomMapping) {
+        const prefixes = (mapping: SssomMapping) => [
+            mapping.subjectId,
+            mapping.objectId,
+            mapping.predicateId,
+            mapping.mappingJustification,
+            ...(mapping.authorIds ?? []),
+            ...(mapping.reviewerIds ?? []),
+        ].map(extractPrefixFromObjectId);
+
+        const removedPrefixes = new Set(prefixes(removedMapping));
+        const keptPrefixes = new Set([
+            ...createDefaultMappingSet().metadata.curieMap.map((entry) => entry.prefix),
+            this.subjectPrefix,
+            ...this.mappingSet.mappings.flatMap(prefixes),
+        ]);
+
+        this.mappingSet.metadata.curieMap = this.mappingSet.metadata.curieMap.filter(
+            ({ prefix }) => !removedPrefixes.has(prefix) || keptPrefixes.has(prefix),
+        );
+    }
+
     removeSssomMapping(mapping: SssomMapping) {
         const mappingIndex = this.mappingSet.mappings.indexOf(mapping);
         if (mappingIndex === -1) { return; }
         this.mappingSet.mappings.splice(mappingIndex, 1);
+        this.updatePrefixes(mapping);
 
         const ontology = this.unmappedOntologies.find((ontology) => ontology.key === mapping.subjectLabel);
         if (!ontology || this.current?.key === ontology.key ||
