@@ -85,7 +85,7 @@
           </Button>
           <form
             method="POST"
-            action="/login?/logout"
+            action="?/logout"
             use:enhance={() => async ({ result, update }) => {
               if (result.type === "success") {
                 applicationStore.isAuthenticated = false;
