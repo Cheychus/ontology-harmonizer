@@ -29,7 +29,7 @@
 
         if (!profileAuthor.id?.trim()) {
             const email = (user.email || user.commit_email || "").trim();
-            profileAuthor.id = email ? `mailto:${email}` : "";
+            profileAuthor.id = email;
         }
     }
 
