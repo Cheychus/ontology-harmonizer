@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageProps } from "./$types";
   import { enhance } from "$app/forms";
+  import { goto } from "$app/navigation";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -33,8 +34,8 @@
    */
   async function handleChange(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    const file = input.files[0];
+    const file = input.files?.[0];
+    if (!file) return;
 
     const json = await loadArcFile(file);
     arcStore.project = null;
@@ -42,6 +43,7 @@
     arcStore.filename = file.name;
     arcStore.init(json);
     success("Selected " + file.name);
+    await goto("/mapping");
   }
 
 </script>

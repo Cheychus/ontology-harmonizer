@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { Button } from "../ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { ExternalLink, GitBranch } from "lucide-svelte";
@@ -30,6 +31,7 @@
     try {
       const p = await arcStore.selectArc(Number(project.id));
       success("Selected " + p.name);
+      await goto("/mapping");
     } finally {
       selecting = false;
     }
