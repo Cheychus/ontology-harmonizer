@@ -3,6 +3,7 @@
   import WorkflowFooter from "$lib/components/application/WorkflowFooter.svelte";
   import { Input } from "$lib/components/ui/input";
   import TermGroupRow from "$lib/components/arcs/TermGroupRow.svelte";
+  import CustomValueFilter from "$lib/components/arcs/CustomValueFilter.svelte";
   import { groupArcTerms } from "$lib/services/arcs/termGroups";
   import { isNumericValue, isWebUrlValue } from "$lib/services/arcs/valuePredicates";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
@@ -72,6 +73,8 @@
       >
       <p class="text-xs text-muted-foreground">Values only, across all properties. You can reselect individual values.</p>
     </div>
+
+    <CustomValueFilter />
 
     <div class="flex flex-wrap items-center justify-between gap-3">
       <Input

@@ -20,8 +20,8 @@
   <tr class="align-top hover:bg-muted/20">
     <td class="px-4 py-3">
     {#if group.property}
-      <label class="flex cursor-pointer items-start gap-3">
-        <input class="mt-1 shrink-0" type="checkbox" checked={arcStore.isTermIncluded(group.property.occurrences[0])}
+      <label class="-mx-2 -my-1 flex min-h-9 cursor-pointer items-center gap-3 rounded-md px-2 py-1 hover:bg-muted/50">
+        <input class="size-5 shrink-0" type="checkbox" checked={arcStore.isTermIncluded(group.property.occurrences[0])}
           aria-label={`Include property name ${group.name}`}
           onchange={(event) => group.property && arcStore.setTermsIncluded(group.property.occurrences, event.currentTarget.checked)} />
         <span class="min-w-0">
@@ -37,8 +37,8 @@
       {#if group.units.length > 0}
         <div class="flex max-h-24 flex-col gap-2 overflow-y-auto">
           {#each group.units as unit (unit.label)}
-            <label class="flex min-w-0 cursor-pointer items-start gap-2 text-sm">
-              <input class="mt-1 shrink-0" type="checkbox" checked={arcStore.isTermIncluded(unit.occurrences[0])}
+            <label class="flex min-h-9 min-w-0 cursor-pointer items-center gap-3 rounded-md px-1 py-1 text-sm hover:bg-muted/50">
+              <input class="size-5 shrink-0" type="checkbox" checked={arcStore.isTermIncluded(unit.occurrences[0])}
                 aria-label={`Include unit ${unit.label} for ${group.name || "unnamed property"}`}
                 onchange={(event) => arcStore.setTermsIncluded(unit.occurrences, event.currentTarget.checked)} />
               <span class="break-words">{unit.label}</span>
@@ -52,10 +52,12 @@
     <td class="px-4 py-3">
     {#if group.values.length > 0}
       <div class="flex items-start gap-3">
-          <input class="mt-1 shrink-0" type="checkbox" checked={selectedValues === group.values.length}
+        <label class="-m-2 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md hover:bg-muted/50">
+          <input class="size-5 shrink-0" type="checkbox" checked={selectedValues === group.values.length}
             aria-label={`Include all values for ${group.name || "unnamed property"}`}
             indeterminate={selectedValues > 0 && selectedValues < group.values.length}
             onchange={(event) => arcStore.setTermsIncluded(valueTerms, event.currentTarget.checked)} />
+        </label>
         <div class="min-w-0 flex-1">
           <button type="button" class="flex w-full items-center gap-2 text-left text-sm font-medium hover:text-primary"
             aria-expanded={valuesOpen} aria-controls={valuesId} onclick={() => (valuesOpen = !valuesOpen)}>
@@ -85,9 +87,9 @@
           </div>
           <ul class="max-h-64 divide-y overflow-y-auto" aria-label={`Values for ${group.name || "unnamed property"}`}>
               {#each visibleValues as value (value.label)}
-                <li class="py-2">
-                  <label class="flex cursor-pointer items-start gap-2 text-sm">
-                    <input class="mt-1 shrink-0" type="checkbox" checked={arcStore.isTermIncluded(value.occurrences[0])}
+                <li class="py-0.5">
+                  <label class="flex min-h-10 cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-muted/50">
+                    <input class="size-5 shrink-0" type="checkbox" checked={arcStore.isTermIncluded(value.occurrences[0])}
                       onchange={(event) => arcStore.setTermsIncluded(value.occurrences, event.currentTarget.checked)} />
                     <span class="min-w-0 flex-1 break-words">{value.label}</span>
                     <span class="shrink-0 text-xs text-muted-foreground">{value.occurrences.length} {value.occurrences.length === 1 ? "occurrence" : "occurrences"}</span>
