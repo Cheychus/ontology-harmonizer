@@ -1,19 +1,19 @@
-
-
+import type { IGitLabUser } from "$lib/types/gitLab";
+import type { MappingContributor } from "$lib/types/mapping";
 
 // Control flow state
 class ApplicationStore {
     steps = [
         {
-            label: "Login",
-            href: "/login",
-        },
-        {
             label: "Select ARC",
             href: "/select-arc",
         },
         {
-            label: "Select Mapping",
+            label: "Filter terms",
+            href: "/filter-terms",
+        },
+        {
+            label: "Configure mapping",
             href: "/mapping",
         },
         {
@@ -21,20 +21,28 @@ class ApplicationStore {
             href: "/map",
         },
         {
-            label: "Apply Mapping",
+            label: "Apply changes",
             href: "/apply",
         },
-        {
-            label: "Commit",
-            href: "/commit",
-        },
     ];
-
 
     currentStep = $state(0);
 
     isAuthenticated = $state(false);
+    sessionExpired = $state(false);
 
+    setGitLabUser(user: IGitLabUser | null) {
+        this.gitLabUser = user;
+        this.isAuthenticated = Boolean(user);
+        this.stepState.isLoggedIn = Boolean(user);
+        if (user) this.sessionExpired = false;
+    }
+
+    expireGitLabSession() {
+        if (!this.isAuthenticated && !this.gitLabUser) return;
+        this.setGitLabUser(null);
+        this.sessionExpired = true;
+    }
 
     stepState = $state({
         isLoggedIn: false,
@@ -45,18 +53,23 @@ class ApplicationStore {
     });
 
     getCurrentStep() {
-        if (!this.stepState.isLoggedIn) return "/login";
         if (!this.stepState.arcSelected) return "/select-arc";
         if (!this.stepState.mappingConfigured) return "/mapping";
         if (!this.stepState.mappingApplied) return "/apply";
-        if (!this.stepState.committed) return "/commit";
-
-        return "/select-arc";
+        return "/apply";
     }
 
     getStepIndex(path: string) {
         return this.steps.findIndex((s) => s.href === path)
     }
+
+    gitLabUser = $state<IGitLabUser | null>(null);
+
+    defaultMappingContributors = $state<MappingContributor[]>([
+        { role: "author", id: "" },
+    ]);
+
+
 
 
 }

@@ -21,8 +21,16 @@ async function generatePkce() {
 }
 
 
-export const GET = async ({ cookies }) => {
+export const GET = async ({ cookies, url }) => {
   const pkceObj = await generatePkce();
+
+  if (url.searchParams.get("reconnect") === "true") {
+    cookies.set("gitlab_reconnect", "true", {
+      path: "/", httpOnly: true, secure: true, sameSite: "lax", maxAge: 600,
+    });
+  } else {
+    cookies.delete("gitlab_reconnect", { path: "/" });
+  }
 
   const params = new URLSearchParams({
     client_id: GITLAB_CLIENT_ID,

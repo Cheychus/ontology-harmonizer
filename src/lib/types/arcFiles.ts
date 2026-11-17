@@ -13,6 +13,6 @@ interface GraphNode {
     propertyID?: string | string[]; // SHOULD be present (URL) - Key ontology reference
     unitText?: string; // Unit name
     unitCode?: string | string[]; // COULD be present (URL) - Unit ontology reference
-    value?: string; // Value text or number
+    value?: string | number; // Value text or number
     valueReference?: string | string[]; // COULD be present (URL) - Value ontology reference
 }

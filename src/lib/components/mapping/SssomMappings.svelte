@@ -1,0 +1,148 @@
+<script lang="ts">
+    import HelpHint from "$lib/components/HelpHint.svelte";
+    import { ChevronDown, ChevronUp } from "lucide-svelte";
+    import Button from "$lib/components/ui/button/button.svelte";
+    import type { SssomMapping } from "$lib/types/mapping";
+    import { curieToIri } from "$lib/services/sssom/curieMap";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
+
+    interface Props {
+        onlyMapped?: boolean;
+        embedded?: boolean;
+    }
+
+    let { onlyMapped = false, embedded = false }: Props = $props();
+    let expandedMappings: SssomMapping[] = $state([]);
+
+    const displayedMappings = $derived(onlyMapped ? mappingStore.mappedSssomMappings : mappingStore.mappingSet.mappings);
+    const allExpanded = $derived(displayedMappings.length > 0 && displayedMappings.every((mapping) => expandedMappings.includes(mapping)));
+
+    const displayLabels: Record<string, string> = {
+        "skos:exactMatch": "Exact match",
+        "http://www.w3.org/2004/02/skos/core#exactMatch": "Exact match",
+        "semapv:ManualMappingCuration": "Manual mapping curation",
+        "https://w3id.org/semapv/vocab/ManualMappingCuration": "Manual mapping curation",
+    };
+</script>
+
+<section class={`flex min-w-0 flex-col gap-4 p-4 ${embedded ? "" : "mb-6 rounded-lg border bg-card shadow-sm"}`}>
+    <div class="flex items-center gap-2">
+        <div>
+            <h3>{embedded ? "Mapping entries" : "SSSOM mappings"}</h3>
+            {#if !embedded}
+                <p class="text-sm text-muted-foreground">Mappings created with SSSOM metadata.</p>
+            {/if}
+        </div>
+        <span class="ml-auto text-sm text-muted-foreground">{displayedMappings.length}</span>
+        {#if displayedMappings.length > 0}
+            <Button variant="outline" size="sm" onclick={() => expandedMappings = allExpanded ? [] : [...displayedMappings]}>
+                {allExpanded ? "Hide all details" : "Show all details"}
+            </Button>
+        {/if}
+    </div>
+
+    {#if displayedMappings.length > 0}
+        <div class="overflow-x-auto">
+            <table class="w-full table-auto text-left text-sm">
+                <thead class="border-b text-muted-foreground">
+                    <tr>
+                        <th scope="col" class="w-1/2 px-3 py-3 font-medium"><span class="inline-flex items-center gap-2">Subject <HelpHint helpKey="subjectId" /></span></th>
+                        <th scope="col" class="w-px whitespace-nowrap px-3 py-3 font-medium"><span class="inline-flex items-center gap-2">Relation <HelpHint helpKey="predicateId" /></span></th>
+                        <th scope="col" class="w-1/2 px-3 py-3 font-medium"><span class="inline-flex items-center gap-2">Object <HelpHint helpKey="objectId" /></span></th>
+                        <th scope="col" class="w-px px-1 py-3"><span class="sr-only">Details</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each displayedMappings as mapping}
+                        {@const expanded = expandedMappings.includes(mapping)}
+                        <tr class="align-top" class:border-b={!expanded}>
+                            <td
+                                class="space-y-1 px-3 py-4 [overflow-wrap:anywhere]"
+                            >
+                                {#if mapping.subjectLabel}<p class="font-medium">{mapping.subjectLabel}</p>{/if}
+                                <a
+                                    href={curieToIri(mapping.subjectId, mappingStore.mappingSet.metadata.curieMap)}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    class="text-muted-foreground underline underline-offset-2 hover:text-foreground">{mapping.subjectId}</a
+                                >
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4">{displayLabels[mapping.predicateId] ?? mapping.predicateId}</td>
+                            <td class="space-y-1 px-3 py-4 [overflow-wrap:anywhere]">
+                                {#if mapping.objectLabel}<p class="font-medium">{mapping.objectLabel}</p>{/if}
+                                <a
+                                    href={curieToIri(mapping.objectId, mappingStore.mappingSet.metadata.curieMap)}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    class="text-muted-foreground underline underline-offset-2 hover:text-foreground">{mapping.objectId}</a
+                                >
+                            </td>
+                            <td class="px-1 py-3 text-right">
+                                <button
+                                    type="button"
+                                    class="rounded px-2 py-1 hover:bg-muted focus-visible:outline-2"
+                                    aria-label="Toggle mapping details"
+                                    aria-expanded={expanded}
+                                    onclick={() => expandedMappings = expanded ? expandedMappings.filter((item) => item !== mapping) : [...expandedMappings, mapping]}
+                                >
+                                    {#if expanded}
+                                        <ChevronUp class="size-4" />
+                                    {:else}
+                                        <ChevronDown class="size-4" />
+                                    {/if}
+                                </button>
+                            </td>
+                        </tr>
+                        {#if expanded}
+                            <tr class="border-b">
+                                <td colspan="4" class="px-6 pb-6 pt-0">
+                                    <dl
+                                        class="grid gap-x-6 gap-y-2 sm:grid-cols-[auto_minmax(0,1fr)] [&>dd]:[overflow-wrap:anywhere] [&>dt]:text-muted-foreground"
+                                    >
+                                        <dt class="flex items-center gap-2">Method <HelpHint helpKey="mappingJustification" /></dt>
+                                        <dd>{displayLabels[mapping.mappingJustification] ?? mapping.mappingJustification}</dd>
+                                        {#if mapping.confidence !== undefined}
+                                            <dt class="flex items-center gap-2">Confidence <HelpHint helpKey="confidence" /></dt>
+                                            <dd>{mapping.confidence}</dd>
+                                        {/if}
+                                        {#if mapping.comment}
+                                            <dt class="flex items-center gap-2">Comment <HelpHint helpKey="comment" /></dt>
+                                            <dd>{mapping.comment}</dd>
+                                        {/if}
+                                        {#if mapping.authorIds?.length}
+                                            <dt class="flex items-center gap-2">Authors <HelpHint helpKey="authorIds" /></dt>
+                                            <dd>{mapping.authorIds.join(", ")}</dd>
+                                        {/if}
+                                        {#if mapping.reviewerIds?.length}
+                                            <dt class="flex items-center gap-2">Reviewers <HelpHint helpKey="reviewerIds" /></dt>
+                                            <dd>{mapping.reviewerIds.join(", ")}</dd>
+                                        {/if}
+                                        {#if mapping.mappingDate}
+                                            <dt class="flex items-center gap-2">Mapping date <HelpHint helpKey="mappingDate" /></dt>
+                                            <dd>{mapping.mappingDate}</dd>
+                                        {/if}
+                                    </dl>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        class="mt-4"
+                                        onclick={() => {
+                                            mappingStore.removeSssomMapping(mapping);
+                                            expandedMappings = expandedMappings.filter((item) => item !== mapping);
+                                        }}
+                                    >
+                                        Remove mapping
+                                    </Button>
+                                </td>
+                            </tr>
+                        {/if}
+                    {/each}
+                </tbody>
+            </table>
+        </div>
+    {:else}
+        <p class="text-sm text-muted-foreground">
+            {onlyMapped ? "No SSSOM mappings are relevant to the current ARC." : "No SSSOM mappings have been created yet."}
+        </p>
+    {/if}
+</section>

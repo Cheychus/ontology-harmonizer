@@ -1,0 +1,67 @@
+import type { CurieMap } from "$lib/types/mapping";
+
+export function normalizeShortForm(shortForm: string): string {
+    return shortForm.replace("_", ":");
+}
+
+export function extractPrefixFromObjectId(objectId: string) {
+    const separator = objectId.indexOf(":");
+    const prefix = separator === -1 ? null : objectId.slice(0, separator);
+    if (!prefix) {
+        return null;
+    }
+    return prefix;
+}
+
+export function extractLocalIdFromObjectId(objectId: string) {
+    const separator = objectId.indexOf(":");
+    const localId = separator === -1 ? objectId : objectId.slice(separator + 1);
+    if (!localId) {
+        return null;
+    }
+    return localId;
+}
+
+export function extractBaseIri(objectId: string, fullIri: string) {
+    const localId = extractLocalIdFromObjectId(objectId);
+    if (!localId) {
+        return null;
+    }
+
+    if (fullIri.endsWith(localId)) {
+        const baseUrl = fullIri.slice(0, -localId.length)
+        return baseUrl;
+    }
+
+    return null;
+}
+
+export function isCurieMapDetailsValid(fullIri: string, objectId: string, prefix: string, baseIri: string): boolean {
+    const localId = extractLocalIdFromObjectId(objectId);
+    if (!prefix || !baseIri || !localId) {
+        return false;
+    }
+
+    return fullIri === baseIri + localId;
+}
+
+export function iriToCurie(identifier: string, curieMap: CurieMap): string {
+    const entry = curieMap
+        .filter(({ iri }) => iri.length > 0 && identifier.startsWith(iri))
+        .sort((a, b) => b.iri.length - a.iri.length)[0];
+
+    if (!entry) return identifier;
+
+    return `${entry.prefix}:${identifier.slice(entry.iri.length)}`;
+}
+
+export function curieToIri(identifier: string, curieMap: CurieMap): string {
+    const separator = identifier.indexOf(":");
+    if (separator === -1) return identifier;
+
+    const prefix = identifier.slice(0, separator);
+    const entry = curieMap.find((entry) => entry.prefix === prefix);
+    if (!entry) return identifier;
+
+    return entry.iri + identifier.slice(separator + 1);
+}

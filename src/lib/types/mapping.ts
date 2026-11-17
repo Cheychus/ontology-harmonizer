@@ -1,0 +1,52 @@
+export interface CurieMapEntry {
+    prefix: string;
+    iri: string;
+}
+export type CurieMap = CurieMapEntry[];
+
+/** Complete document returned by the SSSOM parser, retained for a future merge/export. */
+export interface ParsedSssomDocument {
+    mappings: Record<string, unknown>[];
+    [headerKey: string]: unknown;
+}
+
+export type SupportedPredicate = "skos:exactMatch" | "skos:relatedMatch" | "skos:closeMatch" | string;
+export type MappingJustification = "semapv:ManualMappingCuration" | string;
+
+export interface MappingSet {
+    formatVersion: '1.0';
+    metadata: {
+        mappingSetId: string;
+        license: string;
+        curieMap: CurieMap;
+        title?: string;
+        description?: string;
+        version?: string;
+        comment?: string;
+    };
+    mappings: SssomMapping[];
+}
+
+export interface SssomMapping extends Partial<SssomContributorFields> {
+    subjectId: string;
+    subjectLabel?: string;
+    predicateId: SupportedPredicate;
+    objectId: string;
+    objectLabel?: string;
+    mappingJustification: MappingJustification;
+    confidence?: number;
+    comment?: string;
+    mappingDate?: string;
+}
+
+export interface SssomContributorFields {
+    authorIds: string[];
+    reviewerIds: string[];
+}
+
+export type ContributorRole = "author" | "reviewer";
+
+export interface MappingContributor {
+    role: ContributorRole;
+    id: string;
+}

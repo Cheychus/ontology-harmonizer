@@ -12,6 +12,7 @@ export const GET = async ({ params, url, cookies, fetch }) => {
   } : {});
 
   if (!res.ok) {
+    if (res.status === 401 && token) cookies.delete("gitlab_token", { path: "/" });
     return res;
   }
 
@@ -36,6 +37,7 @@ export const POST = async ({ params, url, cookies, request, fetch }) => {
   });
 
   if (!res.ok) {
+    if (res.status === 401 && token) cookies.delete("gitlab_token", { path: "/" });
     return res;
   }
 

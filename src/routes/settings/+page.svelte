@@ -33,6 +33,11 @@
         <h2>Settings</h2>
         <div class="w-full h-px border border-b"></div>
 
+        <div class="flex items-center gap-2">
+            <Checkbox id="show-help-hints" class="w-5 h-5" bind:checked={settingsStore.showHelpHints} />
+            <Label for="show-help-hints">Show help icons</Label>
+        </div>
+        <div class="w-full h-px border border-b"></div>
         <div class="flex flex-col w-full gap-2">
             <Label>Matching Service</Label>
             <div class="flex items-center gap-2">

@@ -1,12 +1,13 @@
-import { extractOntologies } from "$lib/services/arcs/arcOntology.service";
-import { SvelteMap } from "svelte/reactivity";
-import { oboFileStore } from "../oboFiles/OboFileStore.svelte";
-import { curieToUrl } from "$lib/services/oboFiles/oboFile.service";
+import { extractOntologies, type ArcTermFilter } from "$lib/services/arcs/arcOntology.service";
+import { SvelteMap, SvelteSet } from "svelte/reactivity";
+import { termSelectionKey } from "$lib/services/arcs/termGroups";
 import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
 import { applicationStore } from "../application/ApplicationStore.svelte";
 import { getArcJson, getProject, getProjects } from "$lib/services/gitlab/gitlab";
 import { failure } from "$lib/services/toasts/toastService";
+import { resolveArcMapping } from "$lib/services/arcs/mappingReview";
+import { curieToIri } from "$lib/services/sssom/curieMap";
 
 export type DerivedOntology = {
   source: GraphNode;
@@ -28,11 +29,46 @@ class ArcStore {
 
   ontologyCandidates: SvelteMap<string, DerivedOntology> = $state(new SvelteMap());
   allOntologyValues: DerivedOntology[] = $state([]);
+  extractedOntologyValues: DerivedOntology[] = $state([]);
+  private excludedTerms = new SvelteSet<string>();
   arcIriMap: SvelteMap<string, string[]> = $state(new SvelteMap());
   changedOntologies: IChangedOntology[] = $state([]);
+  publishedResult: { commitUrl: string; mergeUrl: string } | null = $state(null);
 
 
   initialised: boolean = $state(false);
+  private selectedTermFilter: ArcTermFilter = $state("all");
+
+  get termFilter() {
+    return this.selectedTermFilter;
+  }
+
+  isTermIncluded(term: DerivedOntology) {
+    return !this.excludedTerms.has(termSelectionKey(term));
+  }
+
+  setTermsIncluded(terms: DerivedOntology[], included: boolean) {
+    for (const term of terms) {
+      const key = termSelectionKey(term);
+      if (included) this.excludedTerms.delete(key);
+      else this.excludedTerms.add(key);
+    }
+    this.updateSelectedTerms();
+    mappingStore.startMapping(mappingStore.unmappedOntologies);
+  }
+
+  deselectValuesMatching(matches: (value: string) => boolean) {
+    const matchingValues = this.allOntologyValues.filter((term) =>
+      term.ontologyAttribute === "valueReference" && matches(term.key));
+    if (matchingValues.length > 0) this.setTermsIncluded(matchingValues, false);
+  }
+
+  setTermFilter(filter: ArcTermFilter) {
+    if (filter === this.selectedTermFilter) return;
+    this.selectedTermFilter = filter;
+    this.searchOntologies();
+    mappingStore.startMapping(mappingStore.unmappedOntologies);
+  }
 
   /**
    * Initialise this store with a arc json file
@@ -40,9 +76,12 @@ class ArcStore {
    */
   public init(json: ARC_RO_JSON) {
     this.json = json;
+    this.selectedTermFilter = "all";
+    this.excludedTerms.clear();
     this.searchOntologies();
     mappingStore.startMapping(mappingStore.unmappedOntologies);
     this.changedOntologies = [];
+    this.publishedResult = null;
     this.initialised = true;
   }
 
@@ -57,6 +96,7 @@ class ArcStore {
     try {
       this.projects = await getProjects();
     } catch (e) {
+      if (!applicationStore.sessionExpired) failure(e instanceof Error ? e.message : "Could not load DataHUB projects");
     } finally {
       this.loading = false;
     }
@@ -79,31 +119,31 @@ class ArcStore {
   }
 
   private searchOntologies() {
-    // To reset the map after a new arc was initialised
-    this.ontologyCandidates.clear();
-    this.allOntologyValues = [];
-    this.arcIriMap.clear();
-
+    this.extractedOntologyValues = [];
     this.graph.forEach((node) => {
       if (node["@type"] === "PropertyValue") {
-        const ontologies = extractOntologies(node);
-        this.allOntologyValues.push(...ontologies);
-        ontologies.forEach((onto) => {
-          this.ontologyCandidates.set(onto.key, onto);
-        });
+        this.extractedOntologyValues.push(...extractOntologies(node, this.termFilter));
       }
     });
-
-    this.ontologyCandidates.forEach((o) => this.filterDuplicateIris(o.key))
+    this.updateSelectedTerms();
   }
 
-  private filterDuplicateIris(ontologyKey: string) {
-    const arcOccurences = this.allOntologyValues.filter((o) => o.key === ontologyKey);
-    const iris = new Set<string>();
-    arcOccurences.forEach((o) => iris.add(o.value));
-    this.arcIriMap.set(ontologyKey, iris.values().toArray()) // key = IRI1, IRI2...
+  private updateSelectedTerms() {
+    this.ontologyCandidates.clear();
+    this.allOntologyValues = this.extractedOntologyValues.filter((term) => this.isTermIncluded(term));
+    this.arcIriMap.clear();
 
-    return iris;
+    const references = new Map<string, Set<string>>();
+    for (const term of this.allOntologyValues) {
+      this.ontologyCandidates.set(term.key, term);
+      let iris = references.get(term.key);
+      if (!iris) {
+        iris = new Set();
+        references.set(term.key, iris);
+      }
+      iris.add(term.value);
+    }
+    references.forEach((iris, key) => this.arcIriMap.set(key, Array.from(iris)));
   }
 
   saveOntologyValue(key: string, value: string) {
@@ -114,34 +154,26 @@ class ArcStore {
     this.json = this.json; // To trigger svelte reactivity and update the json
   }
 
-  mapOBOtoARC(): number {
-    let count = 0;
-    this.ontologyCandidates.forEach((onto) => {
-      const term = oboFileStore.findTermByName(onto.key);
-      if (term) {
-        onto.source[onto.ontologyAttribute] = term.xrefs.map((xref) => curieToUrl(xref)).join(", ");
-        count++;
-      }
-    });
-    this.updateArcJson();
-    return count;
-  }
-
-
   applyMapping() {
     let count = 0;
     this.allOntologyValues?.forEach((onto) => {
-      const mapping = mappingStore.findMapping(onto.key);
-      if (mapping && mapping.iri !== onto.value) {
-        const old = { ...onto };
-        onto.source[onto.ontologyAttribute] = mapping.iri; // change in ARC JSON
-        this.changedOntologies.push({
-          old,
-          new: mapping.iri,
-        })
+      const mapping = resolveArcMapping(onto, mappingStore.mappingSet);
+      if (mapping?.needsUpdate) {
+        const existingIndex = this.changedOntologies.findIndex((change) =>
+          change.old.source === onto.source && change.old.ontologyAttribute === onto.ontologyAttribute);
+        const old = existingIndex >= 0 ? this.changedOntologies[existingIndex].old : { ...onto };
+        onto.source[onto.ontologyAttribute] = mapping.targetValue;
+        if (curieToIri(old.value, mappingStore.mappingSet.metadata.curieMap) === mapping.targetValue) {
+          if (existingIndex >= 0) this.changedOntologies.splice(existingIndex, 1);
+        } else if (existingIndex >= 0) {
+          this.changedOntologies[existingIndex].new = mapping.targetValue;
+        } else {
+          this.changedOntologies.push({ old, new: mapping.targetValue });
+        }
         count++;
       }
     });
+    if (count > 0) this.publishedResult = null;
     this.updateArcJson();
     return count;
   }

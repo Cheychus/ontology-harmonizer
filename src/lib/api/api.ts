@@ -1,3 +1,13 @@
+import { browser } from "$app/environment";
+import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
+
+export class ApiError extends Error {
+  constructor(public status: number, message = `API error ${status}`) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ApiSendParams {
@@ -24,7 +34,12 @@ export async function apiSend<T>(fetch: typeof globalThis.fetch, { method, path,
   const res = await fetch(path, opts);
 
   if (!res.ok) {
-    throw new Error(`API error ${res.status}`);
+    const isDataHubRequest = path.startsWith("/api/gitlab/") || path.startsWith("/api/arcs/");
+    if (res.status === 401 && isDataHubRequest) {
+      if (browser) applicationStore.expireGitLabSession();
+      throw new ApiError(401, "Your DataHUB session has expired. Reconnect to continue.");
+    }
+    throw new ApiError(res.status);
   }
 
   const text = await res.text();

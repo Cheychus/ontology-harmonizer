@@ -53,5 +53,7 @@ export const GET = async ({ url, fetch, cookies }) => {
     sameSite: "lax"
   });
 
-  throw redirect(302, "/select-arc");
+  const reconnect = cookies.get("gitlab_reconnect") === "true";
+  cookies.delete("gitlab_reconnect", { path: "/" });
+  throw redirect(302, reconnect ? "/auth/gitlab/reconnected" : "/select-arc");
 };

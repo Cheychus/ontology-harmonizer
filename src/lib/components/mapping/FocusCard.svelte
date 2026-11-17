@@ -1,28 +1,72 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
-    import { mappingStore, type IMapping } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Search, LoaderCircle, ArrowLeft, ArrowRight } from "lucide-svelte";
+    import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
+    import { Search, LoaderCircle, ArrowLeft, ArrowRight, CornerDownLeft, Check, Pencil, X, CircleAlert, Keyboard } from "lucide-svelte";
     import { Input } from "../ui/input";
-    import { Badge } from "../ui/badge";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
     import * as Select from "$lib/components/ui/select/index.js";
-    import type { IMatchingViewModel } from "../ontologies/Matchings.svelte";
+    import type { IMatchingViewModel } from "$lib/types/terminologyService";
     import { matchingStore, type IMatchingServiceData } from "$lib/stores/pythonService/MatchingStore.svelte";
-    import { searchTerms, terminologyProviders } from "$lib/api/terminology";
+    import { searchTerms, terminologyProviders, type TerminologyProviderId } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
     import type { ITerminologySearchResult, matchingType } from "$lib/types/terminologyService";
-    import { iriToCurie } from "$lib/services/oboFiles/oboFile.service";
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
     import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
+    import SSSOMInput from "./SSSOM_Input.svelte";
+    import { type MappingContributor, type SssomMapping } from "$lib/types/mapping";
+    import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
+    import {
+        normalizeShortForm,
+        extractBaseIri,
+        extractLocalIdFromObjectId,
+        extractPrefixFromObjectId,
+        isCurieMapDetailsValid,
+    } from "$lib/services/sssom/curieMap";
+    import { contributorsToSssomFields } from "$lib/services/sssom/contributors";
+    import HelpHint from "../HelpHint.svelte";
+
+    $inspect(mappingStore.mappingSet);
 
     interface Props {
         currentOntology: DerivedOntology;
+        keyboardMode?: boolean;
     }
 
-    let { currentOntology }: Props = $props();
+    let { currentOntology, keyboardMode = $bindable(true) }: Props = $props();
+    let cardHasFocus = $state(false);
+    let keyboardReady = $derived(keyboardMode && cardHasFocus);
+
+    function shortcutClass(available = true) {
+        return keyboardReady && available
+            ? "border-emerald-500/60 bg-emerald-50 text-emerald-800"
+            : "border-current/20 opacity-40";
+    }
+    let sourceValueExpanded = $state(false);
+    let sourceValueOverflows = $state(false);
+    const sourceValueId = $props.id();
+
+    // Measure the rendered text so Show more follows the actual two-line limit at any width.
+    function measureSourceValue(node: HTMLElement, _value: string) {
+        function measure() {
+            const lineHeight = Number.parseFloat(getComputedStyle(node).lineHeight);
+            sourceValueOverflows = node.scrollHeight > lineHeight * 2 + 1;
+        }
+        const observer = new ResizeObserver(measure);
+        observer.observe(node);
+        return {
+            async update(_value: string) {
+                sourceValueExpanded = false;
+                await tick();
+                measure();
+            },
+            destroy() {
+                observer.disconnect();
+            },
+        };
+    }
 
     let ontologySearchResults: IMatchingViewModel[] = $state([]);
     let searchResultIdx = $state(0);
@@ -33,25 +77,85 @@
     let activeSearch: AbortController | null = null;
     let searchId = 0;
 
-    let selectValue = $derived("");
-    let selectedMapping: IMapping | null = $state(null);
     let iriInput: string = $derived(currentSearchResult?.iri ?? "");
-    let shortFormInput: string = $derived(iriToCurie(currentSearchResult?.shortForm ?? ""));
+    let shortFormInput: string = $derived(normalizeShortForm(currentSearchResult?.shortForm ?? ""));
+    let curieMapPrefix = $state("");
+    let curieMapBaseIri = $state("");
+    let curieMapDetailsAccepted = $state(false);
+    let curieMapValidationError = $state("");
+    let canMap = $derived(Boolean(mappingStore.subjectIdentifier.prefix && curieMapDetailsAccepted && iriInput && shortFormInput && !loading));
 
-    // Derive select options from the existing obo file mapping terms
-    const selectOptions = $derived.by(() => {
-        return (
-            mappingStore.mappingJson.map((m) => {
-                return { value: m.name, label: m.name };
-            }) ?? []
-        );
-    });
-    const triggerContent = $derived(selectOptions.find((o) => o.value === selectValue)?.label ?? "Create a new mapping");
     const terminologyProviderLabel = $derived(
         terminologyProviders.find((provider) => provider.id === settingsStore.terminologyProvider)?.label ?? "Select a terminology service",
     );
+    const searchSource = $derived(settingsStore.matchingMethod === "pythonService" ? "pythonService" : settingsStore.terminologyProvider);
+    const searchSourceLabel = $derived(settingsStore.matchingMethod === "pythonService" ? "Python Matching Service" : terminologyProviderLabel);
+    const predicates = [
+        { value: "skos:exactMatch", label: "Exact Match" },
+        { value: "skos:closeMatch", label: "Close Match" },
+        { value: "skos:relatedMatch", label: "Related Match" },
+    ];
+    const predicateTriggerContent = $derived(
+        predicates.find((predicate) => predicate.value === sssomMapping.predicateId)?.label ?? "Select relationship",
+    );
 
     let searchInput = $derived(currentOntology?.key ?? "");
+    let sssomMapping = $state<SssomMapping>({
+        subjectId: "",
+        subjectLabel: "",
+        predicateId: "skos:exactMatch",
+        objectId: "",
+        objectLabel: "",
+        mappingJustification: "semapv:ManualMappingCuration",
+        confidence: 1,
+        comment: "",
+        authorIds: [],
+    });
+
+    let contributors: MappingContributor[] = $state(applicationStore.defaultMappingContributors.map((c) => ({ ...c })));
+
+    // Keep the SSSOM mapping in sync with the current Focus Card ontology values and search results.
+    $effect(() => {
+        sssomMapping.subjectId = mappingStore.subjectIdentifier.prefix
+            ? `${mappingStore.subjectIdentifier.prefix}:${encodeURIComponent(currentOntology.key)}`
+            : "";
+        sssomMapping.subjectLabel = currentOntology.key;
+        sssomMapping.objectLabel = currentSearchResult?.label ?? "";
+
+        const extractedBaseIri = extractBaseIri(shortFormInput, iriInput) ?? iriInput;
+        const extractedPrefix = extractPrefixFromObjectId(shortFormInput) ?? "";
+        const localId = extractLocalIdFromObjectId(shortFormInput);
+        const automaticallyAccepted = isCurieMapDetailsValid(iriInput, shortFormInput, extractedPrefix, extractedBaseIri);
+
+        curieMapBaseIri = extractedBaseIri;
+        curieMapPrefix = extractedPrefix;
+        curieMapDetailsAccepted = automaticallyAccepted;
+        sssomMapping.objectId = automaticallyAccepted && localId ? `${extractedPrefix}:${localId}` : shortFormInput;
+        curieMapValidationError = "";
+    });
+
+    function toggleCurieMapDetails() {
+        if (curieMapDetailsAccepted) {
+            curieMapDetailsAccepted = false;
+            sssomMapping.objectId = shortFormInput;
+            return;
+        }
+
+        if (!isCurieMapDetailsValid(iriInput, shortFormInput, curieMapPrefix, curieMapBaseIri)) {
+            curieMapValidationError = "Prefix and Base IRI do not resolve to the selected IRI.";
+            return;
+        }
+
+        const localId = extractLocalIdFromObjectId(shortFormInput);
+        if (!localId) {
+            curieMapValidationError = "Short Form has no local identifier.";
+            return;
+        }
+
+        sssomMapping.objectId = `${curieMapPrefix}:${localId}`;
+        curieMapValidationError = "";
+        curieMapDetailsAccepted = true;
+    }
 
     onMount(() => {
         if (settingsStore.automaticMatching) {
@@ -138,194 +242,442 @@
         searchResultIdx = newIdx;
     }
 
-    function map() {
-        if (!selectedMapping && (!iriInput || !shortFormInput)) {
+    function selectSearchSource(value: string) {
+        if (value === "pythonService") {
+            settingsStore.matchingMethod = "pythonService";
+        } else {
+            settingsStore.matchingMethod = "terminology";
+            settingsStore.terminologyProvider = value as TerminologyProviderId;
+        }
+
+        if (settingsStore.automaticMatching) {
+            getMatchings(settingsStore.matchingMethod);
+        }
+    }
+
+    function addSssomMapping() {
+        if (loading) return;
+        if (!mappingStore.subjectIdentifier.prefix) {
+            warning("Choose a subject prefix before creating mappings");
+            return;
+        }
+
+        if (!curieMapDetailsAccepted) {
+            warning("Curie Map Details are not valid");
+            return;
+        }
+
+        if (!iriInput || !shortFormInput) {
             warning("IRI and Short Form required");
             return;
         }
 
-        if (selectedMapping) {
-            mappingStore.addSynonym(selectedMapping, currentOntology.key);
-            selectedMapping.shortForm = shortFormInput;
-        } else {
-            const iri = iriInput;
-            const label = currentSearchResult.label ?? currentOntology.key;
-            const xref = shortFormInput;
-            mappingStore.addMapping(label, iri, currentOntology.key, xref);
+        const sssomContributorFields = contributorsToSssomFields(contributors);
+        const success = mappingStore.addSssomMapping({
+            ...sssomMapping,
+            ...sssomContributorFields,
+        });
+
+        if (success && curieMapDetailsAccepted) {
+            mappingStore.addCurieMapEntry(curieMapPrefix, curieMapBaseIri);
+            mappingStore.moveNext();
         }
-        mappingStore.moveNext();
     }
 
     let container: HTMLElement;
     function refocus() {
-        container?.focus();
+        if (keyboardMode) container?.focus({ preventScroll: true });
+    }
+
+    function toggleKeyboardMode() {
+        keyboardMode = !keyboardMode;
+        refocus();
+    }
+
+    function preserveCardFocus(event: MouseEvent) {
+        // Avoid a temporary blur before the click handler toggles or resumes the mode.
+        if (event.button === 0) event.preventDefault();
     }
 </script>
 
-<div class="flex gap-2 pt-4 items-center">
-    <Select.Root type="single" name="terminologyProvider" bind:value={settingsStore.terminologyProvider}>
-        <Select.Trigger class="w-64">
-            {terminologyProviderLabel}
-        </Select.Trigger>
-        <Select.Content>
-            <Select.Group>
-                <Select.Label>Terminology service</Select.Label>
-                {#each terminologyProviders as provider (provider.id)}
-                    <Select.Item value={provider.id} label={provider.label}>{provider.label}</Select.Item>
-                {/each}
-            </Select.Group>
-        </Select.Content>
-    </Select.Root>
-    <Label>Automatic Search</Label>
-    <Switch
-        onCheckedChange={() => {
-            if (settingsStore.automaticMatching) {
-                getMatchings(settingsStore.matchingMethod);
-            }
-            refocus();
-        }}
-        bind:checked={settingsStore.automaticMatching}
-    />
-</div>
+<svelte:window onblur={() => (cardHasFocus = false)} onfocus={() => (cardHasFocus = document.activeElement === container)} />
+
 <div
     bind:this={container}
-    tabindex="0"
+    tabindex={keyboardMode ? 0 : -1}
     role="button"
-    class="min-h-112.5 max-h-112.5 flex flex-col flex-1 gap-2 shadow rounded-lg p-4 outline-none"
+    aria-label="Mapping focus card"
+    class={`flex min-w-0 flex-col gap-4 shadow rounded-lg p-4 outline-none lg:h-full ${keyboardReady ? "ring-2 ring-emerald-500/40" : ""}`}
+    onfocusin={(event) => (cardHasFocus = event.target === container)}
+    onfocusout={() => (cardHasFocus = false)}
     onkeydown={(e) => {
-        if (e.target instanceof HTMLInputElement) return;
+        if (!keyboardReady || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+        if (e.target instanceof HTMLElement) {
+            if (e.target.closest("input, textarea, select, button, a, [contenteditable], [role='combobox'], [role='switch'], [role='option']"))
+                return;
+        }
+        // Holding Enter or Escape must not map or skip multiple consecutive terms.
+        if (e.repeat && (e.key === "Enter" || e.key === "Escape")) return;
         switch (e.key) {
             case "ArrowLeft":
+                e.preventDefault();
                 switchSearchResult(-1);
                 break;
             case "ArrowRight":
+                e.preventDefault();
                 switchSearchResult(1);
                 break;
             case "Enter":
-                map();
+                e.preventDefault();
+                if (canMap) addSssomMapping();
                 break;
             case "Escape":
+                e.preventDefault();
                 mappingStore.skip();
                 break;
         }
     }}
 >
-    <div class="flex min-w-0 gap-2 items-center">
-        <h3 class="basis-1/3 min-w-0 shrink-0 truncate whitespace-nowrap">
-            {currentOntology.key}
-        </h3>
-
-        <Badge variant="outline" class="h-6 shrink-0">
-            {currentOntology.ontologyAttribute}
-        </Badge>
-
-        {#if currentOntology.value !== ""}
-            <Badge variant="outline" class="h-6 min-w-0 flex-initial">
-                <a target="_blank" class="block truncate" href={currentOntology.value} title={currentOntology.value}>
-                    {currentOntology.value}
-                </a>
-            </Badge>
-        {:else}
-            <Badge variant="outline" class="h-6 min-w-0">ARC Value not defined</Badge>
-        {/if}
-
-        <Button variant="secondary" class="shrink-0 ml-auto" onclick={() => mappingStore.skip()}>Skip</Button>
-    </div>
-    <div class="flex gap-2 pt-2">
-        <Button class="" onclick={() => getMatchings("terminology")} variant="secondary">{terminologyProviderLabel} <Search size={22} /></Button>
-        {#if settingsStore.enablePythonMatchingService}
-            <Button onclick={async () => getMatchings("pythonService")} variant="secondary">Matching Service <Search size={22} /></Button>
-        {/if}
-
-        <Input
-            onkeydown={(e) => {
-                if (e.key === "Enter") getMatchings("terminology");
-            }}
-            placeholder="search for a value..."
-            bind:value={searchInput}
-        />
-    </div>
-
-    <!-- <Label class="pt-2">Search Results</Label> -->
-    <div class={{ "rounded-sm min-h-0 border border-border flex flex-col flex-1 ": true, "animate-puls": loading }}>
-        {#if currentSearchResult}
-            <div class="p-2 flex flex-col min-h-0 flex-1">
-                <div class="flex justify-between shrink-0">
-                    <h4>{currentSearchResult.label} - {iriToCurie(currentSearchResult?.shortForm ?? "") ?? "undefined"}</h4>
-                    <p class="font-bold">{searchResultIdx + 1}/{ontologySearchResults.length}</p>
-                </div>
-
-                <div class="flex-1 min-h-0 overflow-y-auto">
-                    <ul class="list-disc pl-8 pr-2">
-                        {#if currentSearchResult.description && currentSearchResult.description.length > 0}
-                            {#each currentSearchResult.description as description}
-                                <li class="py-1 break-all">{description?.value ?? description}</li>
-                            {/each}
-                        {:else}
-                            <li class="italic">No descriptions</li>
-                        {/if}
-                    </ul>
-                </div>
-            </div>
-
-            <div class="mt-auto p-1 flex justify-between items-center">
-                <Button class="w-32" variant="outline" size="icon" onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button>
-
-                <Button class="w-32" variant="outline" size="icon" onclick={() => switchSearchResult(1)}><ArrowRight /></Button>
-            </div>
-        {:else}
-            <div class="flex items-center justify-center h-full flex-1">
-                {#if loading}
-                    <LoaderCircle class="animate-spin" />
-                {:else if noResults}
-                    <p class="text-muted-foreground">No results for {searchInput}</p>
-                {:else}
-                    <p class="text-muted-foreground">Search for ontologies or define the mapping manually</p>
+    <div
+        class="grid min-w-0 items-start gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_minmax(0,auto)_minmax(6rem,1fr)] lg:items-stretch"
+    >
+        <div class="flex min-w-0 flex-col gap-2 md:col-span-2 md:row-start-1 lg:col-span-1 lg:col-start-1">
+            <div class="flex flex-wrap items-center gap-2">
+                <Switch
+                    onCheckedChange={() => {
+                        if (settingsStore.automaticMatching) {
+                            getMatchings(settingsStore.matchingMethod);
+                        }
+                        refocus();
+                    }}
+                    bind:checked={settingsStore.automaticMatching}
+                />
+                <Label class="whitespace-nowrap">Automatic Search</Label>
+                <div class="ml-auto flex items-center gap-2">
+                {#if keyboardMode && !keyboardReady}
+                    <span class="text-xs text-muted-foreground">Not focused</span>
+                    <Button class="h-7 px-2 text-xs" size="sm" variant="outline" onmousedown={preserveCardFocus} onclick={refocus} title="Focus the card to use arrow keys, Enter and Escape">Resume</Button>
                 {/if}
+                <Button
+                    class="h-7 px-2 text-xs"
+                    variant={keyboardMode ? "secondary" : "outline"}
+                    size="sm"
+                    aria-pressed={keyboardMode}
+                    onmousedown={preserveCardFocus}
+                    title="When the card is focused: Left/Right = results, Enter = map, Esc = skip. Inputs and buttons keep their normal keyboard behavior."
+                    onclick={toggleKeyboardMode}><Keyboard class="size-3.5" />Keyboard mode: {keyboardMode ? "On" : "Off"}</Button
+                >
+                </div>
             </div>
-        {/if}
-    </div>
 
-    <div class="mt-auto flex flex-col w-full gap-2">
-        <div class="flex gap-2 items-end w-full py-2">
-            <div class="flex flex-col w-full gap-2">
-                <Label for="iri-input">IRI</Label>
-                <Input id="iri-input" placeholder="e.g. http://purl.obolibrary.org/obo/OBI_1234" bind:value={iriInput} />
-            </div>
+            <div class="flex flex-wrap gap-2">
+                <Select.Root type="single" name="searchSource" value={searchSource} onValueChange={selectSearchSource}>
+                    <Select.Trigger class="w-64">{searchSourceLabel}</Select.Trigger>
+                    <Select.Content>
+                        <Select.Group>
+                            <Select.Label>Terminology services</Select.Label>
+                            {#each terminologyProviders as provider (provider.id)}
+                                <Select.Item value={provider.id} label={provider.label}>{provider.label}</Select.Item>
+                            {/each}
+                        </Select.Group>
+                        {#if settingsStore.enablePythonMatchingService}
+                            <Select.Group>
+                                <Select.Label>Matching services</Select.Label>
+                                <Select.Item value="pythonService" label="Python Matching Service">Python Matching Service</Select.Item>
+                            </Select.Group>
+                        {/if}
+                    </Select.Content>
+                </Select.Root>
 
-            <div class="flex flex-col gap-2 w-1/3">
-                <Label for="iri-input">Short Form</Label>
-                <Input id="iri-input" placeholder="e.g. OBI:1234" bind:value={shortFormInput} />
+                <Input
+                    class="min-w-0 flex-1 basis-48"
+                    onkeydown={(e) => {
+                        if (e.key === "Enter") getMatchings(settingsStore.matchingMethod);
+                    }}
+                    placeholder="search for a value..."
+                    bind:value={searchInput}
+                />
+                <Button onclick={() => getMatchings(settingsStore.matchingMethod)} variant="secondary">Search <Search size={22} /></Button>
             </div>
         </div>
+        <div class="min-h-0 min-w-0 rounded-md border border-border bg-muted/30 p-3 md:col-start-1 md:row-start-2 lg:overflow-y-auto">
+            <div class="grid min-w-0 gap-4">
+                <div class="min-w-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-sm font-medium text-muted-foreground">Mapping source</p>
+                        <Button variant="secondary" size="sm" onclick={() => mappingStore.skip()}>Skip
+                            {#if keyboardMode}<kbd class={`ml-1 rounded border px-1 font-sans text-[10px] leading-4 ${shortcutClass()}`} title="Escape: skip term">Esc</kbd>{/if}
+                        </Button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="break-words text-lg font-semibold">{currentOntology.key}</h3>
+                        <HelpHint helpKey="subjectLabel" />
+                    </div>
+                </div>
 
-        <div class="flex gap-2">
-            <Button class="w-1/3" onclick={() => map()}>Map</Button>
+                <dl
+                    class="grid min-w-0 gap-4 text-sm sm:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)] md:grid-cols-1 lg:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)]"
+                >
+                    <div class="min-w-0 space-y-1">
+                        <dt class="font-medium text-muted-foreground flex items-center gap-2">Subject ID <HelpHint helpKey="subjectId" /></dt>
+                        <dd class="min-w-0">
+                            {#if mappingStore.subjectIdentifier.prefix}
+                                <div class="flex items-center gap-2">
+                                    <span class="min-w-0 break-all" title={sssomMapping.subjectId}>{sssomMapping.subjectId}</span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        class="shrink-0"
+                                        aria-label="Choose another subject prefix"
+                                        title="Choose another subject prefix"
+                                        onclick={() => (mappingStore.subjectPrefix = "")}
+                                    >
+                                        <X />
+                                    </Button>
+                                </div>
+                            {:else}
+                                <div class="flex flex-wrap gap-2 items-center">
+                                    <Select.Root type="single" bind:value={mappingStore.subjectPrefix}>
+                                        <Select.Trigger id="subject-prefix" class="w-36">Choose prefix</Select.Trigger>
+                                        <Select.Content>
+                                            <Select.Group>
+                                                <Select.Label>Subject prefix</Select.Label>
+                                                {#each mappingStore.mappingSet.metadata.curieMap as entry (entry.prefix)}
+                                                    <Select.Item value={entry.prefix} label={entry.prefix}>{entry.prefix}</Select.Item>
+                                                {/each}
+                                            </Select.Group>
+                                        </Select.Content>
+                                    </Select.Root>
+                                    <span class="shrink-0" title="Select a source prefix to continue">
+                                        <CircleAlert class="text-destructive" aria-label="Select a source prefix to continue" />
+                                    </span>
+                                    <span class="text-sm text-destructive">Select a source prefix to continue.</span>
+                                </div>
+                            {/if}
+                        </dd>
+                    </div>
 
-            <Select.Root
-                type="single"
-                bind:value={selectValue}
-                onValueChange={() => {
-                    selectedMapping = mappingStore.findMapping(selectValue)!;
-                    shortFormInput = selectedMapping.shortForm;
-                    iriInput = selectedMapping.iri;
-                }}
-            >
-                <Select.Trigger class="w-full col-span-2">
-                    {triggerContent}
-                </Select.Trigger>
-                <Select.Content>
-                    <Select.Item value={"new-mapping"} label={"Create a new mapping"}></Select.Item>
-                    <Select.Group>
-                        <Select.Label>Terms</Select.Label>
-                        {#each selectOptions as option}
-                            <Select.Item value={option.value} label={option.label}>
-                                {option.label}
-                            </Select.Item>
-                        {/each}
-                    </Select.Group>
-                </Select.Content>
-            </Select.Root>
+                    <div class="min-w-0 space-y-1">
+                        <dt class="font-medium text-muted-foreground">Attribute</dt>
+                        <dd class="whitespace-nowrap">{currentOntology.ontologyAttribute}</dd>
+                    </div>
+
+                    <div class="min-w-0 space-y-1">
+                        <dt class="font-medium text-muted-foreground">Value</dt>
+                        <dd class="min-w-0">
+                            {#if currentOntology.value !== ""}
+                                <a
+                                    id={sourceValueId}
+                                    use:measureSourceValue={currentOntology.value}
+                                    class={`break-all whitespace-pre-wrap text-primary underline-offset-4 hover:underline ${sourceValueExpanded ? "block" : "line-clamp-2"}`}
+                                    href={currentOntology.value}
+                                    target="_blank"
+                                    rel="noreferrer">{currentOntology.value}</a
+                                >
+                                {#if sourceValueOverflows}
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        class="h-auto px-0 py-1 text-xs"
+                                        aria-expanded={sourceValueExpanded}
+                                        aria-controls={sourceValueId}
+                                        onclick={() => (sourceValueExpanded = !sourceValueExpanded)}
+                                        >{sourceValueExpanded ? "Show less" : "Show more"}</Button
+                                    >
+                                {/if}
+                            {:else}
+                                <span class="italic text-muted-foreground">Not defined</span>
+                            {/if}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+        <div
+            class={{
+                "rounded-md min-h-42 min-w-0 border border-border flex flex-col md:h-[clamp(22rem,60dvh,34rem)] md:col-start-2 md:row-start-2 md:overflow-hidden lg:col-start-1 lg:row-start-3 lg:h-auto lg:min-h-0": true,
+                "animate-puls": loading,
+            }}
+        >
+            {#if currentSearchResult}
+                <div class="flex min-h-0 min-w-0 flex-col p-3 md:flex-1 md:overflow-y-auto">
+                    <p class="text-sm font-medium text-muted-foreground">Search results</p>
+                    <div class="mb-3 flex items-center gap-2">
+                        <h3 class="break-words text-lg font-semibold">{currentSearchResult.label}</h3>
+                        <HelpHint helpKey="objectLabel" />
+                    </div>
+
+                    <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+                        <dt class="flex items-center gap-2 font-medium text-muted-foreground">CURIE <HelpHint helpKey="objectId" /></dt>
+                        <dd>{normalizeShortForm(currentSearchResult.shortForm ?? "") || "Not available"}</dd>
+
+                        <dt class="font-medium text-muted-foreground">Full IRI</dt>
+                        <dd class="break-all">
+                            <a href={currentSearchResult.iri} target="_blank">
+                                {currentSearchResult.iri}
+                            </a>
+                        </dd>
+
+                        {#if currentSearchResult.source === "pythonService" && currentSearchResult.score !== undefined}
+                            <dt class="font-medium text-muted-foreground">Score</dt>
+                            <dd>{currentSearchResult.score}</dd>
+                        {/if}
+                    </dl>
+
+                    <div class="mt-4 border-t pt-3">
+                        <h5 class="mb-2 text-sm font-medium">Descriptions</h5>
+                        {#if currentSearchResult.description && currentSearchResult.description.length > 0}
+                            <ul class="max-h-64 overflow-y-auto list-disc pl-5 pr-2 md:max-h-none md:overflow-visible">
+                                {#each currentSearchResult.description as description}
+                                    <li class="py-1 break-all">{description?.value ?? description}</li>
+                                {/each}
+                            </ul>
+                        {:else}
+                            <p class="italic text-sm text-muted-foreground">No descriptions</p>
+                        {/if}
+                    </div>
+                </div>
+                <div class="mt-auto grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-t p-2">
+                    <Button
+                        class="w-12 justify-self-start sm:w-20"
+                        variant="outline"
+                        size="icon"
+                        aria-label="Previous search result"
+                        disabled={searchResultIdx === 0}
+                        onclick={() => switchSearchResult(-1)}>
+                        {#if keyboardMode}
+                            <kbd class={`inline-flex size-6 items-center justify-center rounded border ${shortcutClass(searchResultIdx > 0)}`} title="Left arrow key: previous result"><ArrowLeft class="size-3.5" /></kbd>
+                        {:else}<ArrowLeft />{/if}
+                    </Button>
+                    <Button class="w-24 sm:w-32" disabled={!canMap} onclick={addSssomMapping}>Map
+                        {#if keyboardMode}<kbd class={`ml-1 inline-flex size-5 items-center justify-center rounded border ${shortcutClass(canMap)}`} title="Enter: map selected result"><CornerDownLeft class="size-3" /></kbd>{/if}
+                    </Button>
+                    <div class="flex min-w-0 items-center justify-end gap-2">
+                        <div
+                            class="flex w-12 min-w-0 flex-col items-center gap-1"
+                            title={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}
+                        >
+                            <p
+                                class="text-xs leading-4 text-muted-foreground"
+                                role="status"
+                                aria-label={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}
+                            >
+                                {searchResultIdx + 1} / {ontologySearchResults.length}
+                            </p>
+                            <div class="flex h-[3px] w-full gap-0.5" aria-hidden="true">
+                                {#each ontologySearchResults as _, index}
+                                    <span
+                                        class={`min-w-0 flex-1 rounded-full transition-colors ${index === searchResultIdx ? "bg-primary" : "bg-muted-foreground/25"}`}
+                                    ></span>
+                                {/each}
+                            </div>
+                        </div>
+                        <Button
+                            class="w-12 sm:w-20"
+                            variant="outline"
+                            size="icon"
+                            aria-label="Next search result"
+                            disabled={searchResultIdx === ontologySearchResults.length - 1}
+                            onclick={() => switchSearchResult(1)}>
+                            {#if keyboardMode}
+                                <kbd class={`inline-flex size-6 items-center justify-center rounded border ${shortcutClass(searchResultIdx < ontologySearchResults.length - 1)}`} title="Right arrow key: next result"><ArrowRight class="size-3.5" /></kbd>
+                            {:else}<ArrowRight />{/if}
+                        </Button>
+                    </div>
+                </div>
+            {:else}
+                <div class="flex items-center justify-center h-full flex-1">
+                    {#if loading}<LoaderCircle class="animate-spin" />
+                    {:else if noResults}<p class="text-muted-foreground">No results for {searchInput}</p>
+                    {:else}<p class="text-muted-foreground">Select a terminology service and search for ontology terms</p>{/if}
+                </div>
+            {/if}
+        </div>
+        <div
+            class="flex min-h-0 min-w-0 flex-col gap-4 rounded-md border p-3 md:col-span-2 md:row-start-3 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:overflow-y-auto"
+        >
+            <section>
+                <h3 class="mb-3 text-lg font-semibold">Mapping details</h3>
+                <dl class="grid grid-cols-1 gap-x-3 gap-y-4 text-sm">
+                    <dt class="font-medium text-muted-foreground">Relationship</dt>
+                    <dd class="flex flex-wrap gap-3">
+                        <div class="flex min-w-0 flex-col gap-2">
+                            <div class="flex items-center gap-2">
+                                <Label for="mapping-relationship">Predicate</Label><HelpHint helpKey="predicateId" />
+                            </div>
+                            <Select.Root type="single" name="predicateId" bind:value={sssomMapping.predicateId}>
+                                <Select.Trigger id="mapping-relationship" class="w-45">{predicateTriggerContent}</Select.Trigger>
+                                <Select.Content>
+                                    <Select.Group>
+                                        <Select.Label>Relationships</Select.Label>
+                                        {#each predicates as predicate (predicate.value)}
+                                            <Select.Item value={predicate.value} label={predicate.label}>{predicate.label}</Select.Item>
+                                        {/each}
+                                    </Select.Group>
+                                </Select.Content>
+                            </Select.Root>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <Label for="mapping-confidence">Confidence</Label>
+                                <HelpHint helpKey="confidence" />
+                            </div>
+
+                            <Input
+                                id="mapping-confidence"
+                                class="text-center"
+                                type="number"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                bind:value={sssomMapping.confidence}
+                            />
+                        </div>
+                    </dd>
+
+                    <dt class="flex items-center gap-2 font-medium text-muted-foreground">CURIE map <HelpHint helpKey="curieMap" /></dt>
+                    <dd class="min-w-0">
+                        <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] items-end gap-2">
+                            <div class="flex min-w-0 flex-col gap-2">
+                                <Label for="curie-map-prefix">Prefix</Label>
+                                <Input id="curie-map-prefix" bind:value={curieMapPrefix} disabled={!currentSearchResult || curieMapDetailsAccepted} />
+                            </div>
+                            <div class="flex min-w-0 flex-col gap-2">
+                                <Label for="curie-map-base-iri">Base IRI</Label>
+                                <Input
+                                    id="curie-map-base-iri"
+                                    bind:value={curieMapBaseIri}
+                                    disabled={!currentSearchResult || curieMapDetailsAccepted}
+                                />
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="icon-sm"
+                                aria-label={curieMapDetailsAccepted ? "Edit CURIE map details" : "Accept CURIE map details"}
+                                disabled={!currentSearchResult}
+                                onclick={toggleCurieMapDetails}
+                            >
+                                {#if curieMapDetailsAccepted}
+                                    <Pencil />
+                                {:else}
+                                    <Check />
+                                {/if}
+                            </Button>
+                        </div>
+
+                        {#if currentSearchResult && !curieMapDetailsAccepted}
+                            <p class="mt-2 text-sm text-destructive">Confirm a valid prefix and Base IRI to enable mapping.</p>
+                        {/if}
+
+                        {#if curieMapValidationError}
+                            <p class="mt-2 text-sm text-destructive">{curieMapValidationError}</p>
+                        {/if}
+                    </dd>
+                </dl>
+            </section>
+            <div class="border-t pt-3">
+                <SSSOMInput bind:mapping={sssomMapping} bind:contributors />
+            </div>
         </div>
     </div>
 </div>

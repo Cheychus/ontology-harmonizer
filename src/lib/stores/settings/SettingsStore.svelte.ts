@@ -1,13 +1,13 @@
 import { browser } from "$app/environment";
 import type { TerminologyProviderId } from "$lib/api/terminology";
 import type { matchingType } from "$lib/types/terminologyService";
-import { mappingStore } from "../mapping/MappingStore.svelte";
 
 const STORAGE_KEY = "ontologyHarmonizer";
 
 export class SettingsStore {
     // matching service
     loaded = $state(false);
+    showHelpHints = $state(true);
     enablePythonMatchingService = $state(false);
     pythonMatchingServiceUrl = $state("http://localhost:8000");
     automaticMatching = $state(true);
@@ -38,10 +38,6 @@ export class SettingsStore {
             if (data.settings) {
                 Object.assign(this, data.settings);
             }
-            if (data.mapping && data.mappingName) {
-                mappingStore.load(data.mapping);
-                mappingStore.fileName = data.mappingName;
-            }
         }
     }
 
@@ -50,9 +46,8 @@ export class SettingsStore {
             if (!this.loaded) return;
 
             const data = {
-                mapping: mappingStore.mappingJson,
-                mappingName: mappingStore.fileName,
                 settings: {
+                    showHelpHints: this.showHelpHints,
                     enablePythonMatchingService: this.enablePythonMatchingService,
                     pythonMatchingServiceUrl: this.pythonMatchingServiceUrl,
                     automaticMatching: this.automaticMatching,

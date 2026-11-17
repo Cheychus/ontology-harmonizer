@@ -1,0 +1,10 @@
+# mapping_set_id: https://example.org/mapping-set.sssom.tsv
+# mapping_set_title: Imported mapping set
+# license: https://creativecommons.org/licenses/by/4.0/
+# future_product_field: retain-this-value
+# curie_map:
+#   ex: https://example.org/
+#   skos: http://www.w3.org/2004/02/skos/core#
+#   semapv: https://w3id.org/semapv/vocab/
+subject_id	predicate_id	object_id	mapping_justification
+ex:subject	skos:exactMatch	ex:object	semapv:ManualMappingCuration
