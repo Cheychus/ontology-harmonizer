@@ -1,4 +1,4 @@
-import { extractOntologies } from "$lib/services/arcs/arcOntology.service";
+import { extractOntologies, type ArcTermFilter } from "$lib/services/arcs/arcOntology.service";
 import { SvelteMap } from "svelte/reactivity";
 import type { IGitLabProject } from "$lib/types/gitLab";
 import { mappingStore } from "../mapping/MappingStore.svelte";
@@ -34,6 +34,18 @@ class ArcStore {
 
 
   initialised: boolean = $state(false);
+  private selectedTermFilter: ArcTermFilter = $state("standard");
+
+  get termFilter() {
+    return this.selectedTermFilter;
+  }
+
+  setTermFilter(filter: ArcTermFilter) {
+    if (filter === this.selectedTermFilter) return;
+    this.selectedTermFilter = filter;
+    this.searchOntologies();
+    mappingStore.startMapping(mappingStore.unmappedOntologies);
+  }
 
   /**
    * Initialise this store with a arc json file
@@ -41,6 +53,7 @@ class ArcStore {
    */
   public init(json: ARC_RO_JSON) {
     this.json = json;
+    this.selectedTermFilter = "standard";
     this.searchOntologies();
     mappingStore.startMapping(mappingStore.unmappedOntologies);
     this.changedOntologies = [];
@@ -88,7 +101,7 @@ class ArcStore {
 
     this.graph.forEach((node) => {
       if (node["@type"] === "PropertyValue") {
-        const ontologies = extractOntologies(node);
+        const ontologies = extractOntologies(node, this.termFilter);
         this.allOntologyValues.push(...ontologies);
         ontologies.forEach((onto) => {
           this.ontologyCandidates.set(onto.key, onto);

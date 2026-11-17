@@ -31,7 +31,7 @@
     try {
       const p = await arcStore.selectArc(Number(project.id));
       success("Selected " + p.name);
-      await goto("/mapping");
+      await goto("/filter-terms");
     } finally {
       selecting = false;
     }

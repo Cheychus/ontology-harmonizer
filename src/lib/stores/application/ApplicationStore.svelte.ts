@@ -9,6 +9,10 @@ class ApplicationStore {
             href: "/select-arc",
         },
         {
+            label: "Filter terms",
+            href: "/filter-terms",
+        },
+        {
             label: "Configure mapping",
             href: "/mapping",
         },

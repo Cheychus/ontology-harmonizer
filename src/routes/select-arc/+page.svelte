@@ -43,7 +43,7 @@
     arcStore.filename = file.name;
     arcStore.init(json);
     success("Selected " + file.name);
-    await goto("/mapping");
+    await goto("/filter-terms");
   }
 
 </script>
@@ -113,7 +113,7 @@
         <p class="font-medium">Selected ARC: {arcStore.filename || "Demo ARC"}</p>
         <p class="text-sm text-muted-foreground">{arcStore.ontologyCandidates.size} ontology fields found.</p>
       </div>
-      <Button href="/mapping">Configure mapping</Button>
+      <Button href="/filter-terms">Filter terms</Button>
     </div>
   {/if}
 
