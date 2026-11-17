@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X, CircleAlert, Keyboard } from "lucide-svelte";
+    import { Search, LoaderCircle, ArrowLeft, ArrowRight, CornerDownLeft, Check, Pencil, X, CircleAlert, Keyboard } from "lucide-svelte";
     import { Input } from "../ui/input";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
@@ -36,6 +36,14 @@
     }
 
     let { currentOntology, keyboardMode = $bindable(true) }: Props = $props();
+    let cardHasFocus = $state(false);
+    let keyboardReady = $derived(keyboardMode && cardHasFocus);
+
+    function shortcutClass(available = true) {
+        return keyboardReady && available
+            ? "border-emerald-500/60 bg-emerald-50 text-emerald-800"
+            : "border-current/20 opacity-40";
+    }
     let sourceValueExpanded = $state(false);
     let sourceValueOverflows = $state(false);
     const sourceValueId = $props.id();
@@ -281,21 +289,29 @@
         if (keyboardMode) container?.focus({ preventScroll: true });
     }
 
-    async function toggleKeyboardMode() {
+    function toggleKeyboardMode() {
         keyboardMode = !keyboardMode;
-        await tick();
         refocus();
     }
+
+    function preserveCardFocus(event: MouseEvent) {
+        // Avoid a temporary blur before the click handler toggles or resumes the mode.
+        if (event.button === 0) event.preventDefault();
+    }
 </script>
+
+<svelte:window onblur={() => (cardHasFocus = false)} onfocus={() => (cardHasFocus = document.activeElement === container)} />
 
 <div
     bind:this={container}
     tabindex={keyboardMode ? 0 : -1}
     role="button"
     aria-label="Mapping focus card"
-    class="flex min-w-0 flex-col gap-4 shadow rounded-lg p-4 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:h-full"
+    class={`flex min-w-0 flex-col gap-4 shadow rounded-lg p-4 outline-none lg:h-full ${keyboardReady ? "ring-2 ring-emerald-500/40" : ""}`}
+    onfocusin={(event) => (cardHasFocus = event.target === container)}
+    onfocusout={() => (cardHasFocus = false)}
     onkeydown={(e) => {
-        if (!keyboardMode || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+        if (!keyboardReady || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
         if (e.target instanceof HTMLElement) {
             if (e.target.closest("input, textarea, select, button, a, [contenteditable], [role='combobox'], [role='switch'], [role='option']"))
                 return;
@@ -337,14 +353,21 @@
                     bind:checked={settingsStore.automaticMatching}
                 />
                 <Label class="whitespace-nowrap">Automatic Search</Label>
+                <div class="ml-auto flex items-center gap-2">
+                {#if keyboardMode && !keyboardReady}
+                    <span class="text-xs text-muted-foreground">Not focused</span>
+                    <Button class="h-7 px-2 text-xs" size="sm" variant="outline" onmousedown={preserveCardFocus} onclick={refocus} title="Focus the card to use arrow keys, Enter and Escape">Resume</Button>
+                {/if}
                 <Button
-                    class="ml-auto h-7 px-2 text-xs"
+                    class="h-7 px-2 text-xs"
                     variant={keyboardMode ? "secondary" : "outline"}
                     size="sm"
                     aria-pressed={keyboardMode}
+                    onmousedown={preserveCardFocus}
                     title="When the card is focused: Left/Right = results, Enter = map, Esc = skip. Inputs and buttons keep their normal keyboard behavior."
                     onclick={toggleKeyboardMode}><Keyboard class="size-3.5" />Keyboard mode: {keyboardMode ? "On" : "Off"}</Button
                 >
+                </div>
             </div>
 
             <div class="flex flex-wrap gap-2">
@@ -382,7 +405,9 @@
                 <div class="min-w-0">
                     <div class="flex items-center justify-between gap-2">
                         <p class="text-sm font-medium text-muted-foreground">Mapping source</p>
-                        <Button variant="secondary" size="sm" onclick={() => mappingStore.skip()}>Skip</Button>
+                        <Button variant="secondary" size="sm" onclick={() => mappingStore.skip()}>Skip
+                            {#if keyboardMode}<kbd class={`ml-1 rounded border px-1 font-sans text-[10px] leading-4 ${shortcutClass()}`} title="Escape: skip term">Esc</kbd>{/if}
+                        </Button>
                     </div>
                     <div class="flex items-center gap-2">
                         <h3 class="break-words text-lg font-semibold">{currentOntology.key}</h3>
@@ -519,9 +544,14 @@
                         size="icon"
                         aria-label="Previous search result"
                         disabled={searchResultIdx === 0}
-                        onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button
-                    >
-                    <Button class="w-24 sm:w-32" disabled={!canMap} onclick={addSssomMapping}>Map</Button>
+                        onclick={() => switchSearchResult(-1)}>
+                        {#if keyboardMode}
+                            <kbd class={`inline-flex size-6 items-center justify-center rounded border ${shortcutClass(searchResultIdx > 0)}`} title="Left arrow key: previous result"><ArrowLeft class="size-3.5" /></kbd>
+                        {:else}<ArrowLeft />{/if}
+                    </Button>
+                    <Button class="w-24 sm:w-32" disabled={!canMap} onclick={addSssomMapping}>Map
+                        {#if keyboardMode}<kbd class={`ml-1 inline-flex size-5 items-center justify-center rounded border ${shortcutClass(canMap)}`} title="Enter: map selected result"><CornerDownLeft class="size-3" /></kbd>{/if}
+                    </Button>
                     <div class="flex min-w-0 items-center justify-end gap-2">
                         <div
                             class="flex w-12 min-w-0 flex-col items-center gap-1"
@@ -548,8 +578,11 @@
                             size="icon"
                             aria-label="Next search result"
                             disabled={searchResultIdx === ontologySearchResults.length - 1}
-                            onclick={() => switchSearchResult(1)}><ArrowRight /></Button
-                        >
+                            onclick={() => switchSearchResult(1)}>
+                            {#if keyboardMode}
+                                <kbd class={`inline-flex size-6 items-center justify-center rounded border ${shortcutClass(searchResultIdx < ontologySearchResults.length - 1)}`} title="Right arrow key: next result"><ArrowRight class="size-3.5" /></kbd>
+                            {:else}<ArrowRight />{/if}
+                        </Button>
                     </div>
                 </div>
             {:else}
