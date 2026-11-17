@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
-    import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X, CircleAlert } from "lucide-svelte";
+    import { Search, LoaderCircle, ArrowLeft, ArrowRight, Check, Pencil, X, CircleAlert, Keyboard } from "lucide-svelte";
     import { Input } from "../ui/input";
     import { Button } from "../ui/button";
     import { Label } from "../ui/label";
@@ -32,9 +32,10 @@
 
     interface Props {
         currentOntology: DerivedOntology;
+        keyboardMode?: boolean;
     }
 
-    let { currentOntology }: Props = $props();
+    let { currentOntology, keyboardMode = $bindable(true) }: Props = $props();
     let sourceValueExpanded = $state(false);
     let sourceValueOverflows = $state(false);
     const sourceValueId = $props.id();
@@ -53,7 +54,9 @@
                 await tick();
                 measure();
             },
-            destroy() { observer.disconnect(); },
+            destroy() {
+                observer.disconnect();
+            },
         };
     }
 
@@ -275,41 +278,55 @@
 
     let container: HTMLElement;
     function refocus() {
-        container?.focus();
+        if (keyboardMode) container?.focus({ preventScroll: true });
+    }
+
+    async function toggleKeyboardMode() {
+        keyboardMode = !keyboardMode;
+        await tick();
+        refocus();
     }
 </script>
 
 <div
     bind:this={container}
-    tabindex="0"
+    tabindex={keyboardMode ? 0 : -1}
     role="button"
-    class="flex min-w-0 flex-col gap-4 shadow rounded-lg p-4 outline-none lg:h-full"
+    aria-label="Mapping focus card"
+    class="flex min-w-0 flex-col gap-4 shadow rounded-lg p-4 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:h-full"
     onkeydown={(e) => {
-        // Allows user to handle mapping with the keyboard
+        if (!keyboardMode || e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
         if (e.target instanceof HTMLElement) {
-            if (e.target.closest("input, textarea, [role='combobox'], [role='switch'], [role='option']")) return;
-            // Let native buttons and links handle Enter without mapping a second time.
-            if (e.key === "Enter" && e.target.closest("button, a")) return;
+            if (e.target.closest("input, textarea, select, button, a, [contenteditable], [role='combobox'], [role='switch'], [role='option']"))
+                return;
         }
+        // Holding Enter or Escape must not map or skip multiple consecutive terms.
+        if (e.repeat && (e.key === "Enter" || e.key === "Escape")) return;
         switch (e.key) {
             case "ArrowLeft":
+                e.preventDefault();
                 switchSearchResult(-1);
                 break;
             case "ArrowRight":
+                e.preventDefault();
                 switchSearchResult(1);
                 break;
             case "Enter":
-                addSssomMapping();
+                e.preventDefault();
+                if (canMap) addSssomMapping();
                 break;
             case "Escape":
+                e.preventDefault();
                 mappingStore.skip();
                 break;
         }
     }}
 >
-    <div class="grid min-w-0 items-start gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_minmax(0,auto)_minmax(6rem,1fr)] lg:items-stretch">
+    <div
+        class="grid min-w-0 items-start gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_minmax(0,auto)_minmax(6rem,1fr)] lg:items-stretch"
+    >
         <div class="flex min-w-0 flex-col gap-2 md:col-span-2 md:row-start-1 lg:col-span-1 lg:col-start-1">
-            <div class="flex gap-1">
+            <div class="flex flex-wrap items-center gap-2">
                 <Switch
                     onCheckedChange={() => {
                         if (settingsStore.automaticMatching) {
@@ -320,6 +337,14 @@
                     bind:checked={settingsStore.automaticMatching}
                 />
                 <Label class="whitespace-nowrap">Automatic Search</Label>
+                <Button
+                    class="ml-auto h-7 px-2 text-xs"
+                    variant={keyboardMode ? "secondary" : "outline"}
+                    size="sm"
+                    aria-pressed={keyboardMode}
+                    title="When the card is focused: Left/Right = results, Enter = map, Esc = skip. Inputs and buttons keep their normal keyboard behavior."
+                    onclick={toggleKeyboardMode}><Keyboard class="size-3.5" />Keyboard mode: {keyboardMode ? "On" : "Off"}</Button
+                >
             </div>
 
             <div class="flex flex-wrap gap-2">
@@ -359,10 +384,15 @@
                         <p class="text-sm font-medium text-muted-foreground">Mapping source</p>
                         <Button variant="secondary" size="sm" onclick={() => mappingStore.skip()}>Skip</Button>
                     </div>
-                    <div class="flex items-center gap-2"><h3 class="break-words text-lg font-semibold">{currentOntology.key}</h3><HelpHint helpKey="subjectLabel" /></div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="break-words text-lg font-semibold">{currentOntology.key}</h3>
+                        <HelpHint helpKey="subjectLabel" />
+                    </div>
                 </div>
 
-                <dl class="grid min-w-0 gap-4 text-sm sm:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)] md:grid-cols-1 lg:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)]">
+                <dl
+                    class="grid min-w-0 gap-4 text-sm sm:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)] md:grid-cols-1 lg:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)]"
+                >
                     <div class="min-w-0 space-y-1">
                         <dt class="font-medium text-muted-foreground flex items-center gap-2">Subject ID <HelpHint helpKey="subjectId" /></dt>
                         <dd class="min-w-0">
@@ -411,12 +441,24 @@
                         <dt class="font-medium text-muted-foreground">Value</dt>
                         <dd class="min-w-0">
                             {#if currentOntology.value !== ""}
-                                <a id={sourceValueId} use:measureSourceValue={currentOntology.value}
+                                <a
+                                    id={sourceValueId}
+                                    use:measureSourceValue={currentOntology.value}
                                     class={`break-all whitespace-pre-wrap text-primary underline-offset-4 hover:underline ${sourceValueExpanded ? "block" : "line-clamp-2"}`}
-                                    href={currentOntology.value} target="_blank" rel="noreferrer">{currentOntology.value}</a>
+                                    href={currentOntology.value}
+                                    target="_blank"
+                                    rel="noreferrer">{currentOntology.value}</a
+                                >
                                 {#if sourceValueOverflows}
-                                    <Button variant="link" size="sm" class="h-auto px-0 py-1 text-xs" aria-expanded={sourceValueExpanded}
-                                        aria-controls={sourceValueId} onclick={() => (sourceValueExpanded = !sourceValueExpanded)}>{sourceValueExpanded ? "Show less" : "Show more"}</Button>
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        class="h-auto px-0 py-1 text-xs"
+                                        aria-expanded={sourceValueExpanded}
+                                        aria-controls={sourceValueId}
+                                        onclick={() => (sourceValueExpanded = !sourceValueExpanded)}
+                                        >{sourceValueExpanded ? "Show less" : "Show more"}</Button
+                                    >
                                 {/if}
                             {:else}
                                 <span class="italic text-muted-foreground">Not defined</span>
@@ -425,13 +467,20 @@
                     </div>
                 </dl>
             </div>
-
         </div>
-        <div class={{ "rounded-md min-h-42 min-w-0 border border-border flex flex-col md:h-[clamp(22rem,60dvh,34rem)] md:col-start-2 md:row-start-2 md:overflow-hidden lg:col-start-1 lg:row-start-3 lg:h-auto lg:min-h-0": true, "animate-puls": loading }}>
+        <div
+            class={{
+                "rounded-md min-h-42 min-w-0 border border-border flex flex-col md:h-[clamp(22rem,60dvh,34rem)] md:col-start-2 md:row-start-2 md:overflow-hidden lg:col-start-1 lg:row-start-3 lg:h-auto lg:min-h-0": true,
+                "animate-puls": loading,
+            }}
+        >
             {#if currentSearchResult}
                 <div class="flex min-h-0 min-w-0 flex-col p-3 md:flex-1 md:overflow-y-auto">
                     <p class="text-sm font-medium text-muted-foreground">Search results</p>
-                    <div class="mb-3 flex items-center gap-2"><h3 class="break-words text-lg font-semibold">{currentSearchResult.label}</h3><HelpHint helpKey="objectLabel" /></div>
+                    <div class="mb-3 flex items-center gap-2">
+                        <h3 class="break-words text-lg font-semibold">{currentSearchResult.label}</h3>
+                        <HelpHint helpKey="objectLabel" />
+                    </div>
 
                     <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
                         <dt class="flex items-center gap-2 font-medium text-muted-foreground">CURIE <HelpHint helpKey="objectId" /></dt>
@@ -464,18 +513,43 @@
                     </div>
                 </div>
                 <div class="mt-auto grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-t p-2">
-                    <Button class="w-12 justify-self-start sm:w-20" variant="outline" size="icon" aria-label="Previous search result" disabled={searchResultIdx === 0} onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button>
+                    <Button
+                        class="w-12 justify-self-start sm:w-20"
+                        variant="outline"
+                        size="icon"
+                        aria-label="Previous search result"
+                        disabled={searchResultIdx === 0}
+                        onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button
+                    >
                     <Button class="w-24 sm:w-32" disabled={!canMap} onclick={addSssomMapping}>Map</Button>
                     <div class="flex min-w-0 items-center justify-end gap-2">
-                        <div class="flex w-12 min-w-0 flex-col items-center gap-1" title={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}>
-                            <p class="text-xs leading-4 text-muted-foreground" role="status" aria-label={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}>{searchResultIdx + 1} / {ontologySearchResults.length}</p>
+                        <div
+                            class="flex w-12 min-w-0 flex-col items-center gap-1"
+                            title={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}
+                        >
+                            <p
+                                class="text-xs leading-4 text-muted-foreground"
+                                role="status"
+                                aria-label={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}
+                            >
+                                {searchResultIdx + 1} / {ontologySearchResults.length}
+                            </p>
                             <div class="flex h-[3px] w-full gap-0.5" aria-hidden="true">
                                 {#each ontologySearchResults as _, index}
-                                    <span class={`min-w-0 flex-1 rounded-full transition-colors ${index === searchResultIdx ? "bg-primary" : "bg-muted-foreground/25"}`}></span>
+                                    <span
+                                        class={`min-w-0 flex-1 rounded-full transition-colors ${index === searchResultIdx ? "bg-primary" : "bg-muted-foreground/25"}`}
+                                    ></span>
                                 {/each}
                             </div>
                         </div>
-                        <Button class="w-12 sm:w-20" variant="outline" size="icon" aria-label="Next search result" disabled={searchResultIdx === ontologySearchResults.length - 1} onclick={() => switchSearchResult(1)}><ArrowRight /></Button>
+                        <Button
+                            class="w-12 sm:w-20"
+                            variant="outline"
+                            size="icon"
+                            aria-label="Next search result"
+                            disabled={searchResultIdx === ontologySearchResults.length - 1}
+                            onclick={() => switchSearchResult(1)}><ArrowRight /></Button
+                        >
                     </div>
                 </div>
             {:else}
@@ -486,14 +560,18 @@
                 </div>
             {/if}
         </div>
-        <div class="flex min-h-0 min-w-0 flex-col gap-4 rounded-md border p-3 md:col-span-2 md:row-start-3 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:overflow-y-auto">
+        <div
+            class="flex min-h-0 min-w-0 flex-col gap-4 rounded-md border p-3 md:col-span-2 md:row-start-3 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:overflow-y-auto"
+        >
             <section>
                 <h3 class="mb-3 text-lg font-semibold">Mapping details</h3>
                 <dl class="grid grid-cols-1 gap-x-3 gap-y-4 text-sm">
                     <dt class="font-medium text-muted-foreground">Relationship</dt>
                     <dd class="flex flex-wrap gap-3">
                         <div class="flex min-w-0 flex-col gap-2">
-                            <div class="flex items-center gap-2"><Label for="mapping-relationship">Predicate</Label><HelpHint helpKey="predicateId" /></div>
+                            <div class="flex items-center gap-2">
+                                <Label for="mapping-relationship">Predicate</Label><HelpHint helpKey="predicateId" />
+                            </div>
                             <Select.Root type="single" name="predicateId" bind:value={sssomMapping.predicateId}>
                                 <Select.Trigger id="mapping-relationship" class="w-45">{predicateTriggerContent}</Select.Trigger>
                                 <Select.Content>
@@ -533,7 +611,11 @@
                             </div>
                             <div class="flex min-w-0 flex-col gap-2">
                                 <Label for="curie-map-base-iri">Base IRI</Label>
-                                <Input id="curie-map-base-iri" bind:value={curieMapBaseIri} disabled={!currentSearchResult || curieMapDetailsAccepted} />
+                                <Input
+                                    id="curie-map-base-iri"
+                                    bind:value={curieMapBaseIri}
+                                    disabled={!currentSearchResult || curieMapDetailsAccepted}
+                                />
                             </div>
                             <Button
                                 variant="outline"
@@ -558,7 +640,6 @@
                             <p class="mt-2 text-sm text-destructive">{curieMapValidationError}</p>
                         {/if}
                     </dd>
-
                 </dl>
             </section>
             <div class="border-t pt-3">

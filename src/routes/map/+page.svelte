@@ -11,12 +11,17 @@
     import * as Collapsible from "$lib/components/ui/collapsible";
     import SssomMappings from "$lib/components/mapping/SssomMappings.svelte";
 
-    let progress = $derived(arcStore.ontologyCandidates.size ? ((mappingStore.mappedOntologies.length + mappingStore.skipped.length) / arcStore.ontologyCandidates.size) * 100 : 0),
+    let progress = $derived(
+            arcStore.ontologyCandidates.size
+                ? ((mappingStore.mappedOntologies.length + mappingStore.skipped.length) / arcStore.ontologyCandidates.size) * 100
+                : 0,
+        ),
         done = $derived(mappingStore.mappedOntologies.length),
         total = $derived(arcStore.ontologyCandidates.size - mappingStore.skipped.length);
 
     let queue = $derived(mappingStore.queue);
     let currentOntology: DerivedOntology | null = $derived(mappingStore.current);
+    let keyboardMode = $state(true);
     type Section = "mapped" | "queue" | "skipped";
     let openSection = $state<Section | null>(null);
     let footerHeight = $state(60);
@@ -31,12 +36,19 @@
 {#snippet mappingFooter()}
     <WorkflowFooter backHref="/mapping" backLabel="Back to configuration" bind:height={footerHeight} reserveSpace={false}>
         {#snippet status()}
-          <div class="mx-auto flex w-full max-w-xl flex-col gap-1">
-            <p class="text-xs text-muted-foreground">{done} of {total} mapped · {mappingStore.skipped.length} skipped</p>
-            <div class="h-2 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-label="Mapping progress" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
-                <div class="h-full bg-green-500 transition-all duration-300" style="width: {progress}%"></div>
+            <div class="mx-auto flex w-full max-w-xl flex-col gap-1">
+                <p class="text-xs text-muted-foreground">{done} of {total} mapped · {mappingStore.skipped.length} skipped</p>
+                <div
+                    class="h-2 overflow-hidden rounded-full bg-gray-200"
+                    role="progressbar"
+                    aria-label="Mapping progress"
+                    aria-valuenow={Math.round(progress)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                >
+                    <div class="h-full bg-green-500 transition-all duration-300" style="width: {progress}%"></div>
+                </div>
             </div>
-          </div>
         {/snippet}
         {#snippet actions()}
             <Button href="/apply">Review changes</Button>
@@ -78,21 +90,24 @@
         style:--footer-height={`${footerHeight}px`}
         style:--dropdown-height={`${dropdownHeight}px`}
     >
-
-
         {#if currentOntology}
             <div class="focus-container flex-1 min-h-0">
                 {#key currentOntology.key}
-                    <FocusCard {currentOntology} />
+                    <FocusCard {currentOntology} bind:keyboardMode />
                 {/key}
             </div>
         {:else}
             <div class="focus-container min-h-0 flex-1">
-                <section class="flex h-full min-h-80 flex-col items-start gap-5 rounded-lg border bg-card p-6 shadow-sm lg:min-h-0" in:fade={{ duration: 150 }}>
+                <section
+                    class="flex h-full min-h-80 flex-col items-start gap-5 rounded-lg border bg-card p-6 shadow-sm lg:min-h-0"
+                    in:fade={{ duration: 150 }}
+                >
                     {#if arcStore.ontologyCandidates.size === 0}
                         <div>
                             <h2>No ontology fields found</h2>
-                            <p class="mt-2 text-sm text-muted-foreground">This ARC has no supported ontology fields to map. Select another ARC to continue.</p>
+                            <p class="mt-2 text-sm text-muted-foreground">
+                                This ARC has no supported ontology fields to map. Select another ARC to continue.
+                            </p>
                         </div>
                         <Button href="/select-arc">Select another ARC</Button>
                     {:else}
@@ -107,7 +122,11 @@
                                     : "Your mapping is ready to download or apply to the ARC."}
                             </p>
                         </div>
-                        <p class="text-sm"><span class="font-medium">{done} mapped</span><span class="ml-4 text-muted-foreground">{mappingStore.skipped.length} skipped</span></p>
+                        <p class="text-sm">
+                            <span class="font-medium">{done} mapped</span><span class="ml-4 text-muted-foreground"
+                                >{mappingStore.skipped.length} skipped</span
+                            >
+                        </p>
                         <div class="flex w-full flex-wrap gap-2">
                             <Button variant="outline" onclick={exportMapping}><Download />Download SSSOM TSV</Button>
                         </div>
@@ -121,14 +140,14 @@
         <div class="grid w-full max-w-5xl shrink-0 grid-cols-[max-content_max-content_minmax(0,1fr)] gap-3 pt-4">
             <Collapsible.Root open={openSection === "mapped"} onOpenChange={(open) => setOpenSection("mapped", open)} class="contents">
                 <div bind:clientHeight={dropdownHeight} class="col-start-1 row-start-1">
-                <Collapsible.Trigger
-                    class="inline-flex items-center justify-between gap-2 rounded-md border px-3 py-1 text-sm hover:bg-accent"
-                    aria-label="Show mapped SSSOM mappings"
-                    title="Show mapped SSSOM mappings"
-                >
-                    Mapped ({done})
-                    <ChevronDown class={`size-4 transition-transform ${openSection === "mapped" ? "rotate-180" : ""}`} />
-                </Collapsible.Trigger>
+                    <Collapsible.Trigger
+                        class="inline-flex items-center justify-between gap-2 rounded-md border px-3 py-1 text-sm hover:bg-accent"
+                        aria-label="Show mapped SSSOM mappings"
+                        title="Show mapped SSSOM mappings"
+                    >
+                        Mapped ({done})
+                        <ChevronDown class={`size-4 transition-transform ${openSection === "mapped" ? "rotate-180" : ""}`} />
+                    </Collapsible.Trigger>
                 </div>
                 <Collapsible.Content class="col-span-3 row-start-2 min-w-0 rounded-md border p-3">
                     <SssomMappings onlyMapped />
@@ -136,7 +155,9 @@
             </Collapsible.Root>
 
             <Collapsible.Root open={openSection === "queue"} onOpenChange={(open) => setOpenSection("queue", open)} class="contents">
-                <Collapsible.Trigger class="col-start-2 row-start-1 inline-flex items-center justify-between gap-2 rounded-md border px-3 py-1 text-sm hover:bg-accent">
+                <Collapsible.Trigger
+                    class="col-start-2 row-start-1 inline-flex items-center justify-between gap-2 rounded-md border px-3 py-1 text-sm hover:bg-accent"
+                >
                     Queue ({queue.length})
                     <ChevronDown class={`size-4 transition-transform ${openSection === "queue" ? "rotate-180" : ""}`} />
                 </Collapsible.Trigger>
@@ -144,10 +165,7 @@
                     {#each queue as ontology, i}
                         <div class="shadow p-1 rounded-sm flex justify-between items-center">
                             <p class="">{ontology.key}</p>
-                            <Button
-                                onclick={() => mappingStore.selectQueuedOntology(i)}
-                                variant="outline">Select</Button
-                            >
+                            <Button onclick={() => mappingStore.selectQueuedOntology(i)} variant="outline">Select</Button>
                         </div>
                     {:else}
                         <p class="text-sm text-muted-foreground">No queued values.</p>
@@ -155,7 +173,9 @@
                 </Collapsible.Content>
             </Collapsible.Root>
             <Collapsible.Root open={openSection === "skipped"} onOpenChange={(open) => setOpenSection("skipped", open)} class="contents">
-                <Collapsible.Trigger class="col-start-3 row-start-1 inline-flex items-center justify-between justify-self-start gap-2 rounded-md border px-3 py-1 text-sm hover:bg-accent">
+                <Collapsible.Trigger
+                    class="col-start-3 row-start-1 inline-flex items-center justify-between justify-self-start gap-2 rounded-md border px-3 py-1 text-sm hover:bg-accent"
+                >
                     Skipped ({mappingStore.skipped.length})
                     <ChevronDown class={`size-4 transition-transform ${openSection === "skipped" ? "rotate-180" : ""}`} />
                 </Collapsible.Trigger>
