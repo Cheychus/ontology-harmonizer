@@ -5,6 +5,7 @@ export const actions: Actions = {
         cookies.delete("gitlab_token", { path: "/" });
         cookies.delete("gitlab_state", { path: "/" });
         cookies.delete("gitlab_code_verifier", { path: "/" });
+        cookies.delete("gitlab_reconnect", { path: "/" });
         return { success: true };
     },
 };

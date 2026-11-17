@@ -1,5 +1,6 @@
 <script lang="ts">
     import FocusCard from "$lib/components/mapping/FocusCard.svelte";
+    import WorkflowFooter from "$lib/components/application/WorkflowFooter.svelte";
     import Button from "$lib/components/ui/button/button.svelte";
     import { arcStore, type DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
@@ -27,21 +28,20 @@
     }
 </script>
 
-{#snippet mappingFooter(onMap: () => void, canMap: boolean)}
-    <div bind:clientHeight={footerHeight} class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-t bg-background px-4 py-3 shadow-sm md:px-8">
-        <div class="w-24 md:w-48">
-            {#if currentOntology}
-                <Button class="w-full" disabled={!canMap} onclick={onMap}>Map</Button>
-            {/if}
-        </div>
-        <div class="mx-auto flex w-full max-w-xl min-w-0 flex-col gap-1">
-            <p class="text-center text-xs text-muted-foreground">{done} of {total} mapped · Skipped {mappingStore.skipped.length}</p>
+{#snippet mappingFooter()}
+    <WorkflowFooter backHref="/mapping" backLabel="Back to configuration" bind:height={footerHeight} reserveSpace={false}>
+        {#snippet status()}
+          <div class="mx-auto flex w-full max-w-xl flex-col gap-1">
+            <p class="text-xs text-muted-foreground">{done} of {total} mapped · {mappingStore.skipped.length} skipped</p>
             <div class="h-2 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-label="Mapping progress" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
                 <div class="h-full bg-green-500 transition-all duration-300" style="width: {progress}%"></div>
             </div>
-        </div>
-        <Button class="h-auto min-h-9 w-24 whitespace-normal text-center md:w-48" href="/apply">Review changes</Button>
-    </div>
+          </div>
+        {/snippet}
+        {#snippet actions()}
+            <Button href="/apply">Review changes</Button>
+        {/snippet}
+    </WorkflowFooter>
 {/snippet}
 
 {#if !arcStore.initialised}
@@ -83,7 +83,7 @@
         {#if currentOntology}
             <div class="focus-container flex-1 min-h-0">
                 {#key currentOntology.key}
-                    <FocusCard {currentOntology} footer={mappingFooter} />
+                    <FocusCard {currentOntology} />
                 {/key}
             </div>
         {:else}
@@ -109,14 +109,14 @@
                         </div>
                         <p class="text-sm"><span class="font-medium">{done} mapped</span><span class="ml-4 text-muted-foreground">{mappingStore.skipped.length} skipped</span></p>
                         <div class="flex w-full flex-wrap gap-2">
-                            {#if done > 0}<Button href="/apply">Review changes</Button>{/if}
                             <Button variant="outline" onclick={exportMapping}><Download />Download SSSOM TSV</Button>
                         </div>
                     {/if}
                 </section>
             </div>
-            {@render mappingFooter(() => {}, false)}
         {/if}
+
+        {@render mappingFooter()}
 
         <div class="grid w-full max-w-5xl shrink-0 grid-cols-[max-content_max-content_minmax(0,1fr)] gap-3 pt-4">
             <Collapsible.Root open={openSection === "mapped"} onOpenChange={(open) => setOpenSection("mapped", open)} class="contents">
@@ -145,13 +145,7 @@
                         <div class="shadow p-1 rounded-sm flex justify-between items-center">
                             <p class="">{ontology.key}</p>
                             <Button
-                                onclick={() => {
-                                    if (currentOntology) {
-                                        queue.push(currentOntology);
-                                        currentOntology = ontology;
-                                        queue.splice(i, 1);
-                                    }
-                                }}
+                                onclick={() => mappingStore.selectQueuedOntology(i)}
                                 variant="outline">Select</Button
                             >
                         </div>

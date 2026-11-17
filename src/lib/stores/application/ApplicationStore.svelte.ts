@@ -29,6 +29,20 @@ class ApplicationStore {
     currentStep = $state(0);
 
     isAuthenticated = $state(false);
+    sessionExpired = $state(false);
+
+    setGitLabUser(user: IGitLabUser | null) {
+        this.gitLabUser = user;
+        this.isAuthenticated = Boolean(user);
+        this.stepState.isLoggedIn = Boolean(user);
+        if (user) this.sessionExpired = false;
+    }
+
+    expireGitLabSession() {
+        if (!this.isAuthenticated && !this.gitLabUser) return;
+        this.setGitLabUser(null);
+        this.sessionExpired = true;
+    }
 
     stepState = $state({
         isLoggedIn: false,

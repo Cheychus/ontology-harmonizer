@@ -10,7 +10,7 @@ import {
 
 class MappingStore {
     fileName: string = $state("");
-    hasMappingSet = $state(false);
+    hasMappingSet = $state(true);
     mappingSet: MappingSet = $state(createDefaultMappingSet());
     subjectPrefix = $state("");
     arcSourcePrefix = $state("");
@@ -41,6 +41,16 @@ class MappingStore {
         this.queue = this.queue.slice(1);
     }
 
+    selectQueuedOntology(index: number) {
+        const selected = this.queue[index];
+        if (!selected) return;
+
+        const remaining = this.queue.filter((_, i) => i !== index);
+        if (this.current) remaining.push(this.current);
+        this.queue = remaining;
+        this.current = selected;
+    }
+
     skip() {
         if (!this.current) return;
         this.skipped = [...this.skipped, this.current];
@@ -59,8 +69,8 @@ class MappingStore {
 
     startMapping(ontologies: DerivedOntology[]) {
         this.skipped = [];
-        this.queue = ontologies;
-        this.current = this.queue.shift() ?? null;
+        this.current = ontologies[0] ?? null;
+        this.queue = ontologies.slice(1);
     }
 
     reset() {

@@ -11,7 +11,7 @@
     import { searchTerms, terminologyProviders, type TerminologyProviderId } from "$lib/api/terminology";
     import { terminologyStore } from "$lib/stores/terminologyService/TerminologyStore.svelte";
     import type { ITerminologySearchResult, matchingType } from "$lib/types/terminologyService";
-    import { onMount, type Snippet } from "svelte";
+    import { onMount, tick } from "svelte";
     import { settingsStore } from "$lib/stores/settings/SettingsStore.svelte";
     import { failure, warning } from "$lib/services/toasts/toastService";
     import { Switch } from "../ui/switch";
@@ -32,10 +32,30 @@
 
     interface Props {
         currentOntology: DerivedOntology;
-        footer: Snippet<[onMap: () => void, canMap: boolean]>;
     }
 
-    let { currentOntology, footer }: Props = $props();
+    let { currentOntology }: Props = $props();
+    let sourceValueExpanded = $state(false);
+    let sourceValueOverflows = $state(false);
+    const sourceValueId = $props.id();
+
+    // Measure the rendered text so Show more follows the actual two-line limit at any width.
+    function measureSourceValue(node: HTMLElement, _value: string) {
+        function measure() {
+            const lineHeight = Number.parseFloat(getComputedStyle(node).lineHeight);
+            sourceValueOverflows = node.scrollHeight > lineHeight * 2 + 1;
+        }
+        const observer = new ResizeObserver(measure);
+        observer.observe(node);
+        return {
+            async update(_value: string) {
+                sourceValueExpanded = false;
+                await tick();
+                measure();
+            },
+            destroy() { observer.disconnect(); },
+        };
+    }
 
     let ontologySearchResults: IMatchingViewModel[] = $state([]);
     let searchResultIdx = $state(0);
@@ -52,6 +72,7 @@
     let curieMapBaseIri = $state("");
     let curieMapDetailsAccepted = $state(false);
     let curieMapValidationError = $state("");
+    let canMap = $derived(Boolean(mappingStore.subjectIdentifier.prefix && curieMapDetailsAccepted && iriInput && shortFormInput && !loading));
 
     const terminologyProviderLabel = $derived(
         terminologyProviders.find((provider) => provider.id === settingsStore.terminologyProvider)?.label ?? "Select a terminology service",
@@ -224,6 +245,7 @@
     }
 
     function addSssomMapping() {
+        if (loading) return;
         if (!mappingStore.subjectIdentifier.prefix) {
             warning("Choose a subject prefix before creating mappings");
             return;
@@ -264,7 +286,11 @@
     class="flex min-w-0 flex-col gap-4 shadow rounded-lg p-4 outline-none lg:h-full"
     onkeydown={(e) => {
         // Allows user to handle mapping with the keyboard
-        if (e.target instanceof HTMLInputElement) return;
+        if (e.target instanceof HTMLElement) {
+            if (e.target.closest("input, textarea, [role='combobox'], [role='switch'], [role='option']")) return;
+            // Let native buttons and links handle Enter without mapping a second time.
+            if (e.key === "Enter" && e.target.closest("button, a")) return;
+        }
         switch (e.key) {
             case "ArrowLeft":
                 switchSearchResult(-1);
@@ -336,7 +362,7 @@
                     <div class="flex items-center gap-2"><h3 class="break-words text-lg font-semibold">{currentOntology.key}</h3><HelpHint helpKey="subjectLabel" /></div>
                 </div>
 
-                <dl class="grid min-w-0 gap-4 text-sm sm:grid-cols-3 md:grid-cols-1 lg:grid-cols-3">
+                <dl class="grid min-w-0 gap-4 text-sm sm:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)] md:grid-cols-1 lg:grid-cols-[minmax(10rem,1fr)_7rem_minmax(0,1.4fr)]">
                     <div class="min-w-0 space-y-1">
                         <dt class="font-medium text-muted-foreground flex items-center gap-2">Subject ID <HelpHint helpKey="subjectId" /></dt>
                         <dd class="min-w-0">
@@ -378,16 +404,20 @@
 
                     <div class="min-w-0 space-y-1">
                         <dt class="font-medium text-muted-foreground">Attribute</dt>
-                        <dd class="break-words">{currentOntology.ontologyAttribute}</dd>
+                        <dd class="whitespace-nowrap">{currentOntology.ontologyAttribute}</dd>
                     </div>
 
                     <div class="min-w-0 space-y-1">
                         <dt class="font-medium text-muted-foreground">Value</dt>
-                        <dd class="break-all">
+                        <dd class="min-w-0">
                             {#if currentOntology.value !== ""}
-                                <a class="text-primary underline-offset-4 hover:underline" href={currentOntology.value} target="_blank" rel="noreferrer">
-                                    {currentOntology.value}
-                                </a>
+                                <a id={sourceValueId} use:measureSourceValue={currentOntology.value}
+                                    class={`break-all whitespace-pre-wrap text-primary underline-offset-4 hover:underline ${sourceValueExpanded ? "block" : "line-clamp-2"}`}
+                                    href={currentOntology.value} target="_blank" rel="noreferrer">{currentOntology.value}</a>
+                                {#if sourceValueOverflows}
+                                    <Button variant="link" size="sm" class="h-auto px-0 py-1 text-xs" aria-expanded={sourceValueExpanded}
+                                        aria-controls={sourceValueId} onclick={() => (sourceValueExpanded = !sourceValueExpanded)}>{sourceValueExpanded ? "Show less" : "Show more"}</Button>
+                                {/if}
                             {:else}
                                 <span class="italic text-muted-foreground">Not defined</span>
                             {/if}
@@ -400,7 +430,7 @@
         <div class={{ "rounded-md min-h-42 min-w-0 border border-border flex flex-col md:h-[clamp(22rem,60dvh,34rem)] md:col-start-2 md:row-start-2 md:overflow-hidden lg:col-start-1 lg:row-start-3 lg:h-auto lg:min-h-0": true, "animate-puls": loading }}>
             {#if currentSearchResult}
                 <div class="flex min-h-0 min-w-0 flex-col p-3 md:flex-1 md:overflow-y-auto">
-                    <p class="text-sm font-medium text-muted-foreground">Search result</p>
+                    <p class="text-sm font-medium text-muted-foreground">Search results</p>
                     <div class="mb-3 flex items-center gap-2"><h3 class="break-words text-lg font-semibold">{currentSearchResult.label}</h3><HelpHint helpKey="objectLabel" /></div>
 
                     <dl class="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
@@ -433,18 +463,20 @@
                         {/if}
                     </div>
                 </div>
-                <div class="mt-auto flex shrink-0 items-center gap-2 border-t p-2">
-                    <Button class="w-32" variant="outline" size="icon" disabled={searchResultIdx === 0} onclick={() => switchSearchResult(-1)}
-                        ><ArrowLeft /></Button
-                    >
-                    <p class="flex-1 text-center text-sm text-muted-foreground">Result {searchResultIdx + 1} of {ontologySearchResults.length}</p>
-                    <Button
-                        class="w-32"
-                        variant="outline"
-                        size="icon"
-                        disabled={searchResultIdx === ontologySearchResults.length - 1}
-                        onclick={() => switchSearchResult(1)}><ArrowRight /></Button
-                    >
+                <div class="mt-auto grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-t p-2">
+                    <Button class="w-12 justify-self-start sm:w-20" variant="outline" size="icon" aria-label="Previous search result" disabled={searchResultIdx === 0} onclick={() => switchSearchResult(-1)}><ArrowLeft /></Button>
+                    <Button class="w-24 sm:w-32" disabled={!canMap} onclick={addSssomMapping}>Map</Button>
+                    <div class="flex min-w-0 items-center justify-end gap-2">
+                        <div class="flex w-12 min-w-0 flex-col items-center gap-1" title={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}>
+                            <p class="text-xs leading-4 text-muted-foreground" role="status" aria-label={`Result ${searchResultIdx + 1} of ${ontologySearchResults.length}`}>{searchResultIdx + 1} / {ontologySearchResults.length}</p>
+                            <div class="flex h-[3px] w-full gap-0.5" aria-hidden="true">
+                                {#each ontologySearchResults as _, index}
+                                    <span class={`min-w-0 flex-1 rounded-full transition-colors ${index === searchResultIdx ? "bg-primary" : "bg-muted-foreground/25"}`}></span>
+                                {/each}
+                            </div>
+                        </div>
+                        <Button class="w-12 sm:w-20" variant="outline" size="icon" aria-label="Next search result" disabled={searchResultIdx === ontologySearchResults.length - 1} onclick={() => switchSearchResult(1)}><ArrowRight /></Button>
+                    </div>
                 </div>
             {:else}
                 <div class="flex items-center justify-center h-full flex-1">
@@ -534,5 +566,4 @@
             </div>
         </div>
     </div>
-    {@render footer(addSssomMapping, Boolean(mappingStore.subjectIdentifier.prefix && curieMapDetailsAccepted))}
 </div>

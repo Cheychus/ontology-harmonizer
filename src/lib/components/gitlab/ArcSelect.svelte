@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import { Button } from "../ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { ExternalLink, GitBranch } from "lucide-svelte";
   import * as Item from "$lib/components/ui/item/index.js";
   import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
   import type { IGitLabProject } from "$lib/types/gitLab";
-  import { success } from "$lib/services/toasts/toastService";
+  import { failure, success } from "$lib/services/toasts/toastService";
+  import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
 
   interface Props {
     project: IGitLabProject;
@@ -31,7 +31,8 @@
     try {
       const p = await arcStore.selectArc(Number(project.id));
       success("Selected " + p.name);
-      await goto("/filter-terms");
+    } catch (error) {
+      if (!applicationStore.sessionExpired) failure(error instanceof Error ? error.message : "Could not load ARC");
     } finally {
       selecting = false;
     }

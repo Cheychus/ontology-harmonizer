@@ -15,6 +15,7 @@ export const GET: RequestHandler = async ({ params, cookies, fetch }) => {
     } : {});
 
     if (!response.ok) {
+        if (response.status === 401 && token) cookies.delete("gitlab_token", { path: "/" });
         return json({ error: "Unable to download ARC metadata", message: `${upstream}, ${response}` }, { status: response.status });
     }
 

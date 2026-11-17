@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { PageProps } from "./$types";
   import { enhance } from "$app/forms";
-  import { goto } from "$app/navigation";
+  import WorkflowFooter from "$lib/components/application/WorkflowFooter.svelte";
   import ArcSelect from "$lib/components/gitlab/ArcSelect.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -13,15 +13,14 @@
   import { onMount } from "svelte";
 
   let { data }: PageProps = $props();
-  let user = $derived(data.user);
+  let user = $derived(applicationStore.sessionExpired ? null : data.user);
   let projectSearch = $state("");
   let filteredProjects = $derived(arcStore.projects.filter((project) => project.name.toLowerCase().includes(projectSearch.trim().toLowerCase())));
   let publicProjects = $derived(filteredProjects.filter((project) => project.visibility === "public"));
   let privateProjects = $derived(filteredProjects.filter((project) => project.visibility === "private"));
 
   onMount(() => {
-    applicationStore.gitLabUser = user;
-    applicationStore.isAuthenticated = Boolean(user);
+    applicationStore.setGitLabUser(user);
     if (user && arcStore.projects.length === 0) {
       arcStore.loadArcs();
     }
@@ -43,7 +42,6 @@
     arcStore.filename = file.name;
     arcStore.init(json);
     success("Selected " + file.name);
-    await goto("/filter-terms");
   }
 
 </script>
@@ -90,9 +88,7 @@
             action="?/logout"
             use:enhance={() => async ({ result, update }) => {
               if (result.type === "success") {
-                applicationStore.isAuthenticated = false;
-                applicationStore.gitLabUser = null;
-                applicationStore.stepState.isLoggedIn = false;
+                applicationStore.setGitLabUser(null);
                 arcStore.projects = [];
               }
               await update();
@@ -102,20 +98,11 @@
           </form>
         </div>
       {:else}
-        <Button class="mt-auto self-start" variant="outline" href="/auth/gitlab"><Leaf size={18} class="text-green-500" />Connect to DataHUB</Button>
+        <Button class="mt-auto self-start" variant="outline" href={applicationStore.sessionExpired ? "/auth/gitlab?reconnect=true" : "/auth/gitlab"}
+          target={applicationStore.sessionExpired ? "_blank" : undefined} rel={applicationStore.sessionExpired ? "noopener noreferrer" : undefined}><Leaf size={18} class="text-green-500" />{applicationStore.sessionExpired ? "Reconnect to DataHUB" : "Connect to DataHUB"}</Button>
       {/if}
     </div>
   </div>
-
-  {#if arcStore.initialised}
-    <div class="flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4 shadow-sm">
-      <div>
-        <p class="font-medium">Selected ARC: {arcStore.filename || "Demo ARC"}</p>
-        <p class="text-sm text-muted-foreground">{arcStore.ontologyCandidates.size} ontology fields found.</p>
-      </div>
-      <Button href="/filter-terms">Filter terms</Button>
-    </div>
-  {/if}
 
   {#if user}
     {#if arcStore.projects.length > 0}
@@ -148,4 +135,13 @@
       </p>
     {/if}
   {/if}
+  <WorkflowFooter>
+    {#snippet status()}
+      <p class="truncate text-sm font-medium">{arcStore.initialised ? arcStore.filename || "Demo ARC" : "Select an ARC to continue"}</p>
+      {#if arcStore.initialised}<p class="text-xs text-muted-foreground">ARC selected</p>{/if}
+    {/snippet}
+    {#snippet actions()}
+      <Button href="/filter-terms" disabled={!arcStore.initialised || arcStore.selecting}>Continue</Button>
+    {/snippet}
+  </WorkflowFooter>
 </section>

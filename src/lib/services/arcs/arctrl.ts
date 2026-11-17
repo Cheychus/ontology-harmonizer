@@ -4,7 +4,6 @@ import { ARC, Contract } from "@nfdi4plants/arctrl";
 import { Xlsx } from "@fslab/fsspreadsheet";
 import type { IGitlabResponse } from "$lib/types/gitLab";
 import { toast } from "@zerodevx/svelte-toast";
-import { failure } from "../toasts/toastService";
 
 export async function pushToGitlab() {
   const id = toast.push("Commit changes to GitLab...", {
@@ -39,8 +38,6 @@ export async function pushToGitlab() {
       commitUrl,
       mergeUrl,
     };
-  } catch (e) {
-    failure("" + e);
   } finally {
     toast.pop(id);
   }

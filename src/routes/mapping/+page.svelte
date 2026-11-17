@@ -5,6 +5,7 @@
     import HelpHint from "$lib/components/HelpHint.svelte";
     import ContributorEditor from "$lib/components/mapping/ContributorEditor.svelte";
     import { Button } from "$lib/components/ui/button";
+    import WorkflowFooter from "$lib/components/application/WorkflowFooter.svelte";
     import { applicationStore } from "$lib/stores/application/ApplicationStore.svelte";
     import { mappingStore } from "$lib/stores/mapping/MappingStore.svelte";
     import { arcStore } from "$lib/stores/arcs/ArcStore.svelte";
@@ -37,34 +38,26 @@
         if (data.user) loadContributorWithUserData(data.user);
     });
 
-    let jsonFileInput: HTMLInputElement;
-    let sssomFileInput: HTMLInputElement;
-    async function handleJsonChange(event: Event) {
+    let mappingFileInput: HTMLInputElement;
+    async function handleMappingChange(event: Event) {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
         if (!file) return;
 
         try {
-            const mappingSet = parseMappingSetJson(await file.text());
-            mappingStore.loadMappingSet(mappingSet);
+            if (file.name.toLowerCase().endsWith(".json")) {
+                mappingStore.loadMappingSet(parseMappingSetJson(await file.text()));
+            } else {
+                mappingStore.loadSssom(await parseSssomInServer(file));
+            }
             mappingStore.fileName = file.name;
-            success("JSON mapping was uploaded");
+            applicationStore.stepState.mappingConfigured = true;
+            success("Mapping was imported");
         } catch {
-            failure("Could not load JSON mapping");
+            failure("Could not import mapping. Choose a valid SSSOM TSV or JSON file.");
         } finally {
             input.value = "";
         }
-    }
-
-    async function handleSssomChange(event: Event) {
-        const input = event.target as HTMLInputElement;
-        const file = input.files?.[0];
-        if (!file) return;
-
-        const result = await parseSssomInServer(file);
-        mappingStore.fileName = file.name;
-        mappingStore.loadSssom(result);
-        success("SSSOM mapping was uploaded");
     }
 
     function exportJsonMapping() {
@@ -78,18 +71,17 @@
     }
 </script>
 
-<input class="hidden" type="file" accept=".tsv,text/tab-separated-values" bind:this={sssomFileInput} onchange={handleSssomChange} />
-<input class="hidden" type="file" accept=".json,application/json" bind:this={jsonFileInput} onchange={handleJsonChange} />
+<input class="hidden" type="file" accept=".tsv,.json,text/tab-separated-values,application/json" bind:this={mappingFileInput} onchange={handleMappingChange} />
 
 <section class="flex w-full flex-1 flex-col gap-6">
     <div>
         <div class="flex flex-wrap items-center justify-between gap-3">
             <h2>Configure mapping</h2>
             {#if mappingStore.hasMappingSet}
-                <Button href={arcStore.initialised ? "/map" : "/select-arc"}>{arcStore.initialised ? "Start mapping" : "Select ARC"}</Button>
+                <Button variant="outline" onclick={() => mappingFileInput.click()} title="Replace the current mapping with a SSSOM TSV or JSON file"><Upload />Import mapping</Button>
             {/if}
         </div>
-        <p class="text-sm text-muted-foreground">Create a new mapping or import an existing SSSOM file, review its details, then start mapping.</p>
+        <p class="text-sm text-muted-foreground">Configure your mapping or import an existing SSSOM TSV or JSON file, then start mapping.</p>
     </div>
 
     {#if !mappingStore.hasMappingSet}
@@ -99,16 +91,15 @@
                     <h3>New mapping</h3>
                     <p class="text-sm text-muted-foreground">Start with an empty mapping and the application defaults.</p>
                 </div>
-                <Button class="mt-auto self-start" variant="outline" onclick={createMapping}>Create mapping</Button>
+                <Button class="mt-auto self-start" onclick={createMapping}>Create mapping</Button>
             </div>
             <div class="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
                 <div>
                     <h3>Import mapping</h3>
-                    <p class="text-sm text-muted-foreground">Continue working with an existing SSSOM TSV file.</p>
+                    <p class="text-sm text-muted-foreground">Continue working with an existing SSSOM TSV or JSON file.</p>
                 </div>
                 <div class="mt-auto flex flex-wrap items-center gap-2">
-                    <Button variant="outline" onclick={() => sssomFileInput.click()}><Upload />Import SSSOM TSV</Button>
-                    <Button variant="ghost" title="Import JSON as a fallback" onclick={() => jsonFileInput.click()}><Upload />JSON</Button>
+                    <Button variant="outline" onclick={() => mappingFileInput.click()}><Upload />Import mapping</Button>
                 </div>
             </div>
         </div>
@@ -155,4 +146,19 @@
             <SssomMappings embedded />
         </article>
     {/if}
+    <WorkflowFooter backHref={arcStore.initialised ? "/filter-terms" : "/select-arc"} backLabel={arcStore.initialised ? "Back to filter terms" : "Back to ARC selection"}>
+        {#snippet status()}
+            <p class="truncate text-sm font-medium">{mappingStore.hasMappingSet ? mappingStore.fileName || "New mapping" : "Create or import a mapping to continue"}</p>
+            {#if mappingStore.hasMappingSet}
+                <p class="text-xs text-muted-foreground">{mappingStore.mappingSet.mappings.length} mapping entries</p>
+            {/if}
+        {/snippet}
+        {#snippet actions()}
+            {#if !arcStore.initialised}
+                <Button href="/select-arc">Select ARC</Button>
+            {:else}
+                <Button href="/map" disabled={!mappingStore.hasMappingSet}>Start mapping</Button>
+            {/if}
+        {/snippet}
+    </WorkflowFooter>
 </section>

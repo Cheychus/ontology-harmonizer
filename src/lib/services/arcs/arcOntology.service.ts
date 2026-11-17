@@ -1,13 +1,16 @@
 import type { DerivedOntology } from "$lib/stores/arcs/ArcStore.svelte";
+import { isNumericValue } from "./valuePredicates";
 
-export type ArcTermFilter = "standard" | "all";
+export type ArcTermFilter = "standard" | "all" | "exclude-numeric";
 
-export function extractOntologies(node: GraphNode, filter: ArcTermFilter = "standard"): DerivedOntology[] {
+export function extractOntologies(node: GraphNode, filter: ArcTermFilter = "all"): DerivedOntology[] {
   switch (filter) {
     case "standard":
       return extractStandardTerms(node);
     case "all":
       return extractAllTerms(node);
+    case "exclude-numeric":
+      return extractNonNumericTerms(node);
   }
 }
 
@@ -47,6 +50,15 @@ function extractAllTerms(node: GraphNode): DerivedOntology[] {
   }
 
   return terms;
+}
+
+/** Start with all terms, then exclude numeric values while keeping names and units. */
+function extractNonNumericTerms(node: GraphNode): DerivedOntology[] {
+  return extractAllTerms(node).filter((term) => {
+    if (term.ontologyAttribute !== "valueReference") return true;
+
+    return !isNumericValue(term.key);
+  });
 }
 
 /** Build the shared mapping representation without changing the ARC node. */
